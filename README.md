@@ -1,5 +1,5 @@
-docker-ssh
-==========
+Geoserver in Docker
+===================
 
 A simple docker container that runs tilemill (https://github.com/mapbox/tilemill).
 
