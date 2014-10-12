@@ -24,7 +24,7 @@ ADD resources /tmp/resources
 # A little logic that will fetch the geoserver zip file if it
 # is not available locally in the resources dir and
 RUN if [ ! -f /tmp/resources/geoserver.zip ]; then \
-    wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/2.5.2/geoserver-2.5.2-bin.zip -O /tmpresources/geoserver.zip; \
+    wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/2.5.2/geoserver-2.5.2-bin.zip -O /tmp/resources/geoserver.zip; \
     fi; \
     unzip /tmp/resources/geoserver.zip -d /opt && mv -v /opt/geoserver* /opt/geoserver
 ENV GEOSERVER_HOME /opt/geoserver
