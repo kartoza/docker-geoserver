@@ -1,8 +1,5 @@
 # docker-geoserver
 
-**Note** This docker project is still in development and may not work for 
-    you yet!
-
 A simple docker container that runs Geoserver influenced by this docker
 recipe: https://github.com/eliotjordan/docker-geoserver/blob/master/Dockerfile
 
@@ -63,6 +60,11 @@ These will be used to create a new superuser with
 your preferred credentials. If these are not specified then the postgresql 
 user is set to 'docker' with password 'docker'.
 
+There is also a convenience run script that will setup a postgis container
+and a geoserver container in the ``run.sh`` script for this repository.
+
+**Note:** The default geoserver user is 'admin' and the password is 'geoserver'.
+We highly recommend changing these as soon as you first log in.
 
 ## Storing data on the host rather than the container.
 
