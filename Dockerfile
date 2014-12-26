@@ -30,6 +30,6 @@ RUN if [ ! -f /tmp/resources/geoserver.zip ]; then \
 ENV GEOSERVER_HOME /opt/geoserver
 ENV JAVA_HOME /usr/
 
-ENTRYPOINT "/opt/geoserver/bin/startup.sh"
-#CMD "/opt/geoserver/bin/startup.sh"
+#ENTRYPOINT "/opt/geoserver/bin/startup.sh"
+CMD "/opt/geoserver/bin/startup.sh"
 EXPOSE 8080
