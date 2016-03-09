@@ -1,2 +1,3 @@
 resources/geoserver.zip
+resources/plugins/*.zip
 .idea

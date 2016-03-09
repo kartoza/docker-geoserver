@@ -40,6 +40,13 @@ Now edit ``71-apt-cacher-ng`` then do:
 docker build -t kartoza/postgis .
 ```
 
+### Building with plugins
+
+To build a GeoServer image with plugins (e.g. SQL Server plugin, Excel output plugin),
+download the plugin zip files from the GeoServer download page and put them in
+`resources/plugins` before building. You should also download the matching version
+GeoServer WAR zip file to `resources/geoserver.zip`.
+
 ## Run
 
 You probably want to also have postgis running too. To create a running 
@@ -76,10 +83,23 @@ mkdir -p ~/geoserver_data
 docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geserver
 ```
 
-You need to ensure the ``geoserver_data`` directory has sufficinet permissions
+You need to ensure the ``geoserver_data`` directory has sufficient permissions
 for the docker process to read / write it.
 
+## Setting Tomcat properties
 
+To set Tomcat properties such as maximum heap memory size, create a `setenv.sh` file such as:
+
+```shell
+JAVA_OPTS="$JAVA_OPTS -Xmx1536M -XX:MaxPermSize=756M"
+JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
+```
+
+Then pass the `setenv.sh` file as a volume at `/usr/local/tomcat/bin/setenv.sh` when running:
+
+```shell
+docker run -d -v $HOME/setenv.sh:/usr/local/tomcat/bin/setenv.sh kartoza/geserver
+```
 
 ## Credits
 

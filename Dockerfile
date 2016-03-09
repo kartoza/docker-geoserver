@@ -16,19 +16,32 @@ RUN apt-get -y update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-RUN apt-get -y install unzip openjdk-7-jre-headless openjdk-7-jre
+EXPOSE 8080
+
+ENV GS_VERSION 2.6.1
+ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 
 ADD resources /tmp/resources
 
-# A little logic that will fetch the geoserver zip file if it
-# is not available locally in the resources dir and
+# A little logic that will fetch the geoserver war zip file if it
+# is not available locally in the resources dir
 RUN if [ ! -f /tmp/resources/geoserver.zip ]; then \
-    wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/2.6.1/geoserver-2.6.1-bin.zip -O /tmp/resources/geoserver.zip; \
+      wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
+	-O /tmp/resources/geoserver.zip; \
     fi; \
-    unzip /tmp/resources/geoserver.zip -d /opt && mv -v /opt/geoserver* /opt/geoserver
-ENV GEOSERVER_HOME /opt/geoserver
-ENV JAVA_HOME /usr/
+    unzip /tmp/resources/geoserver.zip -d /tmp/geoserver \
+    && mv /tmp/geoserver/geoserver.war /usr/local/tomcat/webapps/geoserver.war \
+    && unzip /usr/local/tomcat/webapps/geoserver.war -d /usr/local/tomcat/webapps/geoserver \
+    && rm -rf /tmp/geoserver
 
-#ENTRYPOINT "/opt/geoserver/bin/startup.sh"
-CMD "/opt/geoserver/bin/startup.sh"
-EXPOSE 8080
+# Install any plugin zip files in resources/plugins
+RUN if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
+      for p in /tmp/resources/plugins/*.zip; do \
+        unzip $p -d /tmp/gs_plugin \
+        && mv /tmp/gs_plugin/*.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/ \
+        && rm -rf /tmp/gs_plugin; \
+      done; \
+    fi
+
+# Delete resources after installation
+RUN rm -rf /tmp/resources
