@@ -40,6 +40,18 @@ Now edit ``71-apt-cacher-ng`` then do:
 docker build -t kartoza/postgis .
 ```
 
+### Building with Oracle JDK
+
+To replace OpenJDK Java with the Oracle JDK, set build-arg `OPEN_JDK=true`:
+
+```shell
+docker build --build-arg OPEN_JDK=true -t kartoza/postgis .
+```
+
+Alternatively, you can download the Oracle JDK 7 Linux x64 tar.gz currently in use by
+[webupd8team's Oracle JDK installer](https://launchpad.net/~webupd8team/+archive/ubuntu/java/+packages)
+(usually the latest version available from Oracle) and place it in `resources` before building.
+
 ### Building with plugins
 
 To build a GeoServer image with plugins (e.g. SQL Server plugin, Excel output plugin),
