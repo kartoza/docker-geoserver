@@ -52,6 +52,10 @@ Alternatively, you can download the Oracle JDK 7 Linux x64 tar.gz currently in u
 [webupd8team's Oracle JDK installer](https://launchpad.net/~webupd8team/+archive/ubuntu/java/+packages)
 (usually the latest version available from Oracle) and place it in `resources` before building.
 
+To enable strong cryptography when using the Oracle JDK (recommended), download the
+[Oracle Java policy jar zip](http://docs.geoserver.org/latest/en/user/production/java.html#oracle-java)
+for the correct JDK version and place it at `resources/jce_policy.zip` before building.
+
 ### Building with plugins
 
 To build a GeoServer image with plugins (e.g. SQL Server plugin, Excel output plugin),

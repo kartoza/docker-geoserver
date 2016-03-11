@@ -51,6 +51,10 @@ RUN if ls /var/cache/oracle-jdk7-installer/*jdk-*-linux-x64.tar.gz > /dev/null 2
        ln -s --force /usr/lib/jvm/java-7-oracle /usr/lib/jvm/default-java && \
        rm -rf /var/lib/apt/lists/* && \
        rm -rf /var/cache/oracle-jdk7-installer; \
+       if [ -f /tmp/resources/jce_policy.zip ]; then \
+         unzip -j /tmp/resources/jce_policy.zip -d /tmp/jce_policy && \
+         mv /tmp/jce_policy/*.jar $JAVA_HOME/jre/lib/security/; \
+       fi; \
     fi;
 
 # A little logic that will fetch the geoserver war zip file if it

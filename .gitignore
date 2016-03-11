@@ -1,4 +1,5 @@
 resources/geoserver.zip
 resources/plugins/*.zip
 resources/*jdk-*-linux-x64.tar.gz
+resources/jce_policy.zip
 .idea
