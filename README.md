@@ -63,6 +63,17 @@ download the plugin zip files from the GeoServer download page and put them in
 `resources/plugins` before building. You should also download the matching version
 GeoServer WAR zip file to `resources/geoserver.zip`.
 
+### Building with file system overlays (advanced)
+
+The contents of `resources/overlays` will be copied to the image file system
+during the build. For example, to include a static Tomcat `setenv.sh`,
+create the file at `resources/overlays/usr/local/tomcat/bin/setenv.sh`.
+
+You can use this functionality to write a static GeoServer directory to
+`/opt/geoserver/data_dir`, include additional jar files, and more.
+
+Overlay files will overwrite existing destination files, so be careful!
+
 ## Run
 
 You probably want to also have postgis running too. To create a running 

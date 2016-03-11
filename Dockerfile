@@ -77,5 +77,11 @@ RUN if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
       done; \
     fi
 
+# Overlay files and directories in resources/overlays if they exist
+RUN rm /tmp/resources/overlays/README.txt && \
+    if ls /tmp/resources/overlays/* > /dev/null 2>&1; then \
+      cp -rf /tmp/resources/overlays/* /; \
+    fi;
+
 # Delete resources after installation
 RUN rm -rf /tmp/resources
