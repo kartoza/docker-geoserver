@@ -16,7 +16,7 @@ RUN apt-get -y update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-ENV GS_VERSION 2.6.1
+ENV GS_VERSION 2.8.0
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 
 # Unset Java related ENVs since they may change with Oracle JDK
