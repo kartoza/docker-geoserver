@@ -140,4 +140,5 @@ docker run -d -v $HOME/setenv.sh:/usr/local/tomcat/bin/setenv.sh kartoza/geserve
 ## Credits
 
 Tim Sutton (tim@kartoza.com)
-May 2014
+Shane St Clair (shane@axiomdatascience.com)
+Alex Leith (alexgleith@gmail.com)
