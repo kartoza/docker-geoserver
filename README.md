@@ -42,10 +42,10 @@ docker build -t kartoza/postgis .
 
 ### Building with Oracle JDK
 
-To replace OpenJDK Java with the Oracle JDK, set build-arg `OPEN_JDK=true`:
+To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
 
 ```shell
-docker build --build-arg OPEN_JDK=true -t kartoza/postgis .
+docker build --build-arg ORACLE_JDK=true -t kartoza/postgis .
 ```
 
 Alternatively, you can download the Oracle JDK 7 Linux x64 tar.gz currently in use by
@@ -62,6 +62,15 @@ To build a GeoServer image with plugins (e.g. SQL Server plugin, Excel output pl
 download the plugin zip files from the GeoServer download page and put them in
 `resources/plugins` before building. You should also download the matching version
 GeoServer WAR zip file to `resources/geoserver.zip`.
+
+### Removing Tomcat extras during build
+
+To remove Tomcat extras including docs, examples, and the manager webapp, set the
+`TOMCAT_EXTRAS` build-arg to `false`:
+
+```shell
+docker build --build-arg TOMCAT_EXTRAS=false -t kartoza/postgis .
+```
 
 ### Building with file system overlays (advanced)
 
