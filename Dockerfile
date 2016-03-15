@@ -80,8 +80,8 @@ RUN if [ ! -f /tmp/resources/geoserver.zip ]; then \
 	-O /tmp/resources/geoserver.zip; \
     fi; \
     unzip /tmp/resources/geoserver.zip -d /tmp/geoserver \
-    && mv /tmp/geoserver/geoserver.war /usr/local/tomcat/webapps/geoserver.war \
-    && unzip /usr/local/tomcat/webapps/geoserver.war -d /usr/local/tomcat/webapps/geoserver \
+    && unzip /tmp/geoserver/geoserver.war -d /usr/local/tomcat/webapps/geoserver \
+    && rm -rf /usr/local/tomcat/webapps/geoserver/data \
     && rm -rf /tmp/geoserver
 
 # Install any plugin zip files in resources/plugins
