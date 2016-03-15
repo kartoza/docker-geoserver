@@ -99,5 +99,15 @@ RUN rm /tmp/resources/overlays/README.txt && \
       cp -rf /tmp/resources/overlays/* /; \
     fi;
 
+# Optionally remove Tomcat manager, docs, and examples
+ARG TOMCAT_EXTRAS=true
+RUN if [ "$TOMCAT_EXTRAS" = false ]; then \
+    rm -rf $CATALINA_HOME/webapps/ROOT && \
+    rm -rf $CATALINA_HOME/webapps/docs && \
+    rm -rf $CATALINA_HOME/webapps/examples && \
+    rm -rf $CATALINA_HOME/webapps/host-manager && \
+    rm -rf $CATALINA_HOME/webapps/manager; \
+  fi;
+
 # Delete resources after installation
 RUN rm -rf /tmp/resources
