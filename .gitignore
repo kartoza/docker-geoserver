@@ -1,2 +1,8 @@
-resources/geoserver.zip
+resources/*
+!resources/plugins/
+resources/plugins/*
+!resources/plugins/README.txt
+!resources/overlays/
+resources/overlays/*
+!resources/overlays/README.txt
 .idea
