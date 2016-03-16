@@ -40,6 +40,49 @@ Now edit ``71-apt-cacher-ng`` then do:
 docker build -t kartoza/postgis .
 ```
 
+### Building with Oracle JDK
+
+To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
+
+```shell
+docker build --build-arg ORACLE_JDK=true -t kartoza/postgis .
+```
+
+Alternatively, you can download the Oracle JDK 7 Linux x64 tar.gz currently in use by
+[webupd8team's Oracle JDK installer](https://launchpad.net/~webupd8team/+archive/ubuntu/java/+packages)
+(usually the latest version available from Oracle) and place it in `resources` before building.
+
+To enable strong cryptography when using the Oracle JDK (recommended), download the
+[Oracle Java policy jar zip](http://docs.geoserver.org/latest/en/user/production/java.html#oracle-java)
+for the correct JDK version and place it at `resources/jce_policy.zip` before building.
+
+### Building with plugins
+
+To build a GeoServer image with plugins (e.g. SQL Server plugin, Excel output plugin),
+download the plugin zip files from the GeoServer download page and put them in
+`resources/plugins` before building. You should also download the matching version
+GeoServer WAR zip file to `resources/geoserver.zip`.
+
+### Removing Tomcat extras during build
+
+To remove Tomcat extras including docs, examples, and the manager webapp, set the
+`TOMCAT_EXTRAS` build-arg to `false`:
+
+```shell
+docker build --build-arg TOMCAT_EXTRAS=false -t kartoza/postgis .
+```
+
+### Building with file system overlays (advanced)
+
+The contents of `resources/overlays` will be copied to the image file system
+during the build. For example, to include a static Tomcat `setenv.sh`,
+create the file at `resources/overlays/usr/local/tomcat/bin/setenv.sh`.
+
+You can use this functionality to write a static GeoServer directory to
+`/opt/geoserver/data_dir`, include additional jar files, and more.
+
+Overlay files will overwrite existing destination files, so be careful!
+
 ## Run
 
 You probably want to also have postgis running too. To create a running 
@@ -76,12 +119,26 @@ mkdir -p ~/geoserver_data
 docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geserver
 ```
 
-You need to ensure the ``geoserver_data`` directory has sufficinet permissions
+You need to ensure the ``geoserver_data`` directory has sufficient permissions
 for the docker process to read / write it.
 
+## Setting Tomcat properties
 
+To set Tomcat properties such as maximum heap memory size, create a `setenv.sh` file such as:
+
+```shell
+JAVA_OPTS="$JAVA_OPTS -Xmx1536M -XX:MaxPermSize=756M"
+JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
+```
+
+Then pass the `setenv.sh` file as a volume at `/usr/local/tomcat/bin/setenv.sh` when running:
+
+```shell
+docker run -d -v $HOME/setenv.sh:/usr/local/tomcat/bin/setenv.sh kartoza/geserver
+```
 
 ## Credits
 
-Tim Sutton (tim@kartoza.com)
-May 2014
+* Tim Sutton (tim@kartoza.com)
+* Shane St Clair (shane@axiomdatascience.com)
+* Alex Leith (alexgleith@gmail.com)
