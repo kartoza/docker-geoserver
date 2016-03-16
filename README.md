@@ -14,14 +14,14 @@ The preferred way (but using most bandwidth for the initial image) is to
 get our docker trusted build like this:
 
 
-```
+```shell
 docker pull kartoza/geoserver
 ```
 
 To build the image yourself without apt-cacher-ng (also consumes more bandwidth
 since deb packages need to be refetched each time you build) do:
 
-```
+```shell
 docker build -t kartoza/geoserver git://github.com/kartoza/docker-geoserver
 ```
 
@@ -30,14 +30,14 @@ clone this repo locally first and modify the contents of 71-apt-cacher-ng to
 match your cacher host. Then build using a local url instead of directly from
 github.
 
-```
+```shell
 git clone git://github.com/kartoza/docker-geoserver
 ```
 
 Now edit ``71-apt-cacher-ng`` then do:
 
-```
-docker build -t kartoza/postgis .
+```shell
+docker build -t kartoza/geoserver .
 ```
 
 ### Building with Oracle JDK
@@ -45,7 +45,7 @@ docker build -t kartoza/postgis .
 To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
 
 ```shell
-docker build --build-arg ORACLE_JDK=true -t kartoza/postgis .
+docker build --build-arg ORACLE_JDK=true -t kartoza/geoserver .
 ```
 
 Alternatively, you can download the Oracle JDK 7 Linux x64 tar.gz currently in use by
@@ -69,7 +69,7 @@ To remove Tomcat extras including docs, examples, and the manager webapp, set th
 `TOMCAT_EXTRAS` build-arg to `false`:
 
 ```shell
-docker build --build-arg TOMCAT_EXTRAS=false -t kartoza/postgis .
+docker build --build-arg TOMCAT_EXTRAS=false -t kartoza/geoserver .
 ```
 
 ### Building with file system overlays (advanced)
@@ -88,9 +88,9 @@ Overlay files will overwrite existing destination files, so be careful!
 You probably want to also have postgis running too. To create a running 
 container do:
 
-```
-sudo docker run --name "postgis" -d -t kartoza/postgis
-sudo docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver
+```shell
+docker run --name "postgis" -d -t kartoza/postgis:9.4-2.1
+docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver
 ```
 
 You can also use the following environment variables to pass a 
@@ -114,7 +114,7 @@ We highly recommend changing these as soon as you first log in.
 
 Docker volumes can be used to persist your data.
 
-```
+```shell
 mkdir -p ~/geoserver_data
 docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geserver
 ```
