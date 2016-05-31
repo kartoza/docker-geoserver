@@ -116,7 +116,7 @@ Docker volumes can be used to persist your data.
 
 ```shell
 mkdir -p ~/geoserver_data
-docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geserver
+docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver
 ```
 
 You need to ensure the ``geoserver_data`` directory has sufficient permissions
@@ -134,7 +134,7 @@ JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true -XX:+UseConcMarkSweepGC -XX:+CMSC
 Then pass the `setenv.sh` file as a volume at `/usr/local/tomcat/bin/setenv.sh` when running:
 
 ```shell
-docker run -d -v $HOME/setenv.sh:/usr/local/tomcat/bin/setenv.sh kartoza/geserver
+docker run -d -v $HOME/setenv.sh:/usr/local/tomcat/bin/setenv.sh kartoza/geoserver
 ```
 
 ## Credits
