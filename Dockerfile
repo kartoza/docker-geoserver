@@ -1,5 +1,5 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-FROM tomcat:8.0
+FROM tomcat:8.0-jre8
 MAINTAINER Tim Sutton<tim@linfiniti.com>
 
 RUN  export DEBIAN_FRONTEND=noninteractive
@@ -16,7 +16,7 @@ RUN apt-get -y update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-ENV GS_VERSION 2.8.2
+ENV GS_VERSION 2.9.1
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 
 RUN mkdir -p $GEOSERVER_DATA_DIR
@@ -26,33 +26,34 @@ ENV JAVA_VERSION=
 ENV JAVA_DEBIAN_VERSION=
 
 # Set JAVA_HOME to /usr/lib/jvm/default-java and link it to OpenJDK installation
-RUN ln -s /usr/lib/jvm/java-7-openjdk-amd64 /usr/lib/jvm/default-java
+RUN ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/default-java
 ENV JAVA_HOME /usr/lib/jvm/default-java
 
 ADD resources /tmp/resources
 
-# If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk7-installer
-# where oracle-java7-installer will detect it
+# If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
+# where oracle-java8-installer will detect it
 RUN if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
-      mkdir /var/cache/oracle-jdk7-installer && \
-      mv /tmp/resources/*jdk-*-linux-x64.tar.gz /var/cache/oracle-jdk7-installer/; \
+      mkdir /var/cache/oracle-jdk8-installer && \
+      mv /tmp/resources/*jdk-*-linux-x64.tar.gz /var/cache/oracle-jdk8-installer/; \
     fi;
 
 # Install Oracle JDK (and uninstall OpenJDK JRE) if the build-arg ORACLE_JDK = true or an Oracle tar.gz
 # was found in /tmp/resources
 ARG ORACLE_JDK=false
-RUN if ls /var/cache/oracle-jdk7-installer/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1 || [ "$ORACLE_JDK" = true ]; then \
-       apt-get autoremove --purge -y openjdk-7-jre-headless && \
-       echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true \
+RUN if ls /var/cache/oracle-jdk8-installer/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1 || [ "$ORACLE_JDK" = true ]; then \
+       apt-get autoremove --purge -y openjdk-8-jre-headless && \
+       echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true \
          | debconf-set-selections && \
-       echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" \
+       echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" \
          > /etc/apt/sources.list.d/webupd8team-java.list && \
        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886 && \
-       apt-get update && \
-       apt-get install -y oracle-java7-installer oracle-java7-set-default && \
-       ln -s --force /usr/lib/jvm/java-7-oracle /usr/lib/jvm/default-java && \
        rm -rf /var/lib/apt/lists/* && \
-       rm -rf /var/cache/oracle-jdk7-installer; \
+       apt-get update && \
+       apt-get install -y oracle-java8-installer oracle-java8-set-default && \
+       ln -s --force /usr/lib/jvm/java-8-oracle /usr/lib/jvm/default-java && \
+       rm -rf /var/lib/apt/lists/* && \
+       rm -rf /var/cache/oracle-jdk8-installer; \
        if [ -f /tmp/resources/jce_policy.zip ]; then \
          unzip -j /tmp/resources/jce_policy.zip -d /tmp/jce_policy && \
          mv /tmp/jce_policy/*.jar $JAVA_HOME/jre/lib/security/; \
@@ -96,7 +97,7 @@ RUN if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
     fi
 
 # Overlay files and directories in resources/overlays if they exist
-RUN rm /tmp/resources/overlays/README.txt && \
+RUN rm -f /tmp/resources/overlays/README.txt && \
     if ls /tmp/resources/overlays/* > /dev/null 2>&1; then \
       cp -rf /tmp/resources/overlays/* /; \
     fi;
