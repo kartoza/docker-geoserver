@@ -65,10 +65,10 @@ WORKDIR /tmp
 # A little logic that will fetch the JAI and JAI ImageIO tar file if it
 # is not available locally in the resources dir
 RUN if [ ! -f /tmp/resources/jai-1_1_3-lib-linux-amd64.tar.gz ]; then \
-    wget http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz;\
+    wget http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz -P ./resources;\
     fi; \
     if [ ! -f /tmp/resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ]; then \
-    wget http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz;\
+    wget http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz -P ./resources;\
     fi; \
     mv resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ && \
     mv resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ./ && \
