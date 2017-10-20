@@ -11,6 +11,8 @@ services:
       volumes:
          #- ./pg/postgres_data:/var/lib/postgresql
          - db-backups:/backups
+      ports:
+        - "25432:5432"
       environment:
          - USERNAME=docker
          - PASS=docker
@@ -30,7 +32,7 @@ services:
       user: root
 
    dbbackups:
-      image: kartoza/pg-backup:9.4
+      image: kartoza/pg-backup:9.5
       hostname: pg-backups
       volumes:
         - db-backups:/backups
