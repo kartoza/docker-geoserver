@@ -3,9 +3,6 @@
 A simple docker container that runs Geoserver influenced by this docker
 recipe: https://github.com/eliotjordan/docker-geoserver/blob/master/Dockerfile
 
-**Note:** We recommend using ``apt-cacher-ng`` to speed up package fetching -
-you should configure the host for it in the provided 71-apt-cacher-ng file.
-
 ## Getting the image
 
 There are various ways to get the image onto your system:
@@ -18,25 +15,16 @@ get our docker trusted build like this:
 docker pull kartoza/geoserver
 ```
 
-To build the image yourself without apt-cacher-ng (also consumes more bandwidth
-since deb packages need to be refetched each time you build) do:
+To build the image yourself:
 
 ```shell
 docker build -t kartoza/geoserver git://github.com/kartoza/docker-geoserver
 ```
 
-To build with apt-cacher-ng (and minimised download requirements) do you need to
-clone this repo locally first and modify the contents of 71-apt-cacher-ng to
-match your cacher host. Then build using a local url instead of directly from
-github.
+To build yourself with a local checkout:
 
 ```shell
 git clone git://github.com/kartoza/docker-geoserver
-```
-
-Now edit ``71-apt-cacher-ng`` then do:
-
-```shell
 docker build -t kartoza/geoserver .
 ```
 
@@ -132,7 +120,7 @@ folders:
 
 Then make a copy of each of the provided EXAMPLE environment files e.g.:
 
-```
+```shell
 cp btsync-db.env.EXAMPLE btsync-db.env
 cp btsync-media.env.EXAMPLE btsync-media.env
 ```
