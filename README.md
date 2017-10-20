@@ -83,7 +83,10 @@ You can use this functionality to write a static GeoServer directory to
 
 Overlay files will overwrite existing destination files, so be careful!
 
-## Run
+## Run (manual docker commands)
+
+**Note:** You probably want to use docker-compose for running as it will provide
+a repeatable orchestrated deployment system.
 
 You probably want to also have postgis running too. To create a running 
 container do:
@@ -103,14 +106,69 @@ These will be used to create a new superuser with
 your preferred credentials. If these are not specified then the postgresql 
 user is set to 'docker' with password 'docker'.
 
-There is also a convenience run script that will setup a postgis container
-and a geoserver container in the ``run.sh`` script for this repository.
-
 **Note:** The default geoserver user is 'admin' and the password is 'geoserver'.
 We highly recommend changing these as soon as you first log in.
 
-## Storing data on the host rather than the container.
+## Run (automated using docker-compose)
 
+We provide a sample ``docker-compose.yml`` file that illustrates
+how you can establish a GeoServer + Postgis orchestrated environment
+with nightly backups that are synchronised to your backup server
+via btsync.
+
+If you are **not** interested in the backups and btsync options, comment 
+out those services in the ``docker-compose.yml`` file.
+
+Please read the ``docker-compose`` 
+[documentation](https://docs.docker.com/compose/) for details
+on usage and syntax of ``docker-compose`` - it is not covered here.
+
+If you **are** interested in btsync backups, install [Resilio sync]
+on your desktop NAS or other backup  destination and create two
+folders:
+
+* one for database backup dumps
+* one for geoserver data dir 
+
+Then make a copy of each of the provided EXAMPLE environment files e.g.:
+
+```
+cp btsync-db.env.EXAMPLE btsync-db.env
+cp btsync-media.env.EXAMPLE btsync-media.env
+```
+
+Then edit the two env files, placing your Read/Write resilio keys
+in the place provided.
+
+
+To run the example do:
+
+```
+docker-compose up
+```
+
+Which will run everything in the foreground giving you the opportunity
+to peruse logs and see that everything spins up nicely.
+
+Once all services are started, test by visiting the GeoServer landing
+page in your browser: [http://localhost:8080/geoserver](http://localhost:8080/geoserver).
+
+To run in the background rather, press ``ctrl-c`` to stop the
+containers and run again in the background:
+
+```
+docker-compose up -d
+```
+
+**Note:** The ``docker-compose.yml`` **does not use persistent storage** so
+when you remove the containers, **all data will be lost**. Either set up 
+btsync (and test to verify that your backups are working, we take 
+**no responsibiliy** if the examples provided here do not produce 
+a reliable backup system), or use host based volumes (you will need 
+to modify the ``docker-compose.yml``` example to do this) so that
+your data persists between invocations of the compose file.
+
+## Storing data on the host rather than the container.
 
 Docker volumes can be used to persist your data.
 
