@@ -74,8 +74,9 @@ services:
       image: kartoza/btsync
       hostname: btsync-media
       volumes:
-         # We mount RO as we do not really want peers to change this data
-         - geoserver-data:/web:ro
+         # We mount RW so that we can use peers 
+         # to push shapefiles etc. to the server
+         - geoserver-data:/web:rw
       env_file:
          # The environment file should define two variables:
          # SECRET: a RW btsync key if the server is a production server
