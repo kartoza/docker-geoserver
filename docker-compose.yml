@@ -6,7 +6,7 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:9.4-2.1
+      image: kartoza/postgis:9.5-2.2
       hostname: postgis
       volumes:
          #- ./pg/postgres_data:/var/lib/postgresql
@@ -14,6 +14,7 @@ services:
       environment:
          - USERNAME=docker
          - PASS=docker
+         - ALLOW_IP_RANGE=172.20.0.0/24
       restart: unless-stopped
 
    geoserver:
