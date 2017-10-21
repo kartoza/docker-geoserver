@@ -6,7 +6,7 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:9.5-2.2
+      image: kartoza/postgis:10.0-2.4
       hostname: postgis
       volumes:
          #- ./pg/postgres_data:/var/lib/postgresql
@@ -32,7 +32,7 @@ services:
       user: root
 
    dbbackups:
-      image: kartoza/pg-backup:9.5
+      image: kartoza/pg-backup:10.0
       hostname: pg-backups
       volumes:
         - db-backups:/backups
