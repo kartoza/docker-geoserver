@@ -1,0 +1,15 @@
+version: '2'
+catalog:
+  name: Kartoza Geoserver
+  version: v2.10.5
+  questions:
+  - variable: BTSYNC_DB_SECRET
+    label: Resilio sync read/write key for syncing database backups
+    required: true
+    default: 
+    type: string
+  - variable: BTSYNC_MEDIA_SECRET
+    label: Resilio sync read/write key for syncing Geoserver media backups
+    required: true
+    default: 
+    type: string
