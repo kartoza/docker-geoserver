@@ -58,7 +58,6 @@ services:
       volumes:
          # We mount RW so that we can use remove peer to clean up old backups off the server
          - db-backups:/web:rw
-      # Use this if NOT orchestrating with Rancher
       env_file:
          # The environment file should define two variables:
          # SECRET: a RW btsync key if the server is a production server
@@ -69,11 +68,6 @@ services:
          # Do not version control the env file as anyone else could peer it and sync
          # our database backups etc.
          - btsync-db.env
-      # Use this if you ARE orchestrating with Rancher 
-      # and then see the accompanying rancher-compose.yml file
-      environment:
-        - SECRET=${BTSYNC_DB_SECRET}
-        - DEVICE=GeoServerDatabase
       
    btsync-media:                                                                   
       # BTSync backups for django media
@@ -83,7 +77,6 @@ services:
          # We mount RW so that we can use peers 
          # to push shapefiles etc. to the server
          - geoserver-data:/web:rw
-      # Use this if NOT orchestrating with Rancher
       env_file:
          # The environment file should define two variables:
          # SECRET: a RW btsync key if the server is a production server
@@ -94,10 +87,4 @@ services:
          # Do not version control the env file as anyone else could peer it and sync
          # our media backups etc.
          - btsync-media.env
-      # Use this if you ARE orchestrating with Rancher 
-      # and then see the accompanying rancher-compose.yml file
-      environment:
-        - SECRET=${BTSYNC_MEDIA_SECRET}
-        - DEVICE=GeoServerMedia
-
 

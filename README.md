@@ -156,6 +156,37 @@ a reliable backup system), or use host based volumes (you will need
 to modify the ``docker-compose.yml``` example to do this) so that
 your data persists between invocations of the compose file.
 
+## Run (automated using rancher)
+
+An even nicer way to run the examples provided is to use our Rancher
+Catalogue Stack for GeoServer. See [http://rancher.com](http://rancher.com) 
+for more details on how to set up and configure your Rancher 
+environment. Once Rancher is set up, use the Admin -> Settings menu to 
+add our Rancher catalogue using this URL:
+
+https://github.com/kartoza/kartoza-rancher-catalogue
+
+Once your settings are saved open a Rancher environment and set up a 
+stack from the catalogue's 'Kartoza' section - you will see 
+GeoServer listed there.
+
+If you want to synchronise your GeoServer settings and database backups
+(created by the nightly backup tool in the stack), use (Resilio 
+sync)[https://www.resilio.com/] to create two Read/Write keys:
+
+* one for database backups
+* one for GeoServer media backups
+
+**Note:** Resilio sync is not Free Software. It is free to use for
+individuals. Business users need to pay - see their web site for details.
+
+
+You can try a similar approach with Syncthing or Seafile (for free options) 
+or Dropbox or Google Drive if you want to use another commercial product. These
+products all have one limitation though: they require interaction 
+to register applications or keys. With Resilio Sync you can completely 
+automate the process without user intervention. 
+
 ## Storing data on the host rather than the container.
 
 Docker volumes can be used to persist your data.
