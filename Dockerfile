@@ -96,10 +96,10 @@ RUN if [ ! -f /tmp/resources/geoserver.zip ]; then \
     && rm -rf /tmp/geoserver
 
 # Install any plugin zip files in resources/plugins
-RUN if ls "/tmp/resources/plugins/*.zip" > /dev/null 2>&1; then \
-      for p in "/tmp/resources/plugins/*.zip"; do \
-        unzip $p -d "/tmp/gs_plugin" \
-        && mv "/tmp/gs_plugin/*.jar" $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/ \
+RUN if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
+      for p in /tmp/resources/plugins/*.zip; do \
+        unzip $p -d /tmp/gs_plugin \
+        && mv /tmp/gs_plugin/*.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/ \
         && rm -rf /tmp/gs_plugin; \
       done; \
     fi
