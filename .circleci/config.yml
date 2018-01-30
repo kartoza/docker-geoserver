@@ -18,7 +18,7 @@ jobs:
             docker build -t "${CIRCLE_PROJECT_REPONAME}:build" .
             docker save "${CIRCLE_PROJECT_REPONAME}" -o artifacts/docker-image.tar
       - persist_to_workspace:
-          root: artifacts 
+          root: artifacts
           paths:
             - docker-image.tar
 
@@ -36,7 +36,7 @@ jobs:
             docker tag "${CIRCLE_PROJECT_REPONAME}:build" "nsidc/geoserver:${CIRCLE_TAG}"
 
       - run:
-          name: Push image to DockerHub 
+          name: Push image to DockerHub
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push "nsidc/geoserver:${CIRCLE_TAG}"
