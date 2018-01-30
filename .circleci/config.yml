@@ -15,7 +15,7 @@ jobs:
       - run:
           name: Build Image
           command: |
-            docker build -t "${CIRCLE_PROJECT_REPONAME}:build" docker/.
+            docker build -t "${CIRCLE_PROJECT_REPONAME}:build" .
             docker save "${CIRCLE_PROJECT_REPONAME}" -o artifacts/docker-image.tar
       - persist_to_workspace:
           root: artifacts 
