@@ -1,0 +1,62 @@
+defaults: &defaults
+  working_directory: ~/docker-geoserver
+  docker:
+    - image: docker:17.05.0-ce-git
+
+version: 2
+jobs:
+
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: mkdir artifacts
+      - run:
+          name: Build Image
+          command: |
+            docker build -t "${CIRCLE_PROJECT_REPONAME}:build" docker/.
+            docker save "${CIRCLE_PROJECT_REPONAME}" -o artifacts/docker-image.tar
+      - persist_to_workspace:
+          root: artifacts 
+          paths:
+            - docker-image.tar
+
+  tag-and-push:
+    <<: *defaults
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: artifacts
+      - run:
+          name: Load and tag image
+          command: |
+            docker load -i artifacts/docker-image.tar
+            docker tag "${CIRCLE_PROJECT_REPONAME}:build" "nsidc/geoserver:${CIRCLE_TAG}"
+
+      - run:
+          name: Push image to DockerHub 
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push "nsidc/geoserver:${CIRCLE_TAG}"
+
+
+workflows:
+  version: 2
+  build-n-push:
+    jobs:
+      - build:
+          filters:
+            tags:
+               only: /.*/
+
+      - tag-and-push:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+          context: org-global
