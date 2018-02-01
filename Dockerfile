@@ -11,7 +11,7 @@ RUN apt-get -y update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-ENV GS_VERSION 2.12.0
+ENV GS_VERSION 2.10.2
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 
 RUN mkdir -p $GEOSERVER_DATA_DIR
@@ -91,10 +91,10 @@ RUN if [ ! -f /tmp/resources/geoserver.zip ]; then \
     && rm -rf /tmp/geoserver
 
 # Install any plugin zip files in resources/plugins
-RUN if ls "/tmp/resources/plugins/*.zip" > /dev/null 2>&1; then \
-      for p in "/tmp/resources/plugins/*.zip"; do \
+RUN if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
+      for p in /tmp/resources/plugins/*.zip; do \
         unzip $p -d "/tmp/gs_plugin" \
-        && mv "/tmp/gs_plugin/*.jar" $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/ \
+        && mv /tmp/gs_plugin/*.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/ \
         && rm -rf /tmp/gs_plugin; \
       done; \
     fi
