@@ -34,12 +34,14 @@ jobs:
           command: |
             docker load -i artifacts/docker-image.tar
             docker tag "${CIRCLE_PROJECT_REPONAME}:build" "nsidc/geoserver:${CIRCLE_TAG}"
+            docker tag "${CIRCLE_PROJECT_REPONAME}:build" "nsidc/geoserver:latest"
 
       - run:
           name: Push image to DockerHub
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push "nsidc/geoserver:${CIRCLE_TAG}"
+            docker push "nsidc/geoserver:latest"
 
 
 workflows:
