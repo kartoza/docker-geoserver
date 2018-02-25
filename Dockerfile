@@ -14,6 +14,15 @@ RUN apt-get -y update
 ENV GS_VERSION 2.12.1
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 
+ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:PerfDataSamplingInterval=500 \
+ -Dorg.geotools.referencing.forceXY=true -XX:SoftRefLRUPolicyMSPerMB=36000 -XX:+UseParallelGC -XX:NewRatio=2 \
+ -XX:+CMSClassUnloadingEnabled"
+#-XX:+UseConcMarkSweepGC use this rather than parallel GC?  
+ENV JAVA_OPTS "$JAVA_OPTS $GEOSERVER_OPTS"
+ENV GDAL_DATA /usr/local/gdal_data
+ENV LD_LIBRARY_PATH /usr/local/gdal_native_libs
+ENV GEOSERVER_LOG_LOCATION /opt/geoserver/data_dir/logs/geoserver.log
+
 RUN mkdir -p $GEOSERVER_DATA_DIR
 
 # Unset Java related ENVs since they may change with Oracle JDK
@@ -25,6 +34,12 @@ RUN ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/default-java
 ENV JAVA_HOME /usr/lib/jvm/default-java
 
 ADD resources /tmp/resources
+
+# Install libjpeg-turbo for that specific geoserver version
+RUN if ls /tmp/resource/libjpeg-turbo-official_1.5.3_amd64.deb; then \
+    dpkg -i /tmp/resource/libjpeg-turbo-official_1.5.3_amd64.deb
+    fi;
+
 
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
 # where oracle-java8-installer will detect it
@@ -97,7 +112,15 @@ RUN if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
         && mv /tmp/gs_plugin/*.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/ \
         && rm -rf /tmp/gs_plugin; \
       done; \
-    fi
+    fi; \
+    if ls /tmp/resources/plugins/*gdal*.tar.gz > /dev/null 2>&1; then \
+    mkdir /usr/local/gdal_data && mkdir /usr/local/gdal_native_libs; \
+    unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data && \
+    tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs; \
+    fi;
+#TODO
+#install http://docs.geoserver.org/2.9.2/user/extensions/libjpeg-turbo/index.html#community-libjpeg-turbo
+#install Apache Tomcat Native library
 
 # Overlay files and directories in resources/overlays if they exist
 RUN rm -f /tmp/resources/overlays/README.txt && \
@@ -106,7 +129,7 @@ RUN rm -f /tmp/resources/overlays/README.txt && \
     fi;
 
 # Optionally remove Tomcat manager, docs, and examples
-ARG TOMCAT_EXTRAS=true
+#ARG TOMCAT_EXTRAS=true #moved to docker-compose.yml
 RUN if [ "$TOMCAT_EXTRAS" = false ]; then \
     rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
