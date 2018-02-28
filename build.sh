@@ -8,7 +8,7 @@ OLD_MINOR=12
 OLD_MAJOR=2
 
 # This represents the version we need geoserver to move up to. ie the lattest stable version
-BUGFIX=12
+BUGFIX=2
 MINOR=12
 MAJOR=2
 
