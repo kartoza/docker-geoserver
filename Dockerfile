@@ -36,11 +36,11 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 ADD resources /tmp/resources
 
 # Install libjpeg-turbo for that specific geoserver version
-RUN if ls /tmp/resource/libjpeg-turbo-official_1.5.3_amd64.deb; then \
-    dpkg -i /tmp/resource/libjpeg-turbo-official_1.5.3_amd64.deb
+RUN if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
+    wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P ./resources;\
     fi;
 
-
+RUN dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
 # where oracle-java8-installer will detect it
 RUN if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
