@@ -11,7 +11,7 @@ RUN apt-get -y update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-ENV GS_VERSION 2.12.1
+ENV GS_VERSION 2.12.2
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 
 ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:PerfDataSamplingInterval=500 \
@@ -40,7 +40,7 @@ RUN if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
     wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P ./resources;\
     fi;
 
-RUN dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
+RUN dpkg -i /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
 # where oracle-java8-installer will detect it
 RUN if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
@@ -96,11 +96,11 @@ WORKDIR $CATALINA_HOME
 
 # A little logic that will fetch the geoserver war zip file if it
 # is not available locally in the resources dir
-RUN if [ ! -f /tmp/resources/geoserver.zip ]; then \
+RUN if [ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]; then \
     wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
-      -O /tmp/resources/geoserver.zip; \
+      -O /tmp/resources/geoserver-${GS_VERSION}.zip; \
     fi; \
-    unzip /tmp/resources/geoserver.zip -d /tmp/geoserver \
+    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver \
     && unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
     && rm -rf $CATALINA_HOME/webapps/geoserver/data \
     && rm -rf /tmp/geoserver
