@@ -19,7 +19,7 @@ wget -c  http://download.java.net/media/jai-imageio/builds/release/1.1/jai_image
 #Geoserver
 VERSION=2.12.1
 
-wget -c http://sourceforge.net/projects/geoserver/files/GeoServer/$VERSION/geoserver-$VERSION-war.zip -O geoserver.zip
+wget -c http://sourceforge.net/projects/geoserver/files/GeoServer/$VERSION/geoserver-$VERSION-war.zip -O geoserver-${VERSION}.zip
 
 # Download libjpeg-turbo
 wget -c https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb

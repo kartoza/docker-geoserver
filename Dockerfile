@@ -11,7 +11,7 @@ RUN apt-get -y update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-ENV GS_VERSION 2.12.2
+ENV GS_VERSION 2.12.1
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 
 ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:PerfDataSamplingInterval=500 \
