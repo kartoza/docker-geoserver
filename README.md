@@ -210,11 +210,15 @@ If you need to use geoserver data directory that contains sample examples and co
 it from geonode site as indicated below:
 
 ```shell
-wget -c http://build.geonode.org/geoserver/latest/data-2.12.x.zip
-unzip data-2.12.x.zip
-mv data ~/geoserver_data
+#!/bin/sh
+# where GS_VERSION is the version of the geoserver installed
+unzip resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver-${GS_VERSION}
+unzip /tmp/geoserver-${GS_VERSION}/geoserver.war -d /tmp/geoserver-${GS_VERSION}/geoserver
+mv /tmp/geoserver-${GS_VERSION}/geoserver/data ~/geoserver_data
+rm -r  /tmp/geoserver-${GS_VERSION} && cp controlflow.properties ~/geoserver_data
 chmod -R a+rwx ~/geoserver_data
-docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver
+docker run -d -p 8580:8080 --name "geoserver" -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver:${GS_VERSION}
+
 ```
 Create an empty data directory to use to persist your data.
 
