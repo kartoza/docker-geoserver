@@ -9,6 +9,8 @@ RUN  dpkg-divert --local --rename --add /sbin/initctl
 
 RUN apt-get -y update
 
+#Install extra fonts to use with sld font markers
+RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts
 #-------------Application Specific Stuff ----------------------------------------------------
 
 ENV GS_VERSION 2.12.1
