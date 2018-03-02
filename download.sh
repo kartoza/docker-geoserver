@@ -24,6 +24,12 @@ wget -c http://sourceforge.net/projects/geoserver/files/GeoServer/$VERSION/geose
 # Download libjpeg-turbo
 wget -c https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb
 
+#Download tomcat APR
+wget -c http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz
+
+#Download tomcat native
+wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz
+
 pushd plugins
 #Extensions
 

@@ -10,7 +10,8 @@ RUN  dpkg-divert --local --rename --add /sbin/initctl
 RUN apt-get -y update
 
 #Install extra fonts to use with sld font markers
-RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts
+RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts \
+    build-essential libapr1-dev libssl-dev default-jdk
 #-------------Application Specific Stuff ----------------------------------------------------
 
 ENV GS_VERSION 2.12.1
@@ -43,6 +44,28 @@ RUN if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
     fi;
 
 RUN dpkg -i /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb
+
+
+# Install tomcat APR
+RUN if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
+    wget -c wget  http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz \
+      -P ./resources; \
+    fi; \
+    tar -xzf /tmp/resources/apr-1.6.3.tar.gz -C /tmp/resources/ && \
+    cd /tmp/resources/apr-1.6.3 && \
+    touch libtoolT && ./configure && make -j 4 && make install
+
+# Install tomcat native
+RUN if [ ! -f /tmp/resources/tomcat-native-1.2.16-src.tar.gz ]; then \
+    wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz \
+      -P ./resources; \
+    fi; \
+    tar -xzf /tmp/resources/tomcat-native-1.2.16-src.tar.gz -C /tmp/resources/ && \
+    cd /tmp/resources/tomcat-native-1.2.16-src/native && \
+    ./configure --with-java-home=${JAVA_HOME} --with-apr=/usr/local/apr && make -j 4 && make install
+
+
+ENV LD_LIBRARY_PATH '$LD_LIBRARY_PATH:/usr/local/apr/lib'
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
 # where oracle-java8-installer will detect it
 RUN if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
