@@ -41,9 +41,9 @@ ADD resources /tmp/resources
 # Install libjpeg-turbo for that specific geoserver version
 RUN if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
     wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P ./resources;\
-    fi;
-
-RUN dpkg -i /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb
+    fi; \
+    cd /tmp/resources/ && \
+    dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
 
 
 # Install tomcat APR
