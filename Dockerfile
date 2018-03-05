@@ -23,7 +23,7 @@ ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:Perf
 #-XX:+UseConcMarkSweepGC use this rather than parallel GC?  
 ENV JAVA_OPTS "$JAVA_OPTS $GEOSERVER_OPTS"
 ENV GDAL_DATA /usr/local/gdal_data
-ENV LD_LIBRARY_PATH /usr/local/gdal_native_libs:/usr/local/apr/lib
+ENV LD_LIBRARY_PATH /usr/local/gdal_native_libs:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64
 ENV GEOSERVER_LOG_LOCATION /opt/geoserver/data_dir/logs/geoserver.log
 
 RUN mkdir -p $GEOSERVER_DATA_DIR
