@@ -23,7 +23,7 @@ ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:Perf
 #-XX:+UseConcMarkSweepGC use this rather than parallel GC?  
 ENV JAVA_OPTS "$JAVA_OPTS $GEOSERVER_OPTS"
 ENV GDAL_DATA /usr/local/gdal_data
-ENV LD_LIBRARY_PATH /usr/local/gdal_native_libs
+ENV LD_LIBRARY_PATH /usr/local/gdal_native_libs:/usr/local/apr/lib
 ENV GEOSERVER_LOG_LOCATION /opt/geoserver/data_dir/logs/geoserver.log
 
 RUN mkdir -p $GEOSERVER_DATA_DIR
@@ -65,7 +65,6 @@ RUN if [ ! -f /tmp/resources/tomcat-native-1.2.16-src.tar.gz ]; then \
     ./configure --with-java-home=${JAVA_HOME} --with-apr=/usr/local/apr && make -j 4 && make install
 
 
-ENV LD_LIBRARY_PATH '$LD_LIBRARY_PATH:/usr/local/apr/lib'
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
 # where oracle-java8-installer will detect it
 RUN if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
