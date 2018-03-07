@@ -142,9 +142,6 @@ RUN if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
     unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data && \
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs; \
     fi;
-#TODO
-#install http://docs.geoserver.org/2.9.2/user/extensions/libjpeg-turbo/index.html#community-libjpeg-turbo
-#install Apache Tomcat Native library
 
 # Overlay files and directories in resources/overlays if they exist
 RUN rm -f /tmp/resources/overlays/README.txt && \
@@ -153,7 +150,7 @@ RUN rm -f /tmp/resources/overlays/README.txt && \
     fi;
 
 # Optionally remove Tomcat manager, docs, and examples
-#ARG TOMCAT_EXTRAS=true #moved to docker-compose.yml
+ARG TOMCAT_EXTRAS=true
 RUN if [ "$TOMCAT_EXTRAS" = false ]; then \
     rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \

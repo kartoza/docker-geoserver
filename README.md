@@ -26,13 +26,7 @@ If you don't make changes it will download Oracle Java and various Oracle and Ge
 The  Tomcat properties such as maximum heap memory size are included in the Dockerfile. You need to change them 
 them before building the image in accordance to the resources available on your server:
 
-The default settings in the image are:
-
-```
-ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true -XX:SoftRefLRUPolicyMSPerMB=36000 -XX:+UseParallelGC -XX:NewRatio=2 -XX:+CMSClassUnloadingEnabled"
-
-```
-Where you can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html)
+You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html)
 
 To build yourself with a local checkout:
 

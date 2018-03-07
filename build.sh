@@ -17,7 +17,7 @@ MAJOR=2
 if grep -rl -q "${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}" Dockerfile
 
 then
-    echo "found"
+    echo "We are going to upgrade the geoserver version"
     sed -i "s/${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}/${MAJOR}.${MINOR}.${BUGFIX}/g" Dockerfile
 	sed -i "s/${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}/${MAJOR}.${MINOR}.${BUGFIX}/g" download.sh
 	./download.sh
