@@ -15,18 +15,27 @@ get our docker trusted build like this:
 docker pull kartoza/geoserver
 ```
 
-To build the image yourself:
+### Pre-downloading files
 
-```shell
-docker build -t kartoza/geoserver git://github.com/kartoza/docker-geoserver
-```
+Inspect downloads.sh to confirm which files you want, then run `.downloads.sh.`
+
+If you don't make changes it will download Oracle Java and various Oracle and Geoserver extensions that will be used during the Docker build. 
+
+### Setting Tomcat properties during build
+
+The  Tomcat properties such as maximum heap memory size are included in the Dockerfile. You need to change them 
+them before building the image in accordance to the resources available on your server:
+
+You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html)
 
 To build yourself with a local checkout:
 
 ```shell
 git clone git://github.com/kartoza/docker-geoserver
-docker build -t kartoza/geoserver .
+cd docker-geoserver
+./build.sh
 ```
+
 
 ### Building with Oracle JDK
 
@@ -191,6 +200,22 @@ automate the process without user intervention.
 
 Docker volumes can be used to persist your data.
 
+If you need to use geoserver data directory that contains sample examples and configurations download
+it from geonode site as indicated below:
+
+```shell
+#!/bin/sh
+# where GS_VERSION is the version of the geoserver installed
+unzip resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver-${GS_VERSION}
+unzip /tmp/geoserver-${GS_VERSION}/geoserver.war -d /tmp/geoserver-${GS_VERSION}/geoserver
+mv /tmp/geoserver-${GS_VERSION}/geoserver/data ~/geoserver_data
+rm -r  /tmp/geoserver-${GS_VERSION} && cp controlflow.properties ~/geoserver_data
+chmod -R a+rwx ~/geoserver_data
+docker run -d -p 8580:8080 --name "geoserver" -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver:${GS_VERSION}
+
+```
+Create an empty data directory to use to persist your data.
+
 ```shell
 mkdir -p ~/geoserver_data
 docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver
@@ -198,6 +223,11 @@ docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver
 
 You need to ensure the ``geoserver_data`` directory has sufficient permissions
 for the docker process to read / write it.
+
+### Control flow properties
+if you have installed the control flow module to manage request in geoserver you need to copy the file
+controlflow.properties to the base of the data directory. You can fine tune the control flow file
+with other parameters as defined in the [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html)
 
 ## Setting Tomcat properties
 
@@ -213,6 +243,7 @@ Then pass the `setenv.sh` file as a volume at `/usr/local/tomcat/bin/setenv.sh` 
 ```shell
 docker run -d -v $HOME/setenv.sh:/usr/local/tomcat/bin/setenv.sh kartoza/geoserver
 ```
+
 
 ## Credits
 

@@ -9,10 +9,22 @@ RUN  dpkg-divert --local --rename --add /sbin/initctl
 
 RUN apt-get -y update
 
+#Install extra fonts to use with sld font markers
+RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts \
+    build-essential libapr1-dev libssl-dev default-jdk
 #-------------Application Specific Stuff ----------------------------------------------------
 
 ENV GS_VERSION 2.12.1
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
+
+ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:PerfDataSamplingInterval=500 \
+ -Dorg.geotools.referencing.forceXY=true -XX:SoftRefLRUPolicyMSPerMB=36000 -XX:+UseParallelGC -XX:NewRatio=2 \
+ -XX:+CMSClassUnloadingEnabled"
+#-XX:+UseConcMarkSweepGC use this rather than parallel GC?  
+ENV JAVA_OPTS "$JAVA_OPTS $GEOSERVER_OPTS"
+ENV GDAL_DATA /usr/local/gdal_data
+ENV LD_LIBRARY_PATH /usr/local/gdal_native_libs:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64
+ENV GEOSERVER_LOG_LOCATION /opt/geoserver/data_dir/logs/geoserver.log
 
 RUN mkdir -p $GEOSERVER_DATA_DIR
 
@@ -25,6 +37,33 @@ RUN ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/default-java
 ENV JAVA_HOME /usr/lib/jvm/default-java
 
 ADD resources /tmp/resources
+
+# Install libjpeg-turbo for that specific geoserver version
+RUN if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
+    wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P ./resources;\
+    fi; \
+    cd /tmp/resources/ && \
+    dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
+
+
+# Install tomcat APR
+RUN if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
+    wget -c wget  http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz \
+      -P ./resources; \
+    fi; \
+    tar -xzf /tmp/resources/apr-1.6.3.tar.gz -C /tmp/resources/ && \
+    cd /tmp/resources/apr-1.6.3 && \
+    touch libtoolT && ./configure && make -j 4 && make install
+
+# Install tomcat native
+RUN if [ ! -f /tmp/resources/tomcat-native-1.2.16-src.tar.gz ]; then \
+    wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz \
+      -P ./resources; \
+    fi; \
+    tar -xzf /tmp/resources/tomcat-native-1.2.16-src.tar.gz -C /tmp/resources/ && \
+    cd /tmp/resources/tomcat-native-1.2.16-src/native && \
+    ./configure --with-java-home=${JAVA_HOME} --with-apr=/usr/local/apr && make -j 4 && make install
+
 
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
 # where oracle-java8-installer will detect it
@@ -81,11 +120,11 @@ WORKDIR $CATALINA_HOME
 
 # A little logic that will fetch the geoserver war zip file if it
 # is not available locally in the resources dir
-RUN if [ ! -f /tmp/resources/geoserver.zip ]; then \
+RUN if [ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]; then \
     wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
-      -O /tmp/resources/geoserver.zip; \
+      -O /tmp/resources/geoserver-${GS_VERSION}.zip; \
     fi; \
-    unzip /tmp/resources/geoserver.zip -d /tmp/geoserver \
+    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver \
     && unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
     && rm -rf $CATALINA_HOME/webapps/geoserver/data \
     && rm -rf /tmp/geoserver
@@ -97,7 +136,12 @@ RUN if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
         && mv /tmp/gs_plugin/*.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/ \
         && rm -rf /tmp/gs_plugin; \
       done; \
-    fi
+    fi; \
+    if ls /tmp/resources/plugins/*gdal*.tar.gz > /dev/null 2>&1; then \
+    mkdir /usr/local/gdal_data && mkdir /usr/local/gdal_native_libs; \
+    unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data && \
+    tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs; \
+    fi;
 
 # Overlay files and directories in resources/overlays if they exist
 RUN rm -f /tmp/resources/overlays/README.txt && \
