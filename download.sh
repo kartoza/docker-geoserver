@@ -17,7 +17,7 @@ wget -c http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-li
 wget -c  http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz
 
 #Geoserver
-VERSION=2.12.1
+VERSION=2.12.2
 
 wget -c http://sourceforge.net/projects/geoserver/files/GeoServer/$VERSION/geoserver-$VERSION-war.zip -O geoserver-${VERSION}.zip
 

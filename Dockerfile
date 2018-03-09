@@ -14,8 +14,13 @@ RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams t
     build-essential libapr1-dev libssl-dev default-jdk
 #-------------Application Specific Stuff ----------------------------------------------------
 
-ENV GS_VERSION 2.12.1
+ENV GS_VERSION 2.12.2
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
+ENV ENABLE_JSONP false
+ENV MAX_FILTER_RULES 20
+ENV OPTIMIZE_LINE_WIDTH false
+ENV GEOWEBCACHE_CACHE_DIR /opt/geoserver/data_dir/gwc
+
 
 ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:PerfDataSamplingInterval=500 \
  -Dorg.geotools.referencing.forceXY=true -XX:SoftRefLRUPolicyMSPerMB=36000 -XX:+UseParallelGC -XX:NewRatio=2 \
