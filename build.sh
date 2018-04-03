@@ -3,13 +3,13 @@
 
 ## GLOBALS
 # This specifies the current version that is specified in the Dockerfile and download script (the previous stable version if a new stable version is available).
-OLD_BUGFIX=1
+OLD_BUGFIX=2
 OLD_MINOR=12
 OLD_MAJOR=2
 
 # This represents the version we need geoserver to move up to. ie the lattest stable version
-BUGFIX=2
-MINOR=12
+BUGFIX=0
+MINOR=13
 MAJOR=2
 
 ## Prepare to bump geoserver to a specific version

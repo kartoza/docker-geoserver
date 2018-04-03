@@ -14,9 +14,9 @@ RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams t
     build-essential libapr1-dev libssl-dev default-jdk
 #-------------Application Specific Stuff ----------------------------------------------------
 
-ENV GS_VERSION 2.12.2
+ENV GS_VERSION 2.13.0
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
-ENV ENABLE_JSONP false
+ENV ENABLE_JSONP true
 ENV MAX_FILTER_RULES 20
 ENV OPTIMIZE_LINE_WIDTH false
 ENV GEOWEBCACHE_CACHE_DIR /opt/geoserver/data_dir/gwc
@@ -32,6 +32,8 @@ ENV LD_LIBRARY_PATH /usr/local/gdal_native_libs:/usr/local/apr/lib:/opt/libjpeg-
 ENV GEOSERVER_LOG_LOCATION /opt/geoserver/data_dir/logs/geoserver.log
 
 RUN mkdir -p $GEOSERVER_DATA_DIR
+RUN install -Dv /dev/null ${GEOSERVER_DATA_DIR}/logs/geoserver.log
+
 
 # Unset Java related ENVs since they may change with Oracle JDK
 ENV JAVA_VERSION=

@@ -17,7 +17,7 @@ wget -c http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-li
 wget -c  http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz
 
 #Geoserver
-VERSION=2.12.2
+VERSION=2.13.0
 
 wget -c http://sourceforge.net/projects/geoserver/files/GeoServer/$VERSION/geoserver-$VERSION-war.zip -O geoserver-${VERSION}.zip
 
@@ -29,6 +29,18 @@ wget -c http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz
 
 #Download tomcat native
 wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz
+
+
+# Build geogig and other community modules
+
+git clone --depth 1 -b 2.13.x git@github.com:geoserver/geoserver.git
+popd geoserver
+mvn clean install -DskipTests -f src/community/pom.xml -P communityRelease assembly:attached
+# choose which plugins you need to add to plugins folder
+cp src/community/target/release/
+cp geoserver-2.13-SNAPSHOT-backup-restore-plugin.zip geoserver-2.13-SNAPSHOT-geogig-plugin.zip \
+ geoserver-2.13-SNAPSHOT-mbstyle-plugin.zip geoserver-2.13-SNAPSHOT-mbtiles-plugin.zip plugins
+popd
 
 pushd plugins
 #Extensions
