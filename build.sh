@@ -21,10 +21,10 @@ then
     sed -i "s/${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}/${MAJOR}.${MINOR}.${BUGFIX}/g" Dockerfile
 	sed -i "s/${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}/${MAJOR}.${MINOR}.${BUGFIX}/g" download.sh
 	./download.sh
-	docker build -t kartoza/geoserver:${MAJOR}.${MINOR}.${BUGFIX} .
+	docker build --build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t kartoza/geoserver:${MAJOR}.${MINOR}.${BUGFIX} .
 else
     echo "It seems the geoserver has not been upgraded. We will download the extensions and build geoserver."
 	./download.sh
-	docker build -t kartoza/geoserver:${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX} .
+	docker build --build-arg GS_VERSION=${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX} -t kartoza/geoserver:${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX} .
 fi
 

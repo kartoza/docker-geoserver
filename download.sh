@@ -32,17 +32,18 @@ wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1
 
 
 # Build geogig and other community modules
-
-git clone --depth 1 -b 2.13.x git@github.com:geoserver/geoserver.git
-popd geoserver
+work_dir=`pwd`
+git clone   git@github.com:geoserver/geoserver.git
+pushd geoserver
+git checkout ${VERSION:0:5}x
 mvn clean install -DskipTests -f src/community/pom.xml -P communityRelease assembly:attached
 # choose which plugins you need to add to plugins folder
-cp src/community/target/release/
-cp geoserver-2.13-SNAPSHOT-backup-restore-plugin.zip geoserver-2.13-SNAPSHOT-geogig-plugin.zip \
- geoserver-2.13-SNAPSHOT-mbstyle-plugin.zip geoserver-2.13-SNAPSHOT-mbtiles-plugin.zip plugins
-popd
+pushd src/community/target/release/
+cp geoserver-${VERSION:0:4}-SNAPSHOT-backup-restore-plugin.zip geoserver-${VERSION:0:4}-SNAPSHOT-geogig-plugin.zip \
+ geoserver-${VERSION:0:4}-SNAPSHOT-mbstyle-plugin.zip geoserver-${VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip ${work_dir}/plugins
 
-pushd plugins
+
+pushd ${work_dir}/plugins
 #Extensions
 
 # Vector tiles
