@@ -32,13 +32,18 @@ wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1
 
 
 # Build geogig and other community modules
+
 work_dir=`pwd`
-git clone   git@github.com:geoserver/geoserver.git
-pushd geoserver
-git checkout ${VERSION:0:5}x
-mvn clean install -DskipTests -f src/community/pom.xml -P communityRelease assembly:attached
+if [ ! -d ${work_dir}/community-plugins ]; then
+    git clone   https://github.com/geoserver/geoserver.git
+    pushd geoserver
+    git checkout ${VERSION:0:5}x
+    mvn clean install -DskipTests -f src/community/pom.xml -P communityRelease assembly:attached
+    cp -r src/community/target/release community-plugins
+    rm -rf geoserver
+fi
 # choose which plugins you need to add to plugins folder
-pushd src/community/target/release/
+pushd community-plugins
 cp geoserver-${VERSION:0:4}-SNAPSHOT-backup-restore-plugin.zip geoserver-${VERSION:0:4}-SNAPSHOT-geogig-plugin.zip \
  geoserver-${VERSION:0:4}-SNAPSHOT-mbstyle-plugin.zip geoserver-${VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip ${work_dir}/plugins
 
