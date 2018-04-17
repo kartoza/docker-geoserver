@@ -18,6 +18,8 @@ docker pull kartoza/geoserver
 ### Pre-downloading files
 
 Inspect downloads.sh to confirm which files you want, then run `.downloads.sh.`
+Ensure you install maven on the host so that you can build the community modules `sudo apt-get install -y maven`
+Also ensure that you have the JAVA_HOME variable set on the host.
 
 If you don't make changes it will download Oracle Java and various Oracle and Geoserver extensions that will be used during the Docker build. 
 

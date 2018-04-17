@@ -17,7 +17,7 @@ wget -c http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-li
 wget -c  http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz
 
 #Geoserver
-VERSION=2.12.1
+VERSION=2.13.0
 
 wget -c http://sourceforge.net/projects/geoserver/files/GeoServer/$VERSION/geoserver-$VERSION-war.zip -O geoserver-${VERSION}.zip
 
@@ -30,7 +30,25 @@ wget -c http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz
 #Download tomcat native
 wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz
 
-pushd plugins
+
+# Build geogig and other community modules
+
+work_dir=`pwd`
+if [ ! -d ${work_dir}/community-plugins ]; then
+    git clone   https://github.com/geoserver/geoserver.git
+    pushd geoserver
+    git checkout ${VERSION:0:5}x
+    mvn clean install -DskipTests -f src/community/pom.xml -P communityRelease assembly:attached
+    cp -r src/community/target/release community-plugins
+    rm -rf geoserver
+fi
+# choose which plugins you need to add to plugins folder
+pushd community-plugins
+cp geoserver-${VERSION:0:4}-SNAPSHOT-backup-restore-plugin.zip geoserver-${VERSION:0:4}-SNAPSHOT-geogig-plugin.zip \
+ geoserver-${VERSION:0:4}-SNAPSHOT-mbstyle-plugin.zip geoserver-${VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip ${work_dir}/plugins
+
+
+pushd ${work_dir}/plugins
 #Extensions
 
 # Vector tiles
