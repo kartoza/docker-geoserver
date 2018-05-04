@@ -46,38 +46,40 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 
 ADD resources /tmp/resources
 
+WORKDIR /tmp
+
 # Install libjpeg-turbo for that specific geoserver version
-RUN if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
+RUN if [ ! -f ./resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
     wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P ./resources;\
     fi; \
-    cd /tmp/resources/ && \
+    cd ./resources/ && \
     dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
 
 
 # Install tomcat APR
-RUN if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
+RUN if [ ! -f ./resources/apr-1.6.3.tar.gz ]; then \
     wget -c wget  http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz \
       -P ./resources; \
     fi; \
-    tar -xzf /tmp/resources/apr-1.6.3.tar.gz -C /tmp/resources/ && \
-    cd /tmp/resources/apr-1.6.3 && \
+    tar -xzf ./resources/apr-1.6.3.tar.gz -C ./resources/ && \
+    cd ./resources/apr-1.6.3 && \
     touch libtoolT && ./configure && make -j 4 && make install
 
 # Install tomcat native
-RUN if [ ! -f /tmp/resources/tomcat-native-1.2.16-src.tar.gz ]; then \
+RUN if [ ! -f ./resources/tomcat-native-1.2.16-src.tar.gz ]; then \
     wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz \
       -P ./resources; \
     fi; \
-    tar -xzf /tmp/resources/tomcat-native-1.2.16-src.tar.gz -C /tmp/resources/ && \
-    cd /tmp/resources/tomcat-native-1.2.16-src/native && \
+    tar -xzf ./resources/tomcat-native-1.2.16-src.tar.gz -C ./resources/ && \
+    cd ./resources/tomcat-native-1.2.16-src/native && \
     ./configure --with-java-home=${JAVA_HOME} --with-apr=/usr/local/apr && make -j 4 && make install
 
 
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
 # where oracle-java8-installer will detect it
-RUN if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
+RUN if ls ./resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
       mkdir /var/cache/oracle-jdk8-installer && \
-      mv /tmp/resources/*jdk-*-linux-x64.tar.gz /var/cache/oracle-jdk8-installer/; \
+      mv ./resources/*jdk-*-linux-x64.tar.gz /var/cache/oracle-jdk8-installer/; \
     fi;
 
 # Install Oracle JDK (and uninstall OpenJDK JRE) if the build-arg ORACLE_JDK = true or an Oracle tar.gz
@@ -103,7 +105,7 @@ RUN if ls /var/cache/oracle-jdk8-installer/*jdk-*-linux-x64.tar.gz > /dev/null 2
     fi;
 
 #Add JAI and ImageIO for great speedy speed.
-WORKDIR /tmp
+
 # A little logic that will fetch the JAI and JAI ImageIO tar file if it
 # is not available locally in the resources dir
 RUN if [ ! -f /tmp/resources/jai-1_1_3-lib-linux-amd64.tar.gz ]; then \
