@@ -48,7 +48,7 @@ ADD resources /tmp/resources
 
 # Install libjpeg-turbo for that specific geoserver version
 RUN if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
-    wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P ./resources;\
+    wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P /tmp/resources;\
     fi; \
     cd /tmp/resources/ && \
     dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
@@ -57,7 +57,7 @@ RUN if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
 # Install tomcat APR
 RUN if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
     wget -c wget  http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz \
-      -P ./resources; \
+      -P /tmp/resources; \
     fi; \
     tar -xzf /tmp/resources/apr-1.6.3.tar.gz -C /tmp/resources/ && \
     cd /tmp/resources/apr-1.6.3 && \
@@ -66,7 +66,7 @@ RUN if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
 # Install tomcat native
 RUN if [ ! -f /tmp/resources/tomcat-native-1.2.16-src.tar.gz ]; then \
     wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz \
-      -P ./resources; \
+      -P /tmp/resources; \
     fi; \
     tar -xzf /tmp/resources/tomcat-native-1.2.16-src.tar.gz -C /tmp/resources/ && \
     cd /tmp/resources/tomcat-native-1.2.16-src/native && \
@@ -107,10 +107,10 @@ WORKDIR /tmp
 # A little logic that will fetch the JAI and JAI ImageIO tar file if it
 # is not available locally in the resources dir
 RUN if [ ! -f /tmp/resources/jai-1_1_3-lib-linux-amd64.tar.gz ]; then \
-    wget http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz -P ./resources;\
+    wget http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz -P /tmp/resources;\
     fi; \
     if [ ! -f /tmp/resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ]; then \
-    wget http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz -P ./resources;\
+    wget http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz -P /tmp/resources;\
     fi; \
     mv resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ && \
     mv resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ./ && \
