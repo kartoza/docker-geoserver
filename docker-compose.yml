@@ -48,7 +48,7 @@ services:
         geogig-db:
           condition: service_healthy
       healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:8080" ]
+        test: curl --fail -s http://localhost:8080/ || exit 1
         interval: 1m30s
         timeout: 10s
         retries: 3
@@ -87,40 +87,3 @@ services:
       depends_on:
         db:
           condition: service_healthy
-   btsync-data:
-      # BTSync backups for database dumps
-      image: kartoza/btsync
-      hostname: btsync-data
-      volumes:
-         # We mount RW so that we can use remove peer to clean up old backups off the server
-         - db-backups:/web:rw
-      env_file:
-         # The environment file should define two variables:
-         # SECRET: a RW btsync key if the server is a production server
-         #     a RO btsync key if it is staging or development machine
-         # DEVICE: a unique device name so you can recognise which host is being peered with in btsync
-         # See the btsync example env in this folder for a template
-         # NOTE:
-         # Do not version control the env file as anyone else could peer it and sync
-         # our database backups etc.
-         - btsync-db.env
-
-   btsync-media:
-      # BTSync backups for django media
-      image: kartoza/btsync
-      hostname: btsync-media
-      volumes:
-         # We mount RW so that we can use peers
-         # to push shapefiles etc. to the server
-         - geoserver-data:/web:rw
-      env_file:
-         # The environment file should define two variables:
-         # SECRET: a RW btsync key if the server is a production server
-         #     a RO btsync key if it is staging or development machine
-         # DEVICE: a unique device name so you can recognise which host is being peered with in btsync
-         # See the btsync example env in this folder for a template
-         # NOTE:
-         # Do not version control the env file as anyone else could peer it and sync
-         # our media backups etc.
-         - btsync-media.env
-
