@@ -44,7 +44,9 @@ cd docker-geoserver
 To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
 
 ```shell
-docker build --build-arg ORACLE_JDK=true -t kartoza/geoserver .
+#Ensure you have maven installed and have set the JAVA HOME env to ensure  building geoserver community modules
+./download.sh
+docker build --build-arg ORACLE_JDK=true --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
 
 Alternatively, you can download the Oracle JDK 7 Linux x64 tar.gz currently in use by
@@ -60,7 +62,7 @@ for the correct JDK version and place it at `resources/jce_policy.zip` before bu
 To build a GeoServer image with plugins (e.g. SQL Server plugin, Excel output plugin),
 download the plugin zip files from the GeoServer download page and put them in
 `resources/plugins` before building. You should also download the matching version
-GeoServer WAR zip file to `resources/geoserver.zip`.
+GeoServer WAR zip file to `resources/geoserver-${VERSION}.zip` where ${VERSION} can be 2.13.0 or any other version you need to build.
 
 ### Removing Tomcat extras during build
 
@@ -68,7 +70,9 @@ To remove Tomcat extras including docs, examples, and the manager webapp, set th
 `TOMCAT_EXTRAS` build-arg to `false`:
 
 ```shell
-docker build --build-arg TOMCAT_EXTRAS=false -t kartoza/geoserver .
+#Ensure you have maven installed and have set the JAVA HOME env to ensure  building geoserver community modules
+./download.sh
+docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
 
 ### Building with file system overlays (advanced)
