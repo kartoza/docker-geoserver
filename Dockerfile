@@ -12,6 +12,7 @@ RUN apt-get -y update
 #Install extra fonts to use with sld font markers
 RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts \
     build-essential libapr1-dev libssl-dev default-jdk
+RUN apt-get update && apt-get install -y git maven
 #-------------Application Specific Stuff ----------------------------------------------------
 
 ARG GS_VERSION=2.13.0
