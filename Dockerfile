@@ -50,6 +50,13 @@ RUN /setup.sh
 ADD controlflow.properties $GEOSERVER_DATA_DIR
 ADD sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 
+# Clean up APT when done.
+RUN echo "Yes, do as I say!" | apt-get remove --force-yes sed
+RUN echo "Yes, do as I say!" | apt-get remove --force-yes login
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
+    && dpkg --remove --force-depends git maven wget unzip build-essential
+
+
 
 
 
