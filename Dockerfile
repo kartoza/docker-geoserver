@@ -11,8 +11,7 @@ RUN apt-get -y update
 
 #Install extra fonts to use with sld font markers
 RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts \
-    build-essential libapr1-dev libssl-dev default-jdk
-RUN apt-get update && apt-get install -y git maven
+    build-essential libapr1-dev libssl-dev
 #-------------Application Specific Stuff ----------------------------------------------------
 
 ARG GS_VERSION=2.13.0
@@ -39,7 +38,7 @@ RUN ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/default-java
 ENV JAVA_HOME /usr/lib/jvm/default-java
 ARG ORACLE_JDK=false
 ARG TOMCAT_EXTRAS=true
-ARG COMMUNITY_MODULES=false
+ARG COMMUNITY_MODULES=true
 
 
 WORKDIR /tmp/
@@ -54,7 +53,7 @@ ADD sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 RUN echo "Yes, do as I say!" | apt-get remove --force-yes sed
 RUN echo "Yes, do as I say!" | apt-get remove --force-yes login
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
-    && dpkg --remove --force-depends git maven wget unzip build-essential
+    && dpkg --remove --force-depends  wget unzip build-essential
 
 
 
