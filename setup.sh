@@ -40,24 +40,24 @@ pushd ${work_dir}/plugins
 #Extensions
 
 # Vector tiles
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-vectortiles-plugin.zip -O geoserver-$GS_VERSION-vectortiles-plugin.zip
+wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-vectortiles-plugin.zip -O geoserver-${GS_VERSION}-vectortiles-plugin.zip
 # CSS styling
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-css-plugin.zip -O geoserver-$GS_VERSION-css-plugin.zip
+wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-css-plugin.zip -O geoserver-${GS_VERSION}-css-plugin.zip
 
 #CSW
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-csw-plugin.zip -O geoserver-$GS_VERSION-csw-plugin.zip
+wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-csw-plugin.zip -O geoserver-${GS_VERSION}-csw-plugin.zip
 # WPS
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-wps-plugin.zip -O geoserver-$GS_VERSION-wps-plugin.zip
+wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-wps-plugin.zip -O geoserver-${GS_VERSION}-wps-plugin.zip
 # Printing plugin
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-printing-plugin.zip -O geoserver-$GS_VERSION-printing-plugin.zip
+wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-printing-plugin.zip -O geoserver-${GS_VERSION}-printing-plugin.zip
 #libjpeg-turbo
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip -O geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip
+wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip -O geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
 #Control flow
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-control-flow-plugin.zip/download -O geoserver-$GS_VERSION-control-flow-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-control-flow-plugin.zip/download -O geoserver-${GS_VERSION}-control-flow-plugin.zip
 #Image pyramid
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-pyramid-plugin.zip/download -O geoserver-$GS_VERSION-pyramid-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-pyramid-plugin.zip/download -O geoserver-${GS_VERSION}-pyramid-plugin.zip
 #GDAL
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/$GS_VERSION/extensions/geoserver-$GS_VERSION-gdal-plugin.zip/download -O geoserver-$GS_VERSION-gdal-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-gdal-plugin.zip/download -O geoserver-${GS_VERSION}-gdal-plugin.zip
 
 if [ ! -d gdal ];
 then
@@ -108,15 +108,12 @@ if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
 # Build geogig and other community modules
 
 if  [ "$COMMUNITY_MODULES" == true ]; then
-    git clone   https://github.com/geoserver/geoserver.git /tmp/geoserver && \
-    pushd /tmp/geoserver && \
-    git checkout ${GS_VERSION:0:5}x && \
-    mvn clean install -DskipTests -f src/community/pom.xml -P communityRelease assembly:attached && \
-    cp -r src/community/target/release /tmp/resources/community-plugins && \
-    pushd /tmp/resources/community-plugins && \
-    cp geoserver-${GS_VERSION:0:4}-SNAPSHOT-backup-restore-plugin.zip geoserver-${GS_VERSION:0:4}-SNAPSHOT-geogig-plugin.zip \
-    geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbstyle-plugin.zip geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip /tmp/resources/plugins && \
-    rm -rf /tmp/geoserver
+    array=(geoserver-${GS_VERSION:0:4}-SNAPSHOT-geogig-plugin.zip geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip)
+    for i in "${array[@]}"
+    do
+	    wget -c https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/${i} -O /tmp/resources/plugins/${i}
+    done
+
 else
     echo "Building community modules will be disabled"
 fi;
