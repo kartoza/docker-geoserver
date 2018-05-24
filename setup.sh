@@ -74,7 +74,7 @@ popd
 
 # Install libjpeg-turbo for that specific geoserver GS_VERSION
 if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
-    wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P /tmp/resources;\
+    wget -c https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P /tmp/resources;\
     fi; \
     cd /tmp/resources/ && \
     dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
@@ -162,15 +162,16 @@ WORKDIR $CATALINA_HOME
 
 # A little logic that will fetch the geoserver war zip file if it
 # is not available locally in the resources dir
-if [ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]; then \
-    wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
-      -O /tmp/resources/geoserver-${GS_VERSION}.zip; \
+GEOSERVER_VERSION=2.12.x
+if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
+    wget -c http://build.geonode.org/geoserver/latest/geoserver-${GEOSERVER_VERSION}.war \
+      -O /tmp/resources/geoserver-${GEOSERVER_VERSION}.war; \
     fi; \
-    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver \
-    && unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
+
+    unzip /tmp/resources/geoserver-${GEOSERVER_VERSION}.war -d $CATALINA_HOME/webapps/geoserver \
     && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
     && rm -rf $CATALINA_HOME/webapps/geoserver/data \
-    && rm -rf /tmp/geoserver
+    && rm -rf /tmp/resources/geoserver-${GEOSERVER_VERSION}.war
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
