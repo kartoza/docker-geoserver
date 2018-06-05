@@ -86,7 +86,6 @@ RUN if ! [ -z ${DOCKER_HOST_IP} ]; \
     else echo "DOCKER_HOST_IP is already set!"; fi
 # for debugging
 RUN echo -n #2===>DOCKER_HOST_IP=${DOCKER_HOST_IP}
-
 # Set WEBSERVER public port
 ARG PUBLIC_PORT=${PUBLIC_PORT}
 # for debugging
@@ -95,20 +94,13 @@ RUN echo -n #1===>PUBLIC_PORT=${PUBLIC_PORT}
 ENV PUBLIC_PORT=${PUBLIC_PORT}
 # for debugging
 RUN echo -n #2===>PUBLIC_PORT=${PUBLIC_PORT}
-
 # set nginx base url for geoserver
 RUN echo export NGINX_BASE_URL=http://${NGINX_HOST}:${NGINX_PORT}/ | \
     sed 's/tcp:\/\/\([^:]*\).*/\1/' >> /root/.bashrc
-
-
 ARG GEONODE=false
 
 RUN if (($GEONODE == true )); then \
-
       /bin/bash ./setup-geonode.sh; \
 fi;
-
-
-
 CMD ["/usr/local/tomcat/tmp/entrypoint.sh"]
 
