@@ -40,24 +40,24 @@ pushd ${work_dir}/plugins
 #Extensions
 
 # Vector tiles
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-vectortiles-plugin.zip -O geoserver-${GS_VERSION}-vectortiles-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-vectortiles-plugin.zip -O geoserver-${GS_VERSION}-vectortiles-plugin.zip
 # CSS styling
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-css-plugin.zip -O geoserver-${GS_VERSION}-css-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-css-plugin.zip -O geoserver-${GS_VERSION}-css-plugin.zip
 
 #CSW
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-csw-plugin.zip -O geoserver-${GS_VERSION}-csw-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-csw-plugin.zip -O geoserver-${GS_VERSION}-csw-plugin.zip
 # WPS
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-wps-plugin.zip -O geoserver-${GS_VERSION}-wps-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-wps-plugin.zip -O geoserver-${GS_VERSION}-wps-plugin.zip
 # Printing plugin
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-printing-plugin.zip -O geoserver-${GS_VERSION}-printing-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-printing-plugin.zip -O geoserver-${GS_VERSION}-printing-plugin.zip
 #libjpeg-turbo
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip -O geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip -O geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
 #Control flow
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-control-flow-plugin.zip/download -O geoserver-${GS_VERSION}-control-flow-plugin.zip
+wget --no-check-certificate -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-control-flow-plugin.zip/download -O geoserver-${GS_VERSION}-control-flow-plugin.zip
 #Image pyramid
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-pyramid-plugin.zip/download -O geoserver-${GS_VERSION}-pyramid-plugin.zip
+wget --no-check-certificate -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-pyramid-plugin.zip/download -O geoserver-${GS_VERSION}-pyramid-plugin.zip
 #GDAL
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-gdal-plugin.zip/download -O geoserver-${GS_VERSION}-gdal-plugin.zip
+wget --no-check-certificate -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-gdal-plugin.zip/download -O geoserver-${GS_VERSION}-gdal-plugin.zip
 
 if [ ! -d gdal ];
 then
@@ -162,16 +162,36 @@ WORKDIR $CATALINA_HOME
 
 # A little logic that will fetch the geoserver war zip file if it
 # is not available locally in the resources dir
-GEOSERVER_VERSION=2.12.x
-if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
-    wget -c http://build.geonode.org/geoserver/latest/geoserver-${GEOSERVER_VERSION}.war \
-      -O /tmp/resources/geoserver-${GEOSERVER_VERSION}.war; \
-    fi; \
 
+function download_geoserver_war_file {
+
+if ["$GEONODE" == true] ; then
+    echo "Geonode Install"
+    GEOSERVER_VERSION=${GS_VERSION:0:5}x
+    if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
+        wget -c http://build.geonode.org/geoserver/latest/geoserver-${GEOSERVER_VERSION}.war \
+          -O /tmp/resources/geoserver-${GEOSERVER_VERSION}.war; \
+        fi;
     unzip /tmp/resources/geoserver-${GEOSERVER_VERSION}.war -d $CATALINA_HOME/webapps/geoserver \
     && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
-    && rm -rf $CATALINA_HOME/webapps/geoserver/data \
     && rm -rf /tmp/resources/geoserver-${GEOSERVER_VERSION}.war
+
+else
+     echo "Geoserver Install"
+     if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
+        wget -c wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
+        -O /tmp/resources/geoserver-${GS_VERSION}.zip; \
+        fi;
+      unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver \
+      && unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
+      && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
+      && rm -rf /tmp/geoserver
+fi
+}
+
+download_geoserver_war_file
+
+rm -rf $CATALINA_HOME/webapps/geoserver/data
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \

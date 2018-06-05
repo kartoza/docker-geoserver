@@ -49,6 +49,13 @@ RUN /setup.sh
 ADD controlflow.properties $GEOSERVER_DATA_DIR
 ADD sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 
+
+# copy the script and perform the run of scripts from entrypoint.sh
+ADD geonode  /usr/local/tomcat/tmp
+WORKDIR /usr/local/tomcat/tmp
+ADD setup-geonode.sh /usr/local/tomcat/tmp/setup-geonode.sh
+RUN chmod +x /usr/local/tomcat/tmp/*.sh
+
 ###########docker host###############
 # Set DOCKERHOST variable if DOCKER_HOST exists
 ARG DOCKERHOST=${DOCKERHOST}
@@ -93,22 +100,10 @@ RUN echo -n #2===>PUBLIC_PORT=${PUBLIC_PORT}
 RUN echo export NGINX_BASE_URL=http://${NGINX_HOST}:${NGINX_PORT}/ | \
     sed 's/tcp:\/\/\([^:]*\).*/\1/' >> /root/.bashrc
 
-# copy the script and perform the run of scripts from entrypoint.sh
-ADD geonode  /usr/local/tomcat/tmp
-WORKDIR /usr/local/tomcat/tmp
 
-RUN apt-get update \
-    && apt-get -y upgrade \
-    && apt-get install -y python python-pip python-dev python-setuptools \
-    && chmod +x /usr/local/tomcat/tmp/*.sh \
-    && python -m pip install --upgrade pip \
-    && pip install -r requirements.txt \
-    && chmod +x /usr/local/tomcat/tmp/*.py
+RUN if  (("$GEONODE" == true )); then
+    /setup-geonode.sh ;\
+fi
 
 CMD ["/usr/local/tomcat/tmp/entrypoint.sh"]
-
-
-
-
-
 
