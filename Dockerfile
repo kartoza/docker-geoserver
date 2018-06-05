@@ -100,6 +100,7 @@ RUN echo -n #2===>PUBLIC_PORT=${PUBLIC_PORT}
 RUN echo export NGINX_BASE_URL=http://${NGINX_HOST}:${NGINX_PORT}/ | \
     sed 's/tcp:\/\/\([^:]*\).*/\1/' >> /root/.bashrc
 
+ARG GEONODE=true
 
 RUN if  (("$GEONODE" == true )); then
     /setup-geonode.sh ;\
