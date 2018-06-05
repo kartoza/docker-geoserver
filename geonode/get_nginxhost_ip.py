@@ -5,7 +5,7 @@ import os
 
 import docker
 
-client = docker.from_env()
+client = docker.from_env(version='1.24')
 # print client.info()
 # TODO avoid this script can fail and fall in the loop where the geoserver
 # service is not available and consequently the nginx too which has geoserver

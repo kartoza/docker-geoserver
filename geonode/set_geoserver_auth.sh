@@ -17,8 +17,6 @@ test ! -d "$auth_conf_target" && echo "Target directory $auth_conf_target does n
 
 # for debugging
 echo -e "NGINX_BASE_URL=${NGINX_BASE_URL}\n"
-SUBSTITUTION_URL="http://${DOCKER_HOST_IP}:${PUBLIC_PORT}"
-echo -e "SUBSTITUTION_URL=$SUBSTITUTION_URL\n"
 echo -e "auth_conf_source=$auth_conf_source\n"
 echo -e "auth_conf_target=$auth_conf_target\n"
 
@@ -48,31 +46,14 @@ do
 
     # Setting new substituted value
     case $i in
-        
-        proxyBaseUrl )
-            if [ ${GEONODE_LB_HOST_IP} ]
-            then
-
-                echo "DEBUG: Editing '$auth_conf_source' for tagname <$i> and replacing its value with '$SUBSTITUTION_URL'"
-                newvalue=`echo -ne "$tagvalue" | sed -re "s@http://localhost(:8.*0)@$SUBSTITUTION_URL@"`
-            
-            else
-
-                echo "DEBUG: Editing '$auth_conf_source' for tagname <$i> and replacing its value with '$NGINX_BASE_URL'"
-                newvalue=`echo -ne "$tagvalue" | sed -re "s@http://localhost(:8.*0)@$NGINX_BASE_URL@"`
-
-            fi;;
-        accessTokenUri | checkTokenEndpointUrl | baseUrl )
+        proxyBaseUrl | accessTokenUri | checkTokenEndpointUrl | baseUrl | userAuthorizationUri | redirectUri | logoutUri )
             echo "DEBUG: Editing '$auth_conf_source' for tagname <$i> and replacing its value with '$NGINX_BASE_URL'"
-            newvalue=`echo -ne "$tagvalue" | sed -re "s@http://localhost(:8.*0)@$NGINX_BASE_URL@"`;;
-        userAuthorizationUri | redirectUri | logoutUri )
-            echo "DEBUG: Editing '$auth_conf_source' for tagname <$i> and replacing its value with '$SUBSTITUTION_URL'"
-            newvalue=`echo -ne "$tagvalue" | sed -re "s@http://localhost(:8.*0)@$SUBSTITUTION_URL@"`;;
+            newvalue=`echo -ne "$tagvalue" | sed -re "s@http://localhost(:8.*0)(/?)@$NGINX_BASE_URL@"`;;
         *) echo -n "an unknown variable has been found";;
     esac
 
     echo "DEBUG: Found the new value for the element <$i> - '$newvalue'"
-    # Replacing element’s value with $SUBSTITUTION_URL
+    # Replacing element’s value with $NGINX_BASE_URL
     # echo -ne "<$i>$tagvalue</$i>" | xmlstarlet sel -t -m "//a" -v . -n
     sed -e "s@<$i>$tagvalue<\/$i>@<$i>$newvalue<\/$i>@g" "$auth_conf_source" > "$temp_file"
     cp "$temp_file" "$auth_conf_source"
