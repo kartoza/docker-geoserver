@@ -3,13 +3,14 @@ version: '2.1'
 volumes:
    db-backups:
    geoserver-data:
+   db-postgres-data:
+   db-geogig-postgres-data:
 
 services:
    db:
       image: kartoza/postgis:10.0-2.4
       volumes:
-         #- ./pg/postgres_data:/var/lib/postgresql
-         - db-backups:/backups
+         - db-postgres-data:/var/lib/postgresql
       ports:
         - "25433:5432"
       environment:
@@ -21,10 +22,9 @@ services:
         test: "exit 0"
 
    geogig-db:
-      image: kartoza/postgis:10.0-2.4
+      image: kartoza/postgis:9.6-2.4
       volumes:
-         #- ./pg/postgres_data:/var/lib/postgresql
-         - db-backups:/backups
+         - db-geogig-postgres-data:/var/lib/postgresql
       environment:
          - USERNAME=docker
          - PASS=docker
@@ -43,8 +43,6 @@ services:
       env_file:
         - geoserver.env
       depends_on:
-        db:
-          condition: service_healthy
         geogig-db:
           condition: service_healthy
       healthcheck:
@@ -75,7 +73,7 @@ services:
       environment:
          # take care to let the project name below match that
          # declared in the top of the makefile
-         - DUMPPREFIX=PG_geoserver
+         - DUMPPREFIX=PG_postgres_data
          # These are all defaults anyway, but setting explicitly in
          # case we ever want to ever use different credentials
          - PGUSER=docker
@@ -86,4 +84,24 @@ services:
       restart: on-failure
       depends_on:
         db:
+          condition: service_healthy
+
+   dbbackups-geogig-db:
+      image: kartoza/pg-backup:9.6
+      volumes:
+        - db-backups:/backups
+      environment:
+         # take care to let the project name below match that
+         # declared in the top of the makefile
+         - DUMPPREFIX=PG_geogig
+         # These are all defaults anyway, but setting explicitly in
+         # case we ever want to ever use different credentials
+         - PGUSER=docker
+         - PGPASSWORD=docker
+         - PGPORT=5432
+         - PGHOST=geogig-db
+         - PGDATABASE=gis
+      restart: on-failure
+      depends_on:
+        geogig-db:
           condition: service_healthy

@@ -163,10 +163,12 @@ WORKDIR $CATALINA_HOME
 # A little logic that will fetch the geoserver war zip file if it
 # is not available locally in the resources dir
 
-function download_geoserver_war_file {
 
-if ["$GEONODE" == true] ; then
+
+if (($GEONODE == true )) ; then
+
     echo "Geonode Install"
+
     GEOSERVER_VERSION=${GS_VERSION:0:5}x
     if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
         wget -c http://build.geonode.org/geoserver/latest/geoserver-${GEOSERVER_VERSION}.war \
@@ -187,9 +189,7 @@ else
       && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
       && rm -rf /tmp/geoserver
 fi
-}
 
-download_geoserver_war_file
 
 rm -rf $CATALINA_HOME/webapps/geoserver/data
 

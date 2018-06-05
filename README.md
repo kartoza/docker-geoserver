@@ -74,6 +74,17 @@ To remove Tomcat extras including docs, examples, and the manager webapp, set th
 ./download.sh
 docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
+### Build Geoserver for Geonode
+
+To build Geoserver for Geonode use the following argument
+`GEONODE` build-arg to `true`:
+
+```shell
+#Ensure you have maven installed and have set the JAVA HOME env to ensure  building geoserver community modules
+./download.sh
+docker build --build-arg GEONODE=true --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
+```
+
 
 ### Building with file system overlays (advanced)
 
