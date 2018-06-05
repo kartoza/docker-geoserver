@@ -1,30 +1,25 @@
 #!/bin/sh
 # Check the geoserver version specified in the Dockerfile and substitute the number in the globals starting with OLD.
 
-## GLOBALS
-# This specifies the current version that is specified in the Dockerfile and download script (the previous stable version if a new stable version is available).
-OLD_BUGFIX=2
-OLD_MINOR=12
-OLD_MAJOR=2
 
-# This represents the version we need geoserver to move up to. ie the lattest stable version
+
+# This represents the version we need GeoServer to move up to. ie the latest stable version
 BUGFIX=0
 MINOR=13
 MAJOR=2
 
-## Prepare to bump geoserver to a specific version
+# Build Geoserver
+echo "Building GeoServer using the specified version "
+sed -i "s/${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}/${MAJOR}.${MINOR}.${BUGFIX}/g" Dockerfile
+docker build --build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t kartoza/geoserver:${MAJOR}.${MINOR}.${BUGFIX} .
 
-if grep -rl -q "${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}" Dockerfile
+# Build Arguments - The change the defaults when building the image
+#need to specify a different value.
+```
+--build-arg ORACLE_JDK=true
+--build-arg COMMUNITY_MODULES=true
+--build-arg TOMCAT_EXTRAS=false
+```
 
-then
-    echo "We are going to upgrade the geoserver version"
-    sed -i "s/${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}/${MAJOR}.${MINOR}.${BUGFIX}/g" Dockerfile
-	sed -i "s/${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX}/${MAJOR}.${MINOR}.${BUGFIX}/g" download.sh
-	./download.sh
-	docker build --build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t kartoza/geoserver:${MAJOR}.${MINOR}.${BUGFIX} .
-else
-    echo "It seems the geoserver has not been upgraded. We will download the extensions and build geoserver."
-	./download.sh
-	docker build --build-arg GS_VERSION=${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX} -t kartoza/geoserver:${OLD_MAJOR}.${OLD_MINOR}.${OLD_BUGFIX} .
-fi
+
 

@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 
 volumes:
    db-backups:
@@ -7,37 +7,71 @@ volumes:
 services:
    db:
       image: kartoza/postgis:10.0-2.4
-      hostname: postgis
       volumes:
          #- ./pg/postgres_data:/var/lib/postgresql
          - db-backups:/backups
       ports:
-        - "25432:5432"
+        - "25433:5432"
       environment:
          - USERNAME=docker
          - PASS=docker
-         - ALLOW_IP_RANGE=172.20.0.0/24
-      restart: unless-stopped
+         - ALLOW_IP_RANGE=0.0.0.0/0
+      restart: on-failure
+      healthcheck:
+        test: "exit 0"
+
+   geogig-db:
+      image: kartoza/postgis:10.0-2.4
+      volumes:
+         #- ./pg/postgres_data:/var/lib/postgresql
+         - db-backups:/backups
+      environment:
+         - USERNAME=docker
+         - PASS=docker
+         - ALLOW_IP_RANGE=0.0.0.0/0
+      restart: on-failure
+      healthcheck:
+        test: "exit 0"
 
    geoserver:
-      image: kartoza/geoserver:2.12.0
-      hostname: geoserver 
+      image: kartoza/geoserver:2.13.0
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
       ports:
-        - "8080:8080"
-      links:
-         - db:db
-      restart: unless-stopped
-      user: root
+        - "8600:8080"
+      restart: on-failure
+      env_file:
+        - geoserver.env
+      depends_on:
+        db:
+          condition: service_healthy
+        geogig-db:
+          condition: service_healthy
+      healthcheck:
+        test: curl --fail -s http://localhost:8080/ || exit 1
+        interval: 1m30s
+        timeout: 10s
+        retries: 3
+
+   geogig:
+      image: kartoza/geogig:1.2.0
+      ports:
+        - "8182:8080"
+      restart: on-failure
+      depends_on:
+        db:
+          condition: service_healthy
+        geogig-db:
+          condition: service_healthy
+      env_file:
+        - geogig.env
+      healthcheck:
+        test: "exit 0"
 
    dbbackups:
       image: kartoza/pg-backup:10.0
-      hostname: pg-backups
       volumes:
         - db-backups:/backups
-      links:
-         - db:db
       environment:
          # take care to let the project name below match that
          # declared in the top of the makefile
@@ -49,42 +83,7 @@ services:
          - PGPORT=5432
          - PGHOST=db
          - PGDATABASE=gis
-      restart: unless-stopped
-
-   btsync-data:
-      # BTSync backups for database dumps
-      image: kartoza/btsync
-      hostname: btsync-data
-      volumes:
-         # We mount RW so that we can use remove peer to clean up old backups off the server
-         - db-backups:/web:rw
-      env_file:
-         # The environment file should define two variables:
-         # SECRET: a RW btsync key if the server is a production server
-         #     a RO btsync key if it is staging or development machine
-         # DEVICE: a unique device name so you can recognise which host is being peered with in btsync
-         # See the btsync example env in this folder for a template
-         # NOTE:
-         # Do not version control the env file as anyone else could peer it and sync
-         # our database backups etc.
-         - btsync-db.env
-      
-   btsync-media:                                                                   
-      # BTSync backups for django media
-      image: kartoza/btsync
-      hostname: btsync-media
-      volumes:
-         # We mount RW so that we can use peers 
-         # to push shapefiles etc. to the server
-         - geoserver-data:/web:rw
-      env_file:
-         # The environment file should define two variables:
-         # SECRET: a RW btsync key if the server is a production server
-         #     a RO btsync key if it is staging or development machine
-         # DEVICE: a unique device name so you can recognise which host is being peered with in btsync
-         # See the btsync example env in this folder for a template
-         # NOTE:
-         # Do not version control the env file as anyone else could peer it and sync
-         # our media backups etc.
-         - btsync-media.env
-
+      restart: on-failure
+      depends_on:
+        db:
+          condition: service_healthy
