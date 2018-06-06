@@ -39,8 +39,7 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 ARG ORACLE_JDK=false
 ARG TOMCAT_EXTRAS=true
 ARG COMMUNITY_MODULES=true
-
-
+ARG GEONODE=true
 WORKDIR /tmp/
 ADD resources /tmp/resources
 ADD setup.sh /
@@ -48,14 +47,11 @@ RUN chmod +x /*.sh
 RUN /setup.sh
 ADD controlflow.properties $GEOSERVER_DATA_DIR
 ADD sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
-
-
 # copy the script and perform the run of scripts from entrypoint.sh
 ADD geonode  /usr/local/tomcat/tmp
 WORKDIR /usr/local/tomcat/tmp
 ADD setup-geonode.sh /usr/local/tomcat/tmp/setup-geonode.sh
 RUN chmod +x /usr/local/tomcat/tmp/*.sh
-
 ###########docker host###############
 # Set DOCKERHOST variable if DOCKER_HOST exists
 ARG DOCKERHOST=${DOCKERHOST}
@@ -65,7 +61,6 @@ RUN echo -n #1===>DOCKERHOST=${DOCKERHOST}
 ENV DOCKERHOST ${DOCKERHOST}
 # for debugging
 RUN echo -n #2===>DOCKERHOST=${DOCKERHOST}
-
 ###########docker host ip#############
 # Set GEONODE_HOST_IP address if it exists
 ARG GEONODE_HOST_IP=${GEONODE_HOST_IP}
@@ -97,7 +92,6 @@ RUN echo -n #2===>PUBLIC_PORT=${PUBLIC_PORT}
 # set nginx base url for geoserver
 RUN echo export NGINX_BASE_URL=http://${NGINX_HOST}:${NGINX_PORT}/ | \
     sed 's/tcp:\/\/\([^:]*\).*/\1/' >> /root/.bashrc
-ARG GEONODE=false
 
 RUN if (($GEONODE == true )); then \
       /bin/bash ./setup-geonode.sh; \

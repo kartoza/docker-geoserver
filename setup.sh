@@ -165,9 +165,9 @@ WORKDIR $CATALINA_HOME
 
 
 
-if (($GEONODE == true )) ; then
+if [ "$GEONODE" == true ]; then
 
-    echo "Geonode Install"
+    echo "This installation will be used as Geonode backend"
 
     GEOSERVER_VERSION=${GS_VERSION:0:5}x
     if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
@@ -177,9 +177,9 @@ if (($GEONODE == true )) ; then
     unzip /tmp/resources/geoserver-${GEOSERVER_VERSION}.war -d $CATALINA_HOME/webapps/geoserver \
     && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
     && rm -rf /tmp/resources/geoserver-${GEOSERVER_VERSION}.war
-
+    
 else
-     echo "Geoserver Install"
+     echo "The image will be used for Geoserver"
      if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
         wget -c wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
         -O /tmp/resources/geoserver-${GS_VERSION}.zip; \
