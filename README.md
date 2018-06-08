@@ -238,8 +238,7 @@ You need to ensure the ``geoserver_data`` directory has sufficient permissions
 for the docker process to read / write it.
 
 ### Control flow properties
-if you have installed the control flow module to manage request in geoserver you need to copy the file
-controlflow.properties to the base of the data directory. You can fine tune the control flow file
+The control flow module is installed by default to manage request in geoserver.You can fine tune the control flow file
 with other parameters as defined in the [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html)
 
 ## Setting Tomcat properties
