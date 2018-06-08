@@ -187,6 +187,7 @@ else
       unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver \
       && unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
       && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
+      && cp -r $CATALINA_HOME/webapps/geoserver/data/security $GEOSERVER_DATA_DIR \
       && rm -rf /tmp/geoserver
 fi
 

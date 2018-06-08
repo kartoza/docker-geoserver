@@ -7,7 +7,7 @@ fi;
 
 GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER:-admin}
 GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD:-geoserver}
-USERS_XML=${USERS_XML:-/geoserver_data/data/security/usergroup/default/users.xml}
+USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
 CLASSPATH=${CLASSPATH:-/usr/local/tomcat/webapps/geoserver/WEB-INF/lib/}
 
 make_hash(){

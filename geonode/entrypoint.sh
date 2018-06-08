@@ -52,6 +52,7 @@ if  [ "$GEONODE" == true ]; then
     exec catalina.sh run
 else
     # start tomcat
+    /usr/local/tomcat/tmp/update_passwords.sh
     exec catalina.sh run
 fi
 
