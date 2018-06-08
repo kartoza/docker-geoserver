@@ -14,7 +14,7 @@ RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams t
     build-essential libapr1-dev libssl-dev default-jdk
 #-------------Application Specific Stuff ----------------------------------------------------
 
-ARG GS_VERSION=2.12.0
+ARG GS_VERSION=2.13.1
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 ENV ENABLE_JSONP true
 ENV MAX_FILTER_RULES 20
@@ -39,10 +39,10 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 ARG ORACLE_JDK=false
 ARG TOMCAT_EXTRAS=true
 ARG COMMUNITY_MODULES=true
-ARG GEONODE=true
+ARG GEONODE=false
 WORKDIR /tmp/
 ADD resources /tmp/resources
-ADD setup.sh /
+ADD scripts/setup.sh /
 RUN chmod +x /*.sh
 RUN /setup.sh
 ADD controlflow.properties $GEOSERVER_DATA_DIR
@@ -50,7 +50,7 @@ ADD sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 # copy the script and perform the run of scripts from entrypoint.sh
 ADD geonode  /usr/local/tomcat/tmp
 WORKDIR /usr/local/tomcat/tmp
-ADD setup-geonode.sh /usr/local/tomcat/tmp/setup-geonode.sh
+ADD scripts/setup-geonode.sh /usr/local/tomcat/tmp/setup-geonode.sh
 RUN chmod +x /usr/local/tomcat/tmp/*.sh
 ###########docker host###############
 # Set DOCKERHOST variable if DOCKER_HOST exists

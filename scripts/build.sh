@@ -19,7 +19,7 @@ docker build --build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t kartoza/geose
 --build-arg ORACLE_JDK=true
 --build-arg COMMUNITY_MODULES=true
 --build-arg TOMCAT_EXTRAS=false
---build-arg GEONODE=false
+--build-arg GEONODE=true # If you need to use a custom Geoserver with Kartoza goodies for Geonode.
 ```
 
 
