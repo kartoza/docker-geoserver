@@ -15,14 +15,6 @@ get our docker trusted build like this:
 docker pull kartoza/geoserver
 ```
 
-### Pre-downloading files
-
-Inspect downloads.sh to confirm which files you want, then run `.downloads.sh.`
-Ensure you install maven on the host so that you can build the community modules `sudo apt-get install -y maven`
-Also ensure that you have the JAVA_HOME variable set on the host.
-
-If you don't make changes it will download Oracle Java and various Oracle and Geoserver extensions that will be used during the Docker build. 
-
 ### Setting Tomcat properties during build
 
 The  Tomcat properties such as maximum heap memory size are included in the Dockerfile. You need to change them 
@@ -35,7 +27,7 @@ To build yourself with a local checkout:
 ```shell
 git clone git://github.com/kartoza/docker-geoserver
 cd docker-geoserver
-./build.sh
+./scripts/build.sh
 ```
 
 
@@ -44,8 +36,6 @@ cd docker-geoserver
 To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
 
 ```shell
-#Ensure you have maven installed and have set the JAVA HOME env to ensure  building geoserver community modules
-./download.sh
 docker build --build-arg ORACLE_JDK=true --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
 
@@ -70,10 +60,18 @@ To remove Tomcat extras including docs, examples, and the manager webapp, set th
 `TOMCAT_EXTRAS` build-arg to `false`:
 
 ```shell
-#Ensure you have maven installed and have set the JAVA HOME env to ensure  building geoserver community modules
-./download.sh
 docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
+### Build Geoserver for Geonode
+
+To build Geoserver for Geonode use the following argument. Also ensure you substitute the Geoserver image name in 
+[geonode rancher](https://github.com/geosolutions-it/geonode-generic/blob/master/templates/geonode-generic/0/docker-compose.yml) 
+to match the name of the image you have just build
+
+```shell
+docker build --build-arg GEONODE=true --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
+```
+
 
 ### Building with file system overlays (advanced)
 
@@ -96,7 +94,8 @@ container do:
 
 ```shell
 docker run --name "postgis" -d -t kartoza/postgis:9.4-2.1
-docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver
+# Assign password on runtime for the Geoserver admin user
+docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -e GEOSERVER_ADMIN_PASSWORD=docker -d -t kartoza/geoserver
 ```
 
 You can also use the following environment variables to pass a 
@@ -108,6 +107,14 @@ user name and password. To postgis:
 These will be used to create a new superuser with
 your preferred credentials. If these are not specified then the postgresql 
 user is set to 'docker' with password 'docker'.
+
+You can also use the following environment variables to pass a 
+password. To geoserver:
+* -e GEOSERVER_ADMIN_PASSWORD=<PASSWORD>
+
+These will be used to create a new superuser with
+your preferred credentials. If these are not specified then the geoserver 
+user is set to 'admin' with password 'geoserver'.
 
 **Note:** The default geoserver user is 'admin' and the password is 'geoserver'.
 We highly recommend changing these as soon as you first log in.
@@ -231,8 +238,7 @@ You need to ensure the ``geoserver_data`` directory has sufficient permissions
 for the docker process to read / write it.
 
 ### Control flow properties
-if you have installed the control flow module to manage request in geoserver you need to copy the file
-controlflow.properties to the base of the data directory. You can fine tune the control flow file
+The control flow module is installed by default to manage request in geoserver.You can fine tune the control flow file
 with other parameters as defined in the [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html)
 
 ## Setting Tomcat properties

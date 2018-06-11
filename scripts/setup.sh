@@ -40,24 +40,24 @@ pushd ${work_dir}/plugins
 #Extensions
 
 # Vector tiles
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-vectortiles-plugin.zip -O geoserver-${GS_VERSION}-vectortiles-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-vectortiles-plugin.zip -O geoserver-${GS_VERSION}-vectortiles-plugin.zip
 # CSS styling
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-css-plugin.zip -O geoserver-${GS_VERSION}-css-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-css-plugin.zip -O geoserver-${GS_VERSION}-css-plugin.zip
 
 #CSW
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-csw-plugin.zip -O geoserver-${GS_VERSION}-csw-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-csw-plugin.zip -O geoserver-${GS_VERSION}-csw-plugin.zip
 # WPS
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-wps-plugin.zip -O geoserver-${GS_VERSION}-wps-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-wps-plugin.zip -O geoserver-${GS_VERSION}-wps-plugin.zip
 # Printing plugin
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-printing-plugin.zip -O geoserver-${GS_VERSION}-printing-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-printing-plugin.zip -O geoserver-${GS_VERSION}-printing-plugin.zip
 #libjpeg-turbo
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip -O geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
+wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip -O geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
 #Control flow
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-control-flow-plugin.zip/download -O geoserver-${GS_VERSION}-control-flow-plugin.zip
+wget --no-check-certificate -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-control-flow-plugin.zip/download -O geoserver-${GS_VERSION}-control-flow-plugin.zip
 #Image pyramid
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-pyramid-plugin.zip/download -O geoserver-${GS_VERSION}-pyramid-plugin.zip
+wget --no-check-certificate -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-pyramid-plugin.zip/download -O geoserver-${GS_VERSION}-pyramid-plugin.zip
 #GDAL
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-gdal-plugin.zip/download -O geoserver-${GS_VERSION}-gdal-plugin.zip
+wget --no-check-certificate -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-gdal-plugin.zip/download -O geoserver-${GS_VERSION}-gdal-plugin.zip
 
 if [ ! -d gdal ];
 then
@@ -74,7 +74,7 @@ popd
 
 # Install libjpeg-turbo for that specific geoserver GS_VERSION
 if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
-    wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P /tmp/resources;\
+    wget --no-check-certificate -c https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P /tmp/resources;\
     fi; \
     cd /tmp/resources/ && \
     dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
@@ -82,7 +82,7 @@ if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
 
 # Install tomcat APR
 if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
-    wget -c wget  http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz \
+    wget --no-check-certificate -c   http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz \
       -P /tmp/resources; \
     fi; \
     tar -xzf /tmp/resources/apr-1.6.3.tar.gz -C /tmp/resources/ && \
@@ -91,7 +91,7 @@ if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
 
 # Install tomcat native
 if [ ! -f /tmp/resources/tomcat-native-1.2.16-src.tar.gz ]; then \
-    wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz \
+    wget --no-check-certificate -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz \
       -P /tmp/resources; \
     fi; \
     tar -xzf /tmp/resources/tomcat-native-1.2.16-src.tar.gz -C /tmp/resources/ && \
@@ -140,10 +140,10 @@ if ls /var/cache/oracle-jdk8-installer/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1 
     fi;
 
  if [ ! -f /tmp/resources/jai-1_1_3-lib-linux-amd64.tar.gz ]; then \
-    wget http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz -P /tmp/resources;\
+    wget --no-check-certificate -c http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz -P /tmp/resources;\
     fi; \
     if [ ! -f /tmp/resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ]; then \
-    wget http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz -P /tmp/resources;\
+    wget --no-check-certificate -c http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz -P /tmp/resources;\
     fi; \
     mv resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ && \
     mv resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ./ && \
@@ -162,15 +162,37 @@ WORKDIR $CATALINA_HOME
 
 # A little logic that will fetch the geoserver war zip file if it
 # is not available locally in the resources dir
-if [ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]; then \
-    wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
-      -O /tmp/resources/geoserver-${GS_VERSION}.zip; \
-    fi; \
-    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver \
-    && unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
+
+
+
+if [ "$GEONODE" == true ]; then
+
+    echo "This installation will be used as Geonode backend"
+
+    GEOSERVER_VERSION=${GS_VERSION:0:5}x
+    if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
+        wget --no-check-certificate -c http://build.geonode.org/geoserver/latest/geoserver-${GEOSERVER_VERSION}.war \
+          -O /tmp/resources/geoserver-${GEOSERVER_VERSION}.war; \
+        fi;
+    unzip /tmp/resources/geoserver-${GEOSERVER_VERSION}.war -d $CATALINA_HOME/webapps/geoserver \
     && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
-    && rm -rf $CATALINA_HOME/webapps/geoserver/data \
-    && rm -rf /tmp/geoserver
+    && rm -rf /tmp/resources/geoserver-${GEOSERVER_VERSION}.war
+    
+else
+     echo "The image will be used for Geoserver"
+     if [ ! -f /tmp/resources/geoserver-${GEOSERVER_VERSION}.war ]; then \
+        wget --no-check-certificate -c wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
+        -O /tmp/resources/geoserver-${GS_VERSION}.zip; \
+        fi;
+      unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver \
+      && unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
+      && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
+      && cp -r $CATALINA_HOME/webapps/geoserver/data/security $GEOSERVER_DATA_DIR \
+      && rm -rf /tmp/geoserver
+fi
+
+
+rm -rf $CATALINA_HOME/webapps/geoserver/data
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
