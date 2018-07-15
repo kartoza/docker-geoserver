@@ -36,6 +36,15 @@ fi;
 
 work_dir=`pwd`
 
+if [ ! -d ${work_dir}/plugins ];
+ then
+     echo "Creating tmp plugins directory"
+     mkdir -p ${work_dir}/plugins
+ else
+     echo "tmp plugins directory already exist"
+ fi
+
+
 pushd ${work_dir}/plugins
 #Extensions
 
