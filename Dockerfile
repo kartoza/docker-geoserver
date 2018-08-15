@@ -37,6 +37,7 @@ ENV JAVA_DEBIAN_VERSION=
 RUN ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/default-java
 ENV JAVA_HOME /usr/lib/jvm/default-java
 ARG ORACLE_JDK=false
+ARG JAI_IMAGEIO=false
 ARG TOMCAT_EXTRAS=true
 ARG COMMUNITY_MODULES=true
 
@@ -44,6 +45,7 @@ ARG COMMUNITY_MODULES=true
 WORKDIR /tmp/
 ADD resources /tmp/resources
 ADD setup.sh /
+ADD setup_jia_imageio.sh /
 RUN chmod +x /*.sh
 RUN /setup.sh
 ADD controlflow.properties $GEOSERVER_DATA_DIR
