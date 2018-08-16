@@ -154,7 +154,7 @@ Which will run everything in the foreground giving you the opportunity
 to peruse logs and see that everything spins up nicely.
 
 Once all services are started, test by visiting the GeoServer landing
-page in your browser: [http://localhost:8080/geoserver](http://localhost:8080/geoserver).
+page in your browser: [http://localhost:8600/geoserver](http://localhost:8600/geoserver).
 
 To run in the background rather, press ``ctrl-c`` to stop the
 containers and run again in the background:
