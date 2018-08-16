@@ -17,6 +17,7 @@ docker build --build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t kartoza/geose
 #need to specify a different value.
 ```
 --build-arg ORACLE_JDK=true
+--build-arg JAI_IMAGEIO=true
 --build-arg COMMUNITY_MODULES=true
 --build-arg TOMCAT_EXTRAS=false
 ```

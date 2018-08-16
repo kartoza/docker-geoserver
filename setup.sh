@@ -146,25 +146,31 @@ if ls /var/cache/oracle-jdk8-installer/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1 
          mv /tmp/jce_policy/*.jar $JAVA_HOME/jre/lib/security/; \
        fi; \
     fi;
+# NOTE: I don't know why the following section not working
+#  if [ ! -f /tmp/resources/jai-1_1_3-lib-linux-amd64.tar.gz ]; then \
+#     wget http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz -P /tmp/resources;\
+#     fi; \
+#     if [ ! -f /tmp/resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ]; then \
+#     wget http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz -P /tmp/resources;\
+#     fi; \
+#     mv resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ && \
+#     mv resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ./ && \
+#     gunzip -c jai-1_1_3-lib-linux-amd64.tar.gz | tar xf - && \
+#     gunzip -c jai_imageio-1_1-lib-linux-amd64.tar.gz | tar xf - && \
+#     mv /tmp/jai-1_1_3/lib/*.jar $JAVA_HOME/jre/lib/ext/ && \
+#     mv /tmp/jai-1_1_3/lib/*.so $JAVA_HOME/jre/lib/amd64/ && \
+#     mv /tmp/jai_imageio-1_1/lib/*.jar $JAVA_HOME/jre/lib/ext/ && \
+#     mv /tmp/jai_imageio-1_1/lib/*.so $JAVA_HOME/jre/lib/amd64/ && \
+#     rm /tmp/jai-1_1_3-lib-linux-amd64.tar.gz && \
+#     rm -r /tmp/jai-1_1_3 && \
+#     rm /tmp/jai_imageio-1_1-lib-linux-amd64.tar.gz && \
+#     rm -r /tmp/jai_imageio-1_1
 
- if [ ! -f /tmp/resources/jai-1_1_3-lib-linux-amd64.tar.gz ]; then \
-    wget http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz -P /tmp/resources;\
-    fi; \
-    if [ ! -f /tmp/resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ]; then \
-    wget http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz -P /tmp/resources;\
-    fi; \
-    mv resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ && \
-    mv resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ./ && \
-    gunzip -c jai-1_1_3-lib-linux-amd64.tar.gz | tar xf - && \
-    gunzip -c jai_imageio-1_1-lib-linux-amd64.tar.gz | tar xf - && \
-    mv /tmp/jai-1_1_3/lib/*.jar $JAVA_HOME/jre/lib/ext/ && \
-    mv /tmp/jai-1_1_3/lib/*.so $JAVA_HOME/jre/lib/amd64/ && \
-    mv /tmp/jai_imageio-1_1/lib/*.jar $JAVA_HOME/jre/lib/ext/ && \
-    mv /tmp/jai_imageio-1_1/lib/*.so $JAVA_HOME/jre/lib/amd64/ && \
-    rm /tmp/jai-1_1_3-lib-linux-amd64.tar.gz && \
-    rm -r /tmp/jai-1_1_3 && \
-    rm /tmp/jai_imageio-1_1-lib-linux-amd64.tar.gz && \
-    rm -r /tmp/jai_imageio-1_1
+# Note: I followed the instuction from official geoserver docs http://docs.geoserver.org/stable/en/user/production/java.html
+if [ "$JAI_IMAGEIO" = true ]; then \
+    /setup_jia_imageio.sh
+fi
+
 
 WORKDIR $CATALINA_HOME
 
