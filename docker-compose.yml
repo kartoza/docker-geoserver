@@ -69,13 +69,8 @@ services:
       image: kartoza/pg-backup:9.6
       volumes:
         - db-backups:/backups
-      environment:
-         - DUMPPREFIX=PG_geogig-db
-         - PGUSER=docker
-         - PGPASSWORD=docker
-         - PGPORT=5432
-         - PGHOST=db
-         - PGDATABASE=gis
+      env_file:
+      - docker-env/geogig-db-backups.env
       restart: on-failure
       depends_on:
         geogig-db:
@@ -85,13 +80,8 @@ services:
      image: kartoza/pg-backup:9.6
      volumes:
      - db-backups:/backups
-     environment:
-     - DUMPPREFIX=PG_db
-     - PGUSER=docker
-     - PGPASSWORD=docker
-     - PGPORT=5432
-     - PGHOST=db
-     - PGDATABASE=gis
+     env_file:
+     - docker-env/db-backups.env
      restart: on-failure
      depends_on:
        db:
