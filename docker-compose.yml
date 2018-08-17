@@ -3,32 +3,29 @@ version: '2.1'
 volumes:
    db-backups:
    geoserver-data:
+   geogig-db-data:
+   geo-db-data:
 
 services:
    db:
-      image: kartoza/postgis:10.0-2.4
+      image: kartoza/postgis:9.6-2.4
       volumes:
-         #- ./pg/postgres_data:/var/lib/postgresql
-         - db-backups:/backups
+         - geo-db-data:/var/lib/postgresql
       ports:
-        - "25433:5432"
-      environment:
-         - USERNAME=docker
-         - PASS=docker
-         - ALLOW_IP_RANGE=0.0.0.0/0
+        - "5432:5432"
+      env_file:
+      - docker-env/geogig-db.env
       restart: on-failure
       healthcheck:
         test: "exit 0"
 
    geogig-db:
-      image: kartoza/postgis:10.0-2.4
+      image: kartoza/postgis:9.6-2.4
       volumes:
-         #- ./pg/postgres_data:/var/lib/postgresql
+         - geogig-db-data:/var/lib/postgresql
          - db-backups:/backups
-      environment:
-         - USERNAME=docker
-         - PASS=docker
-         - ALLOW_IP_RANGE=0.0.0.0/0
+      env_file:
+         - docker-env/geogig-db.env
       restart: on-failure
       healthcheck:
         test: "exit 0"
@@ -41,7 +38,7 @@ services:
         - "8600:8080"
       restart: on-failure
       env_file:
-        - geoserver.env
+        - docker-env/geoserver.env
       depends_on:
         db:
           condition: service_healthy
@@ -64,20 +61,16 @@ services:
         geogig-db:
           condition: service_healthy
       env_file:
-        - geogig.env
+        - docker-env/geogig.env
       healthcheck:
         test: "exit 0"
 
-   dbbackups:
-      image: kartoza/pg-backup:10.0
+   geogig-db-dbbackups:
+      image: kartoza/pg-backup:9.6
       volumes:
         - db-backups:/backups
       environment:
-         # take care to let the project name below match that
-         # declared in the top of the makefile
-         - DUMPPREFIX=PG_geoserver
-         # These are all defaults anyway, but setting explicitly in
-         # case we ever want to ever use different credentials
+         - DUMPPREFIX=PG_geogig-db
          - PGUSER=docker
          - PGPASSWORD=docker
          - PGPORT=5432
@@ -85,5 +78,21 @@ services:
          - PGDATABASE=gis
       restart: on-failure
       depends_on:
-        db:
+        geogig-db:
           condition: service_healthy
+
+   db-dbbackups:
+     image: kartoza/pg-backup:9.6
+     volumes:
+     - db-backups:/backups
+     environment:
+     - DUMPPREFIX=PG_db
+     - PGUSER=docker
+     - PGPASSWORD=docker
+     - PGPORT=5432
+     - PGHOST=db
+     - PGDATABASE=gis
+     restart: on-failure
+     depends_on:
+       db:
+         condition: service_healthy
