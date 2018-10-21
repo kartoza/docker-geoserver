@@ -15,6 +15,7 @@ RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams t
 #-------------Application Specific Stuff ----------------------------------------------------
 
 ARG GS_VERSION=2.13.0
+ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 ENV ENABLE_JSONP true
 ENV MAX_FILTER_RULES 20
@@ -54,8 +55,4 @@ ADD scripts/sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 RUN echo "Yes, do as I say!" | apt-get remove --force-yes sed
 RUN echo "Yes, do as I say!" | apt-get remove --force-yes login
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
-    && dpkg --remove --force-depends  wget unzip build-essential
-
-
-
-
+&& dpkg --remove --force-depends wget unzip build-essential
