@@ -37,7 +37,7 @@ If you need to build the image with a custom geoserver war file that will be dow
 ```
 docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/project/ge/geoserver/GeoServer/2.13.0/geoserver-2.13.0-war.zip --build-arg GS_VERSION=2.13.0
 ```
-**Note: war file version should match the version number provided by `GS_VERSION` argumentotherwise we will have a mismatch of plugins and GeoServer installed.**
+**Note: war file version should match the version number provided by `GS_VERSION` argument otherwise we will have a mismatch of plugins and GeoServer installed.**
 
 ### Building with Oracle JDK
 
