@@ -31,6 +31,14 @@ cd docker-geoserver
 ```
 Ensure that you look at the build script to see what other build arguments you can include whilst building your image.
 
+### Building with war file from a URL
+
+If you need to build the image with a custom geoserver war file that will be downloaded from a server, you can pass the war file url as a build argument to docker, example:
+```
+docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/project/ge/geoserver/GeoServer/2.13.0/geoserver-2.13.0-war.zip --build-arg GS_VERSION=2.13.0
+```
+**Note: war file version should match the version number provided by `GS_VERSION` argumentotherwise we will have a mismatch of plugins and GeoServer installed.**
+
 ### Building with Oracle JDK
 
 To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
