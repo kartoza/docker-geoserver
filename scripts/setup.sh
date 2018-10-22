@@ -173,11 +173,18 @@ pushd $CATALINA_HOME
 # A little logic that will fetch the geoserver war zip file if it
 # is not available locally in the resources dir
 if [ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]; then \
-    wget -c http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip \
-      -O /tmp/resources/geoserver-${GS_VERSION}.zip; \
+    if [[ "$WAR_URL" == *\.zip ]]
+    then
+        destination=/tmp/resources/geoserver-${GS_VERSION}.zip
+        wget -c --no-check-certificate $WAR_URL -O $destination;
+        unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
+    else
+        destination=/tmp/geoserver/geoserver.war
+        mkdir -p /tmp/geoserver/ && \
+        wget -c --no-check-certificate $WAR_URL -O $destination;
+    fi;\
     fi; \
-    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver \
-    && unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
+    unzip /tmp/geoserver/geoserver.war -d $CATALINA_HOME/webapps/geoserver \
     && cp -r $CATALINA_HOME/webapps/geoserver/data/user_projections $GEOSERVER_DATA_DIR \
     && rm -rf $CATALINA_HOME/webapps/geoserver/data \
     && rm -rf /tmp/geoserver
