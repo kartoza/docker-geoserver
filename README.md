@@ -14,15 +14,7 @@ get our docker trusted build like this:
 ```shell
 docker pull kartoza/geoserver
 ```
-
-### Pre-downloading files
-
-Inspect downloads.sh to confirm which files you want, then run `.downloads.sh.`
-Ensure you install maven on the host so that you can build the community modules `sudo apt-get install -y maven`
-Also ensure that you have the JAVA_HOME variable set on the host.
-
-If you don't make changes it will download Oracle Java and various Oracle and Geoserver extensions that will be used during the Docker build. 
-
+ 
 ### Setting Tomcat properties during build
 
 The  Tomcat properties such as maximum heap memory size are included in the Dockerfile. You need to change them 
@@ -37,32 +29,40 @@ git clone git://github.com/kartoza/docker-geoserver
 cd docker-geoserver
 ./build.sh
 ```
+Ensure that you look at the build script to see what other build arguments you can include whilst building your image.
 
+### Building with war file from a URL
+
+If you need to build the image with a custom geoserver war file that will be downloaded from a server, you can pass the war file url as a build argument to docker, example:
+```
+docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/project/ge/geoserver/GeoServer/2.13.0/geoserver-2.13.0-war.zip --build-arg GS_VERSION=2.13.0
+```
+**Note: war file version should match the version number provided by `GS_VERSION` argument otherwise we will have a mismatch of plugins and GeoServer installed.**
 
 ### Building with Oracle JDK
 
 To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
 
 ```shell
-#Ensure you have maven installed and have set the JAVA HOME env to ensure  building geoserver community modules
-./download.sh
 docker build --build-arg ORACLE_JDK=true --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
 
 Alternatively, you can download the Oracle JDK 7 Linux x64 tar.gz currently in use by
 [webupd8team's Oracle JDK installer](https://launchpad.net/~webupd8team/+archive/ubuntu/java/+packages)
-(usually the latest version available from Oracle) and place it in `resources` before building.
+(usually the latest version available from Oracle). 
 
 To enable strong cryptography when using the Oracle JDK (recommended), download the
 [Oracle Java policy jar zip](http://docs.geoserver.org/latest/en/user/production/java.html#oracle-java)
-for the correct JDK version and place it at `resources/jce_policy.zip` before building.
+for the correct JDK version .
+
+The setup scripts download these files already and installs them.
 
 ### Building with plugins
 
-To build a GeoServer image with plugins (e.g. SQL Server plugin, Excel output plugin),
-download the plugin zip files from the GeoServer download page and put them in
-`resources/plugins` before building. You should also download the matching version
-GeoServer WAR zip file to `resources/geoserver-${VERSION}.zip` where ${VERSION} can be 2.13.0 or any other version you need to build.
+Inspect setup.sh to confirm which plugins (community modules or standard plugins) you want to include in
+the build process, then add them in their respective sections in the script.
+
+You should ensure that the plugins match the  version for the GeoServer WAR zip file.
 
 ### Removing Tomcat extras during build
 
@@ -70,8 +70,6 @@ To remove Tomcat extras including docs, examples, and the manager webapp, set th
 `TOMCAT_EXTRAS` build-arg to `false`:
 
 ```shell
-#Ensure you have maven installed and have set the JAVA HOME env to ensure  building geoserver community modules
-./download.sh
 docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
 
@@ -105,19 +103,25 @@ user name and password. To postgis:
 * -e USERNAME=<PGUSER> 
 * -e PASS=<PGPASSWORD>
 
-These will be used to create a new superuser with
-your preferred credentials. If these are not specified then the postgresql 
-user is set to 'docker' with password 'docker'.
+You can also use the following environment variables to pass arguments to GeoServer:
+
+
+* GEOSERVER_DATA_DIR=<PATH>
+* ENABLE_JSONP=<true or false>
+* MAX_FILTER_RULES=<Any integrer>
+* OPTIMIZE_LINE_WIDTH=<false or true>
+* FOOTPRINTS_DATA_DIR=<PATH>
+* GEOWEBCACHE_CACHE_DIR=<PATH>
+
 
 **Note:** The default geoserver user is 'admin' and the password is 'geoserver'.
-We highly recommend changing these as soon as you first log in.
+We highly recommend changing the admin password on login.
 
 ## Run (automated using docker-compose)
 
 We provide a sample ``docker-compose.yml`` file that illustrates
-how you can establish a GeoServer + Postgis orchestrated environment
-with nightly backups that are synchronised to your backup server
-via btsync.
+how you can establish a GeoServer + Postgis + Geogig orchestrated environment
+with nightly backups that are synchronised to your backup server via btsync.
 
 If you are **not** interested in the backups and btsync options, comment 
 out those services in the ``docker-compose.yml`` file.
@@ -136,8 +140,8 @@ folders:
 Then make a copy of each of the provided EXAMPLE environment files e.g.:
 
 ```shell
-cp btsync-db.env.EXAMPLE btsync-db.env
-cp btsync-media.env.EXAMPLE btsync-media.env
+cp docker-env/btsync-db.env.EXAMPLE docker-env/btsync-db.env
+cp docker-env/btsync-media.env.EXAMPLE docker-env/btsync-media.env
 ```
 
 Then edit the two env files, placing your Read/Write resilio keys
@@ -154,7 +158,7 @@ Which will run everything in the foreground giving you the opportunity
 to peruse logs and see that everything spins up nicely.
 
 Once all services are started, test by visiting the GeoServer landing
-page in your browser: [http://localhost:8080/geoserver](http://localhost:8080/geoserver).
+page in your browser: [http://localhost:8600/geoserver](http://localhost:8600/geoserver).
 
 To run in the background rather, press ``ctrl-c`` to stop the
 containers and run again in the background:
@@ -207,15 +211,14 @@ automate the process without user intervention.
 Docker volumes can be used to persist your data.
 
 If you need to use geoserver data directory that contains sample examples and configurations download
-it from geonode site as indicated below:
+it from [geonode](http://build.geonode.org/geoserver/latest/) site as indicated below:
 
 ```shell
-#!/bin/sh
-# where GS_VERSION is the version of the geoserver installed
-unzip resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver-${GS_VERSION}
-unzip /tmp/geoserver-${GS_VERSION}/geoserver.war -d /tmp/geoserver-${GS_VERSION}/geoserver
-mv /tmp/geoserver-${GS_VERSION}/geoserver/data ~/geoserver_data
-rm -r  /tmp/geoserver-${GS_VERSION} && cp controlflow.properties ~/geoserver_data
+
+# Example - ${GS_VERSION} is the geoserver version i.e 2.13.0 
+wget http://build.geonode.org/geoserver/latest/data-2.13.x.zip
+unzip data-2.13.x.zip -d ~/geoserver_data
+cp scripts/controlflow.properties ~/geoserver_data
 chmod -R a+rwx ~/geoserver_data
 docker run -d -p 8580:8080 --name "geoserver" -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver:${GS_VERSION}
 
@@ -223,17 +226,15 @@ docker run -d -p 8580:8080 --name "geoserver" -v $HOME/geoserver_data:/opt/geose
 Create an empty data directory to use to persist your data.
 
 ```shell
-mkdir -p ~/geoserver_data
+mkdir -p ~/geoserver_data && chmod -R a+rwx ~/geoserver_data
 docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver
 ```
 
-You need to ensure the ``geoserver_data`` directory has sufficient permissions
-for the docker process to read / write it.
-
 ### Control flow properties
-if you have installed the control flow module to manage request in geoserver you need to copy the file
-controlflow.properties to the base of the data directory. You can fine tune the control flow file
-with other parameters as defined in the [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html)
+The control flow module is installed by default and it is used to manage request in geoserver. In order
+to customise it based on your resources and use case read the instructions from 
+[documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html). Modify
+the file scripts/controlflow.properties before building the image.
 
 ## Setting Tomcat properties
 

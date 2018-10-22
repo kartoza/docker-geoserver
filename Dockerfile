@@ -15,6 +15,7 @@ RUN apt-get install -y  fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams t
 #-------------Application Specific Stuff ----------------------------------------------------
 
 ARG GS_VERSION=2.13.0
+ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ENV GEOSERVER_DATA_DIR /opt/geoserver/data_dir
 ENV ENABLE_JSONP true
 ENV MAX_FILTER_RULES 20
@@ -22,7 +23,8 @@ ENV OPTIMIZE_LINE_WIDTH false
 ENV GEOWEBCACHE_CACHE_DIR /opt/geoserver/data_dir/gwc
 ENV GEOSERVER_OPTS "-Djava.awt.headless=true -server -Xms2G -Xmx4G -Xrs -XX:PerfDataSamplingInterval=500 \
  -Dorg.geotools.referencing.forceXY=true -XX:SoftRefLRUPolicyMSPerMB=36000 -XX:+UseParallelGC -XX:NewRatio=2 \
- -XX:+CMSClassUnloadingEnabled"
+ -XX:+CMSClassUnloadingEnabled -Dfile.encoding=UTF8 -Duser.timezone=GMT -Djavax.servlet.request.encoding=UTF-8 \
+ -Djavax.servlet.response.encoding=UTF-8 -Duser.timezone=GMT -Dorg.geotools.shapefile.datetime=true"
 #-XX:+UseConcMarkSweepGC use this rather than parallel GC?
 ENV JAVA_OPTS "$JAVA_OPTS $GEOSERVER_OPTS"
 ENV GDAL_DATA /usr/local/gdal_data
@@ -43,20 +45,14 @@ ARG COMMUNITY_MODULES=true
 
 WORKDIR /tmp/
 ADD resources /tmp/resources
-ADD setup.sh /
-RUN chmod +x /*.sh
-RUN /setup.sh
-ADD controlflow.properties $GEOSERVER_DATA_DIR
-ADD sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
+ADD scripts /scripts
+RUN chmod +x /scripts/*.sh
+RUN /scripts/setup.sh
+ADD scripts/controlflow.properties $GEOSERVER_DATA_DIR
+ADD scripts/sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 
 # Clean up APT when done.
 RUN echo "Yes, do as I say!" | apt-get remove --force-yes sed
 RUN echo "Yes, do as I say!" | apt-get remove --force-yes login
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
-    && dpkg --remove --force-depends  wget unzip build-essential
-
-
-
-
-
-
+&& dpkg --remove --force-depends wget unzip build-essential
