@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 # Download geoserver extensions and other resources
 
-if [ ! -d ${GEOSERVER_DATA_DIR} ];
-then
-    echo "Creating geoserver data directory"
-    mkdir -p ${GEOSERVER_DATA_DIR}
-else
-    echo "Geoserver data directory already exist"
-fi
+function create_dir() {
+DATA_PATH=$1
 
-if [ ! -d ${FOOTPRINTS_DATA_DIR} ];
+if [ ! -d ${DATA_PATH} ];
 then
-    echo "Creating geoserver footprints directory"
-    mkdir -p ${FOOTPRINTS_DATA_DIR}
+    echo "Creating" ${DATA_PATH}  "directory"
+    mkdir -p ${DATA_PATH}
 else
-    echo "Geoserver  footprints directory already exist"
+    echo ${DATA_PATH} "exist - skipping creation"
 fi
+}
 
+create_dir ${GEOSERVER_DATA_DIR}
+create_dir ${FOOTPRINTS_DATA_DIR}
+create_dir /tmp/resources
 pushd /tmp/resources
+
 #Java
 #Webupd8
 #wget -c https://launchpad.net/~webupd8team/+archive/ubuntu/java/+files/oracle-java8-installer_8u101+8u101arm-1~webupd8~2.tar.xz
@@ -36,44 +36,28 @@ fi;
 
 work_dir=`pwd`
 
-if [ ! -d ${work_dir}/plugins ];
- then
-     echo "Creating tmp plugins directory"
-     mkdir -p ${work_dir}/plugins
- else
-     echo "tmp plugins directory already exist"
- fi
+create_dir ${work_dir}/plugins
 
 pushd ${work_dir}/plugins
 #Extensions
 
-# Vector tiles
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-vectortiles-plugin.zip -O geoserver-${GS_VERSION}-vectortiles-plugin.zip
-# CSS styling
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-css-plugin.zip -O geoserver-${GS_VERSION}-css-plugin.zip
+array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-css-plugin.zip geoserver-$GS_VERSION-csw-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip)
+for i in "${array[@]}"
+do
+    url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/$i"
+    if curl --output /dev/null --silent --head --fail "${url}"; then
+      echo "URL exists: ${url}"
+      wget -c ${url} -O /tmp/resources/plugins/${i}
+    else
+      new_url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
+      echo "URL does not exist: ${new_url}"
+      wget  -c ${new_url} -O /tmp/resources/plugins/${i}
+    fi;
+done
 
-#CSW
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-csw-plugin.zip -O geoserver-${GS_VERSION}-csw-plugin.zip
-# WPS
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-wps-plugin.zip -O geoserver-${GS_VERSION}-wps-plugin.zip
-# Printing plugin
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-printing-plugin.zip -O geoserver-${GS_VERSION}-printing-plugin.zip
-#libjpeg-turbo
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip -O geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
-#Control flow
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-control-flow-plugin.zip/download -O geoserver-${GS_VERSION}-control-flow-plugin.zip
-#Image pyramid
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-pyramid-plugin.zip/download -O geoserver-${GS_VERSION}-pyramid-plugin.zip
-#GDAL
-wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-gdal-plugin.zip/download -O geoserver-${GS_VERSION}-gdal-plugin.zip
-
-if [ ! -d gdal ];
-then
-    echo "Creating gdal  directory"
-    mkdir -p gdal
-fi
-
+create_dir gdal
 pushd gdal
+
 wget -c http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
 popd
 wget -c http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
@@ -90,7 +74,7 @@ if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
 
 # Install tomcat APR
 if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
-    wget -c wget  http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz \
+    wget -c   http://apache.is.co.za//apr/apr-1.6.5.tar.gz \
       -P /tmp/resources; \
     fi; \
     tar -xzf /tmp/resources/apr-1.6.3.tar.gz -C /tmp/resources/ && \
