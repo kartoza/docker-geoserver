@@ -44,14 +44,12 @@ pushd ${work_dir}/plugins
 array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-css-plugin.zip geoserver-$GS_VERSION-csw-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip)
 for i in "${array[@]}"
 do
-    url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/$i"
+    url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
     if curl --output /dev/null --silent --head --fail "${url}"; then
       echo "URL exists: ${url}"
       wget -c ${url} -O /tmp/resources/plugins/${i}
     else
-      new_url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
-      echo "URL does not exist: ${new_url}"
-      wget  -c ${new_url} -O /tmp/resources/plugins/${i}
+      echo "URL does not exist: ${url}"
     fi;
 done
 
@@ -73,21 +71,21 @@ if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
 
 
 # Install tomcat APR
-if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
+if [ ! -f /tmp/resources/apr-1.6.5.tar.gz ]; then \
     wget -c   http://apache.is.co.za//apr/apr-1.6.5.tar.gz \
       -P /tmp/resources; \
     fi; \
-    tar -xzf /tmp/resources/apr-1.6.3.tar.gz -C /tmp/resources/ && \
-    cd /tmp/resources/apr-1.6.3 && \
+    tar -xzf /tmp/resources/apr-1.6.5.tar.gz -C /tmp/resources/ && \
+    cd /tmp/resources/apr-1.6.5 && \
     touch libtoolT && ./configure && make -j 4 && make install
 
 # Install tomcat native
-if [ ! -f /tmp/resources/tomcat-native-1.2.16-src.tar.gz ]; then \
-    wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz \
+if [ ! -f /tmp/resources/tomcat-native-1.2.18-src.tar.gz ]; then \
+    wget -c http://apache.saix.net/tomcat/tomcat-connectors/native/1.2.18/source/tomcat-native-1.2.18-src.tar.gz \
       -P /tmp/resources; \
     fi; \
-    tar -xzf /tmp/resources/tomcat-native-1.2.16-src.tar.gz -C /tmp/resources/ && \
-    cd /tmp/resources/tomcat-native-1.2.16-src/native && \
+    tar -xzf /tmp/resources/tomcat-native-1.2.18-src.tar.gz -C /tmp/resources/ && \
+    cd /tmp/resources/tomcat-native-1.2.18-src/native && \
     ./configure --with-java-home=${JAVA_HOME} --with-apr=/usr/local/apr && make -j 4 && make install
 
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
