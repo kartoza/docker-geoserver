@@ -71,4 +71,4 @@ RUN /scripts/setup.sh \
 
 
 
-ENTRYPOINT ["/scripts/entrypoint.sh"]
+CMD ["/scripts/entrypoint.sh"]
