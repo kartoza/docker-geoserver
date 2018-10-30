@@ -30,6 +30,7 @@ RUN set -e \
         build-essential libapr1-dev libssl-dev default-jdk \
     # Set JAVA_HOME to /usr/lib/jvm/default-java and link it to OpenJDK installation
     && ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/default-java \
+    && (echo "Yes, do as I say!" | apt-get remove --force-yes login) \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -55,8 +56,7 @@ ENV \
     JAVA_VERSION= \
     JAVA_DEBIAN_VERSION= 
 
-
-WORKDIR /tmp/
+WORKDIR /scripts
 
 ADD logs $GEOSERVER_DATA_DIR
 ADD resources /tmp/resources
@@ -69,6 +69,6 @@ RUN /scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
     && dpkg --remove --force-depends wget unzip
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
-WORKDIR /scripts
-CMD ["/scripts/entrypoint.sh"]
+
+
+ENTRYPOINT ["/scripts/entrypoint.sh"]
