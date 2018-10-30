@@ -112,12 +112,11 @@ You can also use the following environment variables to pass arguments to GeoSer
 * OPTIMIZE_LINE_WIDTH=<false or true>
 * FOOTPRINTS_DATA_DIR=<PATH>
 * GEOWEBCACHE_CACHE_DIR=<PATH>
-* GEOSERVER_ADMIN_USER=<user>
 * GEOSERVER_ADMIN_PASSWORD=<password>
 
 
 **Note:** The default geoserver user is 'admin' and the password is 'geoserver'.
-You can pass the environment variables GEOSERVER_ADMIN_USER and GEOSERVER_ADMIN_PASSWORD to 
+You can pass the environment variable  GEOSERVER_ADMIN_PASSWORD to 
 change them on runtime
 
 ## Run (automated using docker-compose)
