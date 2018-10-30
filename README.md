@@ -73,6 +73,20 @@ To remove Tomcat extras including docs, examples, and the manager webapp, set th
 docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
 
+### Changing Java memmory requirements
+
+The Docker image is configured to let Java preallocate `2G` of RAM and use up to `4GB` of RAM.
+You can change the Java memory allocation using the following build arguments
+
+- `INITIAL_MEMORY` Initial Memory that Java can allocate, default `2G`.
+- `MAXIMUM_MEMORY` Maximum Memory that Java can allocate, default `4G`.
+
+```shell
+docker build --build-arg INITIAL_MEMORY=1GB -t kartoza/geoserver .
+```
+
+> These build arguments operates on the `-Xms` and `-Xmx` options of the Java Virtual Machine
+
 ### Building with file system overlays (advanced)
 
 The contents of `resources/overlays` will be copied to the image file system
