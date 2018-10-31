@@ -51,7 +51,6 @@ ENV \
        -XX:+CMSClassUnloadingEnabled -Dfile.encoding=UTF8 -Duser.timezone=GMT -Djavax.servlet.request.encoding=UTF-8 \
        -Djavax.servlet.response.encoding=UTF-8 -Duser.timezone=GMT -Dorg.geotools.shapefile.datetime=true" \
        #-XX:+UseConcMarkSweepGC use this rather than parallel GC?
-    JAVA_OPTS="$JAVA_OPTS $GEOSERVER_OPTS" \
     ## Unset Java related ENVs since they may change with Oracle JDK
     JAVA_VERSION= \
     JAVA_DEBIAN_VERSION= 
