@@ -24,6 +24,8 @@ docker build --build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t kartoza/geose
 --build-arg COMMUNITY_MODULES=true
 --build-arg TOMCAT_EXTRAS=false
 --build-arg WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/<GS_VERSION>/geoserver-<GS_VERSION>-war.zip
+--build-arg INITIAL_MEMORY=2G
+--build-arg MAXIMUM_MEMORY=4G
 ```
 
 
