@@ -24,8 +24,8 @@ pushd /tmp/resources
 #Oracle
 #wget -c http://download.oracle.com/otn-pub/java/jdk/8u112-b15/jdk-8u112-linux-x64.tar.gz
 
-if [ ! -f /tmp/resources/jre-8u171-linux-x64.tar.gz ]; then \
-    wget -c --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jre-8u171-linux-x64.tar.gz
+if [ ! -f /tmp/resources/jre-8u191-linux-x64.tar.gz ]; then \
+    wget -c --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" https://download.oracle.com/otn-pub/java/jdk/8u191-b12/2787e4a523244c269598db4e85c51e0c/jre-8u191-linux-x64.tar.gz
 fi;
 
 #Policy
@@ -77,7 +77,7 @@ if [ ! -f /tmp/resources/apr-1.6.5.tar.gz ]; then \
     fi; \
     tar -xzf /tmp/resources/apr-1.6.5.tar.gz -C /tmp/resources/ && \
     cd /tmp/resources/apr-1.6.5 && \
-    touch libtoolT && ./configure && make -j 4 && make install
+    touch libtoolT && ./configure --with-prefix=/usr/local && make -j 4 && make install
 
 # Install tomcat native
 if [ ! -f /tmp/resources/tomcat-native-1.2.18-src.tar.gz ]; then \
@@ -86,7 +86,7 @@ if [ ! -f /tmp/resources/tomcat-native-1.2.18-src.tar.gz ]; then \
     fi; \
     tar -xzf /tmp/resources/tomcat-native-1.2.18-src.tar.gz -C /tmp/resources/ && \
     cd /tmp/resources/tomcat-native-1.2.18-src/native && \
-    ./configure --with-java-home=${JAVA_HOME} --with-apr=/usr/local/apr && make -j 4 && make install
+    ./configure --with-java-home=${JAVA_HOME} --with-apr=/usr/local && make -j 4 && make install
 
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
 # where oracle-java8-installer will detect it
