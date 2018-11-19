@@ -94,6 +94,16 @@ To remove Tomcat extras including docs, examples, and the manager webapp, set th
 docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
 
+### Building with specific version of  Tomcat
+
+To build using a specific tagged release for tomcat image set the
+`IMAGE_VERSION` build-arg to `8-jre8`: See the [dockerhub tomacat](https://hub.docker.com/_/tomcat/)
+to choose which tag you need to build against.
+
+```shell
+docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver:2.13.0 .
+```
+
 ### Building with file system overlays (advanced)
 
 The contents of `resources/overlays` will be copied to the image file system
