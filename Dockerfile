@@ -1,5 +1,8 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-FROM tomcat:8.0-jre8
+ARG image_version=8.0-jre8
+
+FROM tomcat:$image_version
+
 MAINTAINER Tim Sutton<tim@linfiniti.com>
 
 ## The Geoserver version
