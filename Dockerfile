@@ -1,7 +1,7 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG image_version=8.0-jre8
+ARG IMAGE_VERSION=8.0-jre8
 
-FROM tomcat:$image_version
+FROM tomcat:$IMAGE_VERSION
 
 MAINTAINER Tim Sutton<tim@linfiniti.com>
 
