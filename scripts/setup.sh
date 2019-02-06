@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# exit on error
+set -e
+
 # Download geoserver extensions and other resources
 
 if [ ! -d ${GEOSERVER_DATA_DIR} ];
@@ -24,8 +27,8 @@ pushd /tmp/resources
 #Oracle
 #wget -c http://download.oracle.com/otn-pub/java/jdk/8u112-b15/jdk-8u112-linux-x64.tar.gz
 
-if [ ! -f /tmp/resources/jre-8u171-linux-x64.tar.gz ]; then \
-    wget -c --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jre-8u171-linux-x64.tar.gz
+if [ ! -f /tmp/resources/jre-8u201-linux-x64.tar.gz ]; then \
+    wget -c --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jdk-8u201-linux-x64.tar.gz
 fi;
 
 #Policy
@@ -48,18 +51,18 @@ pushd ${work_dir}/plugins
 #Extensions
 
 # Vector tiles
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-vectortiles-plugin.zip -O geoserver-${GS_VERSION}-vectortiles-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-vectortiles-plugin.zip -O geoserver-${GS_VERSION}-vectortiles-plugin.zip
 # CSS styling
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-css-plugin.zip -O geoserver-${GS_VERSION}-css-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-css-plugin.zip -O geoserver-${GS_VERSION}-css-plugin.zip
 
 #CSW
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-csw-plugin.zip -O geoserver-${GS_VERSION}-csw-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-csw-plugin.zip -O geoserver-${GS_VERSION}-csw-plugin.zip
 # WPS
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-wps-plugin.zip -O geoserver-${GS_VERSION}-wps-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-wps-plugin.zip -O geoserver-${GS_VERSION}-wps-plugin.zip
 # Printing plugin
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-printing-plugin.zip -O geoserver-${GS_VERSION}-printing-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-printing-plugin.zip -O geoserver-${GS_VERSION}-printing-plugin.zip
 #libjpeg-turbo
-wget -c https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip -O geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
+wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip -O geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
 #Control flow
 wget -c https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-control-flow-plugin.zip/download -O geoserver-${GS_VERSION}-control-flow-plugin.zip
 #Image pyramid
@@ -82,28 +85,28 @@ popd
 
 # Install libjpeg-turbo for that specific geoserver GS_VERSION
 if [ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]; then \
-    wget https://tenet.dl.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P /tmp/resources;\
+    wget -c https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb -P /tmp/resources;\
     fi; \
     cd /tmp/resources/ && \
     dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
 
 
 # Install tomcat APR
-if [ ! -f /tmp/resources/apr-1.6.3.tar.gz ]; then \
-    wget -c wget  http://mirror.za.web4africa.net/apache//apr/apr-1.6.3.tar.gz \
+if [ ! -f /tmp/resources/apr-1.6.5.tar.gz ]; then \
+    wget -c http://ftp.naz.com/apache//apr/apr-1.6.5.tar.gz \
       -P /tmp/resources; \
     fi; \
-    tar -xzf /tmp/resources/apr-1.6.3.tar.gz -C /tmp/resources/ && \
-    cd /tmp/resources/apr-1.6.3 && \
+    tar -xzf /tmp/resources/apr-1.6.5.tar.gz -C /tmp/resources/ && \
+    cd /tmp/resources/apr-1.6.5 && \
     touch libtoolT && ./configure && make -j 4 && make install
 
 # Install tomcat native
-if [ ! -f /tmp/resources/tomcat-native-1.2.16-src.tar.gz ]; then \
-    wget -c http://mirror.za.web4africa.net/apache/tomcat/tomcat-connectors/native/1.2.16/source/tomcat-native-1.2.16-src.tar.gz \
+if [ ! -f /tmp/resources/tomcat-native-1.2.21-src.tar.gz ]; then \
+    wget -c http://mirrors.gigenet.com/apache/tomcat/tomcat-connectors/native/1.2.21/source/tomcat-native-1.2.21-src.tar.gz  \
       -P /tmp/resources; \
     fi; \
-    tar -xzf /tmp/resources/tomcat-native-1.2.16-src.tar.gz -C /tmp/resources/ && \
-    cd /tmp/resources/tomcat-native-1.2.16-src/native && \
+    tar -xzf /tmp/resources/tomcat-native-1.2.21-src.tar.gz -C /tmp/resources/ && \
+    cd /tmp/resources/tomcat-native-1.2.21-src/native && \
     ./configure --with-java-home=${JAVA_HOME} --with-apr=/usr/local/apr && make -j 4 && make install
 
 # If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
