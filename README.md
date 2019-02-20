@@ -22,7 +22,36 @@ them before building the image in accordance to the resources available on your 
 
 You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html)
 
-To build yourself with a local checkout:
+The Docker image is configured to let Java preallocate `2G` of RAM and use up to `4GB` of RAM.
+You can change the Java memory allocation using the following build arguments
+
+- `INITIAL_MEMORY` Initial Memory that Java can allocate, default `2G`.
+- `MAXIMUM_MEMORY` Maximum Memory that Java can allocate, default `4G`.
+
+```shell
+docker build --build-arg INITIAL_MEMORY=1GB -t kartoza/geoserver .
+```
+
+> These build arguments operates on the `-Xms` and `-Xmx` options of the Java Virtual Machine
+
+### To build yourself with a local checkout using the build script: 
+
+Edit the build script to change the following variables:
+
+-  The variables below represent the latest stable release you need to build. i.e 2.14.0
+   ```
+   BUGFIX=0` 
+   MINOR=14`
+   MAJOR=2
+   ```
+   
+
+- The variables below represents the current version defined in the Dockerfile and used in the setup script. ie 2.13.0
+	```
+	OLD_MAJOR=2
+    OLD_MINOR=13
+	OLD_BUGFIX=0
+	```
 
 ```shell
 git clone git://github.com/kartoza/docker-geoserver
@@ -30,6 +59,8 @@ cd docker-geoserver
 ./build.sh
 ```
 Ensure that you look at the build script to see what other build arguments you can include whilst building your image.
+
+If you do not intend to jump between versions you need to specify that in the build script.
 
 ### Building with war file from a URL
 
@@ -47,16 +78,6 @@ To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
 docker build --build-arg ORACLE_JDK=true --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
 ```
 
-Alternatively, you can download the Oracle JDK 7 Linux x64 tar.gz currently in use by
-[webupd8team's Oracle JDK installer](https://launchpad.net/~webupd8team/+archive/ubuntu/java/+packages)
-(usually the latest version available from Oracle). 
-
-To enable strong cryptography when using the Oracle JDK (recommended), download the
-[Oracle Java policy jar zip](http://docs.geoserver.org/latest/en/user/production/java.html#oracle-java)
-for the correct JDK version .
-
-The setup scripts download these files already and installs them.
-
 ### Building with plugins
 
 Inspect setup.sh to confirm which plugins (community modules or standard plugins) you want to include in
@@ -71,6 +92,16 @@ To remove Tomcat extras including docs, examples, and the manager webapp, set th
 
 ```shell
 docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
+```
+
+### Building with specific version of  Tomcat
+
+To build using a specific tagged release for tomcat image set the
+`IMAGE_VERSION` build-arg to `8-jre8`: See the [dockerhub tomacat](https://hub.docker.com/_/tomcat/)
+to choose which tag you need to build against.
+
+```shell
+docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver:2.13.0 .
 ```
 
 ### Building with file system overlays (advanced)
@@ -112,10 +143,17 @@ You can also use the following environment variables to pass arguments to GeoSer
 * OPTIMIZE_LINE_WIDTH=<false or true>
 * FOOTPRINTS_DATA_DIR=<PATH>
 * GEOWEBCACHE_CACHE_DIR=<PATH>
+* GEOSERVER_ADMIN_PASSWORD=<password>
 
 
-**Note:** The default geoserver user is 'admin' and the password is 'geoserver'.
-We highly recommend changing the admin password on login.
+**Note:** 
+### Changing Geoserver password on runtime
+The default geoserver user is 'admin' and the password is 'geoserver'. You can pass the environment variable  GEOSERVER_ADMIN_PASSWORD to 
+change it on runtime.
+```shell
+
+docker run --name "geoserver"  -e GEOSERVER_ADMIN_PASSWORD='myawesomegeoserver' -p 8080:8080 -d -t kartoza/geoserver
+```
 
 ## Run (automated using docker-compose)
 
@@ -123,7 +161,7 @@ We provide a sample ``docker-compose.yml`` file that illustrates
 how you can establish a GeoServer + Postgis + Geogig orchestrated environment
 with nightly backups that are synchronised to your backup server via btsync.
 
-If you are **not** interested in the backups and btsync options, comment 
+If you are **not** interested in the backups,Geogig and btsync options, comment 
 out those services in the ``docker-compose.yml`` file.
 
 Please read the ``docker-compose`` 
@@ -236,24 +274,10 @@ to customise it based on your resources and use case read the instructions from
 [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html). Modify
 the file scripts/controlflow.properties before building the image.
 
-## Setting Tomcat properties
-
-To set Tomcat properties such as maximum heap memory size, create a `setenv.sh` file such as:
-
-```shell
-JAVA_OPTS="$JAVA_OPTS -Xmx1536M -XX:MaxPermSize=756M"
-JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
-```
-
-Then pass the `setenv.sh` file as a volume at `/usr/local/tomcat/bin/setenv.sh` when running:
-
-```shell
-docker run -d -v $HOME/setenv.sh:/usr/local/tomcat/bin/setenv.sh kartoza/geoserver
-```
-
 
 ## Credits
 
 * Tim Sutton (tim@kartoza.com)
 * Shane St Clair (shane@axiomdatascience.com)
 * Alex Leith (alexgleith@gmail.com)
+* Admire Nyakudya (admire@kartoza.com)
