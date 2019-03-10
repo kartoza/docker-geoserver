@@ -22,14 +22,16 @@ pushd ${resources_dir}
 
 
 if [[ ! -f /tmp/resources/jre-8u201-linux-x64.tar.gz ]]; then \
-    wget -c --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+    wget --progress=bar:force:noscroll -c --no-check-certificate --no-cookies --header \
+    "Cookie: oraclelicense=accept-securebackup-cookie" \
     https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jdk-8u201-linux-x64.tar.gz
 fi;
 
 #Policy
 
 if [[ ! -f /tmp/resources/jce_policy.zip ]]; then \
-    wget -c --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+    wget --progress=bar:force:noscroll -c --no-check-certificate --no-cookies --header \
+    "Cookie: oraclelicense=accept-securebackup-cookie" \
     http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip -O /tmp/resources/jce_policy.zip
 fi;
 
@@ -49,7 +51,7 @@ do
     url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
     if curl --output /dev/null --silent --head --fail "${url}"; then
       echo "URL exists: ${url}"
-      wget -c ${url} -O /tmp/resources/plugins/${i}
+      wget --progress=bar:force:noscroll -c --no-check-certificate ${url} -O /tmp/resources/plugins/${i}
     else
       echo "URL does not exist: ${url}"
     fi;
@@ -58,15 +60,17 @@ done
 create_dir gdal
 pushd gdal
 
-wget -c http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
+wget --progress=bar:force:noscroll -c --no-check-certificate \
+http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
 popd
-wget -c http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
+wget --progress=bar:force:noscroll -c --no-check-certificate \
+http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
 
 popd
 
 # Install libjpeg-turbo for that specific geoserver GS_VERSION
 if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then \
-    wget -c --no-check-certificate \
+    wget --progress=bar:force:noscroll -c --no-check-certificate \
     https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb \
     -P /tmp/resources;\
     fi; \
@@ -86,7 +90,8 @@ if  [[ "$COMMUNITY_MODULES" == true ]]; then
     array=(geoserver-${GS_VERSION:0:4}-SNAPSHOT-geogig-plugin.zip geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip)
     for i in "${array[@]}"
     do
-	    wget -c https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/${i} \
+	    wget --progress=bar:force:noscroll -c --no-check-certificate \
+	    https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/${i} \
 	    -O /tmp/resources/plugins/${i}
     done
 
@@ -118,11 +123,13 @@ if ls /var/cache/oracle-jdk8-installer/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1 
 pushd /tmp/
 
  if [[ ! -f /tmp/resources/jai-1_1_3-lib-linux-amd64.tar.gz ]]; then \
-    wget http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz \
+    wget --progress=bar:force:noscroll -c --no-check-certificate \
+    http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz \
     -P /tmp/resources;\
     fi; \
     if [[ ! -f /tmp/resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ]]; then \
-    wget http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz \
+    wget --progress=bar:force:noscroll -c --no-check-certificate \
+    http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz \
     -P /tmp/resources;\
     fi; \
     mv ./resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ && \
@@ -146,12 +153,12 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
     if [[ "${WAR_URL}" == *\.zip ]]
     then
         destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-        wget -c --no-check-certificate ${WAR_URL} -O ${destination};
+        wget --progress=bar:force:noscroll -c --no-check-certificate ${WAR_URL} -O ${destination};
         unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
     else
         destination=/tmp/geoserver/geoserver.war
         mkdir -p /tmp/geoserver/ && \
-        wget -c --no-check-certificate ${WAR_URL} -O ${destination};
+        wget --progress=bar:force:noscroll -c --no-check-certificate ${WAR_URL} -O ${destination};
     fi;\
     fi; \
     unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
