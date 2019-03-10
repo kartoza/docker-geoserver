@@ -13,10 +13,11 @@ else
 fi
 }
 
+resources_dir="/tmp/resources"
 create_dir ${GEOSERVER_DATA_DIR}
 create_dir ${FOOTPRINTS_DATA_DIR}
-create_dir /tmp/resources
-pushd /tmp/resources
+create_dir ${resources_dir}
+pushd ${resources_dir}
 
 
 
