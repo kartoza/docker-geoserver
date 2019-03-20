@@ -1,6 +1,6 @@
 # docker-geoserver
 
-A simple docker container that runs Geoserver influenced by this docker
+A simple docker container that runs GeoServer influenced by this docker
 recipe: https://github.com/eliotjordan/docker-geoserver/blob/master/Dockerfile
 
 ## Getting the image
