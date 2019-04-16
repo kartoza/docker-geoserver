@@ -7,7 +7,7 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:9.6-2.4
+      image: kartoza/postgis:11.0-2.5
       volumes:
          - geo-db-data:/var/lib/postgresql
       ports:
@@ -38,7 +38,7 @@ services:
 
 
    db-dbbackups:
-     image: kartoza/pg-backup:9.6
+     image: kartoza/pg-backup:11.0
      volumes:
      - db-backups:/backups
      env_file:
