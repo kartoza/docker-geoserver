@@ -181,6 +181,7 @@ if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
     if ls /tmp/resources/plugins/*gdal*.tar.gz > /dev/null 2>&1; then \
     mkdir /usr/local/gdal_data && mkdir /usr/local/gdal_native_libs; \
     unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data && \
+    mv /usr/local/gdal_data/gdal-data/* /usr/local/gdal_data && rm -rf /usr/local/gdal_data/gdal-data && \
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs; \
     fi;
 
