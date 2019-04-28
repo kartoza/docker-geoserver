@@ -52,7 +52,8 @@ ENV \
     GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} -Xrs -XX:PerfDataSamplingInterval=500 \
        -Dorg.geotools.referencing.forceXY=true -XX:SoftRefLRUPolicyMSPerMB=36000 -XX:+UseParallelGC -XX:NewRatio=2 \
        -XX:+CMSClassUnloadingEnabled -Dfile.encoding=UTF8 -Duser.timezone=GMT -Djavax.servlet.request.encoding=UTF-8 \
-       -Djavax.servlet.response.encoding=UTF-8 -Duser.timezone=GMT -Dorg.geotools.shapefile.datetime=true" \
+       -Djavax.servlet.response.encoding=UTF-8 -Duser.timezone=GMT -Dorg.geotools.shapefile.datetime=true \
+       -Dorg.geotools.shapefile.datetime=true -Ds3.properties.location=${GEOSERVER_DATA_DIR}" \
        #-XX:+UseConcMarkSweepGC use this rather than parallel GC?
     ## Unset Java related ENVs since they may change with Oracle JDK
     JAVA_VERSION= \
