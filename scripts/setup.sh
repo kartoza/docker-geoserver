@@ -166,7 +166,7 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
     fi; \
     unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
     && cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
-    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
+    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${CATALINA_HOME} \
     && rm -rf ${CATALINA_HOME}/webapps/geoserver/data \
     && rm -rf /tmp/geoserver
 
