@@ -38,21 +38,12 @@ docker build --build-arg INITIAL_MEMORY=1GB -t kartoza/geoserver .
 
 Edit the build script to change the following variables:
 
--  The variables below represent the latest stable release you need to build. i.e 2.14.0
+-  The variables below represent the latest stable release you need to build. i.e 2.15.2
    ```
-   BUGFIX=0` 
-   MINOR=14`
+   BUGFIX=2 
+   MINOR=15
    MAJOR=2
    ```
-   
-
-- The variables below represents the current version defined in the Dockerfile and used in the setup script. ie 2.13.0
-	```
-	OLD_MAJOR=2
-    OLD_MINOR=13
-	OLD_BUGFIX=0
-	```
-
 ```shell
 git clone git://github.com/kartoza/docker-geoserver
 cd docker-geoserver
@@ -64,13 +55,20 @@ If you do not intend to jump between versions you need to specify that in the bu
 
 ### Building with war file from a URL
 
-If you need to build the image with a custom geoserver war file that will be downloaded from a server, you can pass the war file url as a build argument to docker, example:
+If you need to build the image with a custom GeoServer war file that will be downloaded from a server, you 
+can pass the war file url as a build argument to docker, example:
 ```
 docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/project/ge/geoserver/GeoServer/2.13.0/geoserver-2.13.0-war.zip --build-arg GS_VERSION=2.13.0
 ```
-**Note: war file version should match the version number provided by `GS_VERSION` argument otherwise we will have a mismatch of plugins and GeoServer installed.**
+**Note: war file version should match the version number provided by `GS_VERSION` argument otherwise we will have a 
+mismatch of plugins and GeoServer installed.**
 
 ### Building with Oracle JDK
+
+Download `jdk-8u201-linux-x64.tar.gz` or the latest version from [Oracle Java](https://www.oracle.com) and save the contents into
+the resources folder. This used to be done by the setup scripts but no longer works due to the changes
+in the licencing terms from Oracle which require users to login to their site.
+
 
 To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
 
@@ -147,12 +145,12 @@ You can also use the following environment variables to pass arguments to GeoSer
 
 
 **Note:** 
-### Changing Geoserver password on runtime
-The default geoserver user is 'admin' and the password is 'geoserver'. You can pass the environment variable  GEOSERVER_ADMIN_PASSWORD to 
-change it on runtime.
+### Changing GeoServer password on runtime
+The default GeoServer user is 'admin' and the password is 'geoserver'. You can pass the environment variable  
+GEOSERVER_ADMIN_PASSWORD to  change it on runtime.
 ```shell
 
-docker run --name "geoserver"  -e GEOSERVER_ADMIN_PASSWORD='myawesomegeoserver' -p 8080:8080 -d -t kartoza/geoserver
+docker run --name "geoserver"  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
 ```
 
 ## Run (automated using docker-compose)
@@ -163,6 +161,9 @@ with nightly backups that are synchronised to your backup server via btsync.
 
 If you are **not** interested in the backups,Geogig and btsync options, comment 
 out those services in the ``docker-compose.yml`` file.
+
+If you start the stack using the compose file make sure you login into GeoServer using username:`admin`
+and password:`myawesomegeoserver` as specified by the env file `geoserver.env`
 
 Please read the ``docker-compose`` 
 [documentation](https://docs.docker.com/compose/) for details
@@ -205,13 +206,14 @@ containers and run again in the background:
 docker-compose up -d
 ```
 
-**Note:** The ``docker-compose.yml`` **does not use persistent storage** so
-when you remove the containers, **all data will be lost**. Either set up 
-btsync (and test to verify that your backups are working, we take 
+**Note:** The ``docker-compose.yml`` **uses host based volumes** so
+when you remove the containers, **all data will be kept**. Using host based volumes 
+ ensures that your data persists between invocations of the compose file. If you need
+ to delete the container data you need to run `docker volume prune`. Pruning the volumes will
+ remove all the storage volumes that are not in use so users need to be careful of such a move.
+ Either set up btsync (and test to verify that your backups are working, we take 
 **no responsibiliy** if the examples provided here do not produce 
-a reliable backup system), or use host based volumes (you will need 
-to modify the ``docker-compose.yml``` example to do this) so that
-your data persists between invocations of the compose file.
+a reliable backup system).
 
 ## Run (automated using rancher)
 
@@ -281,3 +283,4 @@ the file scripts/controlflow.properties before building the image.
 * Shane St Clair (shane@axiomdatascience.com)
 * Alex Leith (alexgleith@gmail.com)
 * Admire Nyakudya (admire@kartoza.com)
+* Gavin Fleming (gavin@kartoza.com)
