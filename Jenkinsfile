@@ -23,13 +23,7 @@ node {
         
         stage('Push image') {
             docker.withRegistry('https://prod.nexus.aws.cityofsandy.com', 'sn-dev-nexus-user-pass') {
-                if (env.BRANCH_NAME != 'master') {
-                    echo 'This is not master'
-                    app.push("latest-dev")
-                } else {
-                    app.push("latest-prod")
-                }
-                
+                app.push()
             }
         }
         
