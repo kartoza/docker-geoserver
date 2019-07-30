@@ -19,10 +19,10 @@ ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VE
 ARG COMMUNITY_MODULES=true
 
 ## Maximum Memory that Java can allocate
-ARG MAXIMUM_MEMORY="4G"
+ARG MAXIMUM_MEMORY="1G"
 
 ## Initial Memory that Java can allocate
-ARG INITIAL_MEMORY="2G"
+ARG INITIAL_MEMORY="512M"
 
 RUN set -e \
     export DEBIAN_FRONTEND=noninteractive \
