@@ -12,7 +12,7 @@ node {
         sh "ls ${env.workspace}"
         
         stage('Build Docker Image') {
-            app = docker.build("--build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t cityofsandy/geoserver:${MAJOR}.${MINOR}.${BUGFIX} .", )
+            app = docker.build("cityofsandy/geoserver:${MAJOR}.${MINOR}.${BUGFIX}", "--build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} .", )
         }
 
         stage('Test image') {
