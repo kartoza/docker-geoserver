@@ -1,7 +1,4 @@
-#--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=8.0-jre8
-
-FROM tomcat:$IMAGE_VERSION
+FROM tomcat:8.0-jre8
 
 ## The Geoserver version
 ARG GS_VERSION=2.15.2
