@@ -7,7 +7,7 @@ MAJOR=2
 # Build Geoserver
 echo "Building GeoServer using the specified version "
 
-docker build --build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t kartoza/geoserver:${MAJOR}.${MINOR}.${BUGFIX} .
+docker build --build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t cityofsandy/geoserver:${MAJOR}.${MINOR}.${BUGFIX} .
 
 # Build Arguments - To change the defaults when building the image
 #need to specify a different value.

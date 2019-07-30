@@ -1,5 +1,8 @@
 node {
     def app
+    def BUGFIX = 2
+    def MINOR = 15
+    def MAJOR = 2
     currentBuild.result = "SUCCESS"
     try {
         stage ('Pull SCM') {
@@ -9,7 +12,7 @@ node {
         sh "ls ${env.workspace}"
         
         stage('Build Docker Image') {
-            app = docker.build("cityofsandy/docker-geoserver")
+            app = docker.build("--build-arg GS_VERSION=${MAJOR}.${MINOR}.${BUGFIX} -t cityofsandy/geoserver:${MAJOR}.${MINOR}.${BUGFIX} .", )
         }
 
         stage('Test image') {
