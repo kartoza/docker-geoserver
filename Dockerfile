@@ -67,6 +67,6 @@ RUN /scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
     && dpkg --remove --force-depends  unzip
 
-
+ADD assets/tomcat/web.xml $CATALINA_HOME/webapps/geoserver/WEB-INF/web.xml
 
 CMD ["/scripts/entrypoint.sh"]
