@@ -20,7 +20,6 @@ pushd ${resources_dir}
 
 
 #Policy
-
 if [[ ! -f /tmp/resources/jce_policy.zip ]]; then \
     wget --progress=bar:force:noscroll -c --no-check-certificate --no-cookies --header \
     "Cookie: oraclelicense=accept-securebackup-cookie" \
@@ -200,5 +199,8 @@ if [[ "${TOMCAT_EXTRAS}" = false ]]; then \
     rm -rf ${CATALINA_HOME}/webapps/manager; \
   fi;
 
+mv /tmp/assets/tomcat/web.xml ${CATALINA_HOME}/webapps/geoserver/WEB-INF/web.xml
+
 # Delete resources after installation
 rm -rf /tmp/resources
+rm -rf /tmp/assets

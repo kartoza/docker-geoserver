@@ -58,6 +58,7 @@ RUN mkdir -p ${GEOSERVER_DATA_DIR}
 
 
 ADD resources /tmp/resources
+ADD assets /tmp/assets
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh
 ADD scripts/controlflow.properties $GEOSERVER_DATA_DIR
@@ -66,7 +67,5 @@ ADD scripts/sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 RUN /scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
     && dpkg --remove --force-depends  unzip
-
-ADD assets/tomcat/web.xml $CATALINA_HOME/webapps/geoserver/WEB-INF/web.xml
 
 CMD ["/scripts/entrypoint.sh"]

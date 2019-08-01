@@ -159,8 +159,28 @@
      -->
    </filter>
 
-   <!-- Uncomment following filter to enable CORS -->
-   <!-- CORS should be enabled!!!! -->
+   <filter>
+     <filter-name>CorsFilter</filter-name>
+     <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+   <init-param>
+       <param-name>cors.allowed.origins</param-name>
+       <param-value>*</param-value>
+     </init-param>
+     <init-param>
+       <param-name>cors.allowed.methods</param-name>
+       <param-value>GET,POST,HEAD,OPTIONS,PUT</param-value>
+     </init-param>
+     <init-param>
+       <param-name>cors.exposed.headers</param-name>
+       <param-value>Access-Control-Allow-Origin,Access-Control-Allow-Methods</param-value>
+     </init-param>
+   </filter>
+   <filter-mapping>
+     <filter-name>CorsFilter</filter-name>
+     <url-pattern>/*</url-pattern>
+   </filter-mapping>
+
+<!-- 
    <filter>
         <filter-name>cross-origin</filter-name>
         <filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
@@ -180,9 +200,8 @@
            <param-name>allowedHeaders</param-name>
            <param-value>*</param-value>
        </init-param>
-    </filter>
+    </filter> -->
    
-
     <!--
       THIS FILTER MUST BE THE FIRST ONE, otherwise we end up with ruined chars in the input from the GUI
       See the "Note" in the Tomcat character encoding guide:
@@ -193,12 +212,11 @@
       <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-   <!-- Uncomment following filter to enable CORS
-    <filter-mapping>
+    <!-- <filter-mapping>
         <filter-name>cross-origin</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    -->
+    </filter-mapping> -->
+   
 
     <filter-mapping>
       <filter-name>FlushSafeFilter</filter-name>
