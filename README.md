@@ -113,6 +113,13 @@ You can use this functionality to write a static GeoServer directory to
 
 Overlay files will overwrite existing destination files, so be careful!
 
+#### Build with CORS Support
+
+The contents of `resources/overlays` will be copied to the image file system
+during the build. For example, to include a static web xml with CORS support `web.xml`,
+create the file at `resources/overlays/usr/local/tomcat/conf/web.xml`.
+
+
 ## Run (manual docker commands)
 
 **Note:** You probably want to use docker-compose for running as it will provide
