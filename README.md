@@ -14,27 +14,8 @@ get our docker trusted build like this:
 ```shell
 docker pull kartoza/geoserver
 ```
- 
-### Setting Tomcat properties during build
 
-The  Tomcat properties such as maximum heap memory size are included in the Dockerfile. You need to change them 
-them before building the image in accordance to the resources available on your server:
-
-You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html)
-
-The Docker image is configured to let Java preallocate `2G` of RAM and use up to `4GB` of RAM.
-You can change the Java memory allocation using the following build arguments
-
-- `INITIAL_MEMORY` Initial Memory that Java can allocate, default `2G`.
-- `MAXIMUM_MEMORY` Maximum Memory that Java can allocate, default `4G`.
-
-```shell
-docker build --build-arg INITIAL_MEMORY=1GB -t kartoza/geoserver .
-```
-
-> These build arguments operates on the `-Xms` and `-Xmx` options of the Java Virtual Machine
-
-### To build yourself with a local checkout using the build script: 
+### To build yourself with a local checkout using the build script:
 
 Edit the build script to change the following variables:
 
@@ -149,6 +130,11 @@ You can also use the following environment variables to pass arguments to GeoSer
 * FOOTPRINTS_DATA_DIR=<PATH>
 * GEOWEBCACHE_CACHE_DIR=<PATH>
 * GEOSERVER_ADMIN_PASSWORD=<password>
+* Tomcat properties:
+
+  * You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html). These arguments operate on the `-Xms` and `-Xmx` options of the Java Virtual Machine
+  * `INITIAL_MEMORY`=<size> : Initial Memory that Java can allocate, default `2G`
+  * `MAXIMUM_MEMORY`=<size> : Maximum Memory that Java can allocate, default `4G`
 
 
 **Note:** 
