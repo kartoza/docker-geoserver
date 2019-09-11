@@ -3,7 +3,7 @@ ARG IMAGE_VERSION=8.0-jre8
 
 FROM tomcat:$IMAGE_VERSION
 
-MAINTAINER Tim Sutton<tim@linfiniti.com>
+LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
 ## The Geoserver version
 ARG GS_VERSION=2.15.0
@@ -17,12 +17,6 @@ ARG TOMCAT_EXTRAS=true
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ## Would you like to install community modules
 ARG COMMUNITY_MODULES=true
-
-## Maximum Memory that Java can allocate
-ARG MAXIMUM_MEMORY="4G"
-
-## Initial Memory that Java can allocate
-ARG INITIAL_MEMORY="2G"
 
 RUN set -e \
     export DEBIAN_FRONTEND=noninteractive \
@@ -43,25 +37,19 @@ ENV \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/gdal_native_libs:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64" \
-    GEOSERVER_LOG_LOCATION=/opt/geoserver/data_dir/logs/geoserver.log \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     ENABLE_JSONP=true \
     MAX_FILTER_RULES=20 \
     OPTIMIZE_LINE_WIDTH=false \
-    GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} -Xrs -XX:PerfDataSamplingInterval=500 \
-       -Dorg.geotools.referencing.forceXY=true -XX:SoftRefLRUPolicyMSPerMB=36000 -XX:+UseParallelGC -XX:NewRatio=2 \
-       -XX:+CMSClassUnloadingEnabled -Dfile.encoding=UTF8 -Duser.timezone=GMT -Djavax.servlet.request.encoding=UTF-8 \
-       -Djavax.servlet.response.encoding=UTF-8 -Duser.timezone=GMT -Dorg.geotools.shapefile.datetime=true \
-       -Dorg.geotools.shapefile.datetime=true -Ds3.properties.location=${GEOSERVER_DATA_DIR} " \
-       #-XX:+UseConcMarkSweepGC use this rather than parallel GC?
     ## Unset Java related ENVs since they may change with Oracle JDK
     JAVA_VERSION= \
-    JAVA_DEBIAN_VERSION= 
+    JAVA_DEBIAN_VERSION=
 
 WORKDIR /scripts
+RUN mkdir -p ${GEOSERVER_DATA_DIR}
 
-ADD logs $GEOSERVER_DATA_DIR
+
 ADD resources /tmp/resources
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh
@@ -72,6 +60,10 @@ RUN /scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
     && dpkg --remove --force-depends  unzip
 
-
+ENV \
+    ## Initial Memory that Java can allocate
+    INITIAL_MEMORY="2G" \
+    ## Maximum Memory that Java can allocate
+    MAXIMUM_MEMORY="4G"
 
 CMD ["/scripts/entrypoint.sh"]

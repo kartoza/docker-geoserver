@@ -14,18 +14,10 @@ fi
 }
 
 resources_dir="/tmp/resources"
-create_dir ${GEOSERVER_DATA_DIR}
 create_dir ${FOOTPRINTS_DATA_DIR}
 create_dir ${resources_dir}
 pushd ${resources_dir}
 
-
-
-if [[ ! -f /tmp/resources/jre-8u201-linux-x64.tar.gz ]]; then \
-    wget --progress=bar:force:noscroll -c --no-check-certificate --no-cookies --header \
-    "Cookie: oraclelicense=accept-securebackup-cookie" \
-    https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jdk-8u201-linux-x64.tar.gz
-fi;
 
 #Policy
 
@@ -45,7 +37,9 @@ pushd ${work_dir}/plugins
 array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-css-plugin.zip \
 geoserver-$GS_VERSION-csw-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
 geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip \
-geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip)
+geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip \
+geoserver-$GS_VERSION-sldservice-plugin.zip geoserver-$GS_VERSION-monitor-plugin.zip \
+geoserver-$GS_VERSION-importer-plugin.zip geoserver-$GS_VERSION-charts-plugin.zip)
 for i in "${array[@]}"
 do
     url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
@@ -87,9 +81,8 @@ if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
 # Build geogig and other community modules
 
 if  [[ "$COMMUNITY_MODULES" == true ]]; then
-    array=(geoserver-${GS_VERSION:0:4}-SNAPSHOT-geogig-plugin.zip \
-    geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbstyle-plugin.zip \
-    geoserver-${GS_VERSION:0:4}-SNAPSHOT-backup-restore-plugin.zip \
+    array=( geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip \
+    geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbstyle-plugin.zip \
     geoserver-${GS_VERSION:0:4}-SNAPSHOT-s3-geotiff-plugin.zip geoserver-${GS_VERSION:0:4}-SNAPSHOT-gwc-s3-plugin.zip)
     for i in "${array[@]}"
     do
