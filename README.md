@@ -10,67 +10,48 @@ There are various ways to get the image onto your system:
 The preferred way (but using most bandwidth for the initial image) is to
 get our docker trusted build like this:
 
-
 ```shell
 docker pull kartoza/geoserver
 ```
- 
-### Setting Tomcat properties during build
 
-The  Tomcat properties such as maximum heap memory size are included in the Dockerfile. You need to change them 
-them before building the image in accordance to the resources available on your server:
-
-You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html)
-
-The Docker image is configured to let Java preallocate `2G` of RAM and use up to `4GB` of RAM.
-You can change the Java memory allocation using the following build arguments
-
-- `INITIAL_MEMORY` Initial Memory that Java can allocate, default `2G`.
-- `MAXIMUM_MEMORY` Maximum Memory that Java can allocate, default `4G`.
-
-```shell
-docker build --build-arg INITIAL_MEMORY=1GB -t kartoza/geoserver .
-```
-
-> These build arguments operates on the `-Xms` and `-Xmx` options of the Java Virtual Machine
-
-### To build yourself with a local checkout using the build script: 
+### To build yourself with a local checkout using the build script:
 
 Edit the build script to change the following variables:
 
--  The variables below represent the latest stable release you need to build. i.e 2.14.0
-   ```
-   BUGFIX=0` 
-   MINOR=14`
+- The variables below represent the latest stable release you need to build. i.e 2.15.2
+
+   ```text
+   BUGFIX=2
+   MINOR=15
    MAJOR=2
    ```
-   
-
-- The variables below represents the current version defined in the Dockerfile and used in the setup script. ie 2.13.0
-	```
-	OLD_MAJOR=2
-    OLD_MINOR=13
-	OLD_BUGFIX=0
-	```
 
 ```shell
 git clone git://github.com/kartoza/docker-geoserver
 cd docker-geoserver
 ./build.sh
 ```
+
 Ensure that you look at the build script to see what other build arguments you can include whilst building your image.
 
 If you do not intend to jump between versions you need to specify that in the build script.
 
 ### Building with war file from a URL
 
-If you need to build the image with a custom geoserver war file that will be downloaded from a server, you can pass the war file url as a build argument to docker, example:
-```
+If you need to build the image with a custom GeoServer war file that will be downloaded from a server, you
+can pass the war file url as a build argument to docker, example:
+
+```shell
 docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/project/ge/geoserver/GeoServer/2.13.0/geoserver-2.13.0-war.zip --build-arg GS_VERSION=2.13.0
 ```
+
 **Note: war file version should match the version number provided by `GS_VERSION` argument otherwise we will have a mismatch of plugins and GeoServer installed.**
 
 ### Building with Oracle JDK
+
+Download `jdk-8u201-linux-x64.tar.gz` or the latest version from [Oracle Java](https://www.oracle.com) and save the contents into
+the resources folder. This used to be done by the setup scripts but no longer works due to the changes
+in the licencing terms from Oracle which require users to login to their site.
 
 To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
 
@@ -97,7 +78,7 @@ docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t ka
 ### Building with specific version of  Tomcat
 
 To build using a specific tagged release for tomcat image set the
-`IMAGE_VERSION` build-arg to `8-jre8`: See the [dockerhub tomacat](https://hub.docker.com/_/tomcat/)
+`IMAGE_VERSION` build-arg to `8-jre8`: See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
 to choose which tag you need to build against.
 
 ```shell
@@ -115,12 +96,18 @@ You can use this functionality to write a static GeoServer directory to
 
 Overlay files will overwrite existing destination files, so be careful!
 
+#### Build with CORS Support
+
+The contents of `resources/overlays` will be copied to the image file system
+during the build. For example, to include a static web xml with CORS support `web.xml`,
+create the file at `resources/overlays/usr/local/tomcat/conf/web.xml`.
+
 ## Run (manual docker commands)
 
 **Note:** You probably want to use docker-compose for running as it will provide
 a repeatable orchestrated deployment system.
 
-You probably want to also have postgis running too. To create a running 
+You probably want to also have PostGIS running too. To create a running
 container do:
 
 ```shell
@@ -128,43 +115,51 @@ docker run --name "postgis" -d -t kartoza/postgis:9.4-2.1
 docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver
 ```
 
-You can also use the following environment variables to pass a 
-user name and password. To postgis:
+You can also use the following environment variables to pass a
+user name and password to PostGIS:
 
-* -e USERNAME=<PGUSER> 
-* -e PASS=<PGPASSWORD>
+* `-e USERNAME=<PGUSER>`
+* `-e PASS=<PGPASSWORD>`
 
 You can also use the following environment variables to pass arguments to GeoServer:
 
+* `GEOSERVER_DATA_DIR=<PATH>`
+* `ENABLE_JSONP=<true or false>`
+* `MAX_FILTER_RULES=<Any integer>`
+* `OPTIMIZE_LINE_WIDTH=<false or true>`
+* `FOOTPRINTS_DATA_DIR=<PATH>`
+* `GEOWEBCACHE_CACHE_DIR=<PATH>`
+* `GEOSERVER_ADMIN_PASSWORD=<password>`
+* Tomcat properties:
 
-* GEOSERVER_DATA_DIR=<PATH>
-* ENABLE_JSONP=<true or false>
-* MAX_FILTER_RULES=<Any integrer>
-* OPTIMIZE_LINE_WIDTH=<false or true>
-* FOOTPRINTS_DATA_DIR=<PATH>
-* GEOWEBCACHE_CACHE_DIR=<PATH>
-* GEOSERVER_ADMIN_PASSWORD=<password>
+  * You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html). These arguments operate on the `-Xms` and `-Xmx` options of the Java Virtual Machine
+  * `INITIAL_MEMORY=<size>` : Initial Memory that Java can allocate, default `2G`
+  * `MAXIMUM_MEMORY=<size>` : Maximum Memory that Java can allocate, default `4G`
 
+**Note:**
 
-**Note:** 
-### Changing Geoserver password on runtime
-The default geoserver user is 'admin' and the password is 'geoserver'. You can pass the environment variable  GEOSERVER_ADMIN_PASSWORD to 
-change it on runtime.
+### Changing GeoServer password on runtime
+
+The default GeoServer user is 'admin' and the password is 'geoserver'. You can pass the environment variable
+GEOSERVER_ADMIN_PASSWORD to  change it on runtime.
+
 ```shell
-
-docker run --name "geoserver"  -e GEOSERVER_ADMIN_PASSWORD='myawesomegeoserver' -p 8080:8080 -d -t kartoza/geoserver
+docker run --name "geoserver"  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
 ```
 
 ## Run (automated using docker-compose)
 
 We provide a sample ``docker-compose.yml`` file that illustrates
-how you can establish a GeoServer + Postgis + Geogig orchestrated environment
+how you can establish a GeoServer + PostGIS + GeoGig orchestrated environment
 with nightly backups that are synchronised to your backup server via btsync.
 
-If you are **not** interested in the backups,Geogig and btsync options, comment 
+If you are **not** interested in the backups, GeoGig and btsync options, comment
 out those services in the ``docker-compose.yml`` file.
 
-Please read the ``docker-compose`` 
+If you start the stack using the compose file make sure you login into GeoServer using username:`admin`
+and password:`myawesomegeoserver` as specified by the env file `geoserver.env`
+
+Please read the ``docker-compose``
 [documentation](https://docs.docker.com/compose/) for details
 on usage and syntax of ``docker-compose`` - it is not covered here.
 
@@ -173,7 +168,7 @@ on your desktop NAS or other backup  destination and create two
 folders:
 
 * one for database backup dumps
-* one for geoserver data dir 
+* one for geoserver data dir
 
 Then make a copy of each of the provided EXAMPLE environment files e.g.:
 
@@ -182,13 +177,12 @@ cp docker-env/btsync-db.env.EXAMPLE docker-env/btsync-db.env
 cp docker-env/btsync-media.env.EXAMPLE docker-env/btsync-media.env
 ```
 
-Then edit the two env files, placing your Read/Write resilio keys
+Then edit the two env files, placing your Read/Write Resilio keys
 in the place provided.
-
 
 To run the example do:
 
-```
+```shell
 docker-compose up
 ```
 
@@ -201,35 +195,36 @@ page in your browser: [http://localhost:8600/geoserver](http://localhost:8600/ge
 To run in the background rather, press ``ctrl-c`` to stop the
 containers and run again in the background:
 
-```
+```shell
 docker-compose up -d
 ```
 
-**Note:** The ``docker-compose.yml`` **does not use persistent storage** so
-when you remove the containers, **all data will be lost**. Either set up 
-btsync (and test to verify that your backups are working, we take 
-**no responsibiliy** if the examples provided here do not produce 
-a reliable backup system), or use host based volumes (you will need 
-to modify the ``docker-compose.yml``` example to do this) so that
-your data persists between invocations of the compose file.
+**Note:** The ``docker-compose.yml`` **uses host based volumes** so
+when you remove the containers, **all data will be kept**. Using host based volumes
+ ensures that your data persists between invocations of the compose file. If you need
+ to delete the container data you need to run `docker volume prune`. Pruning the volumes will
+ remove all the storage volumes that are not in use so users need to be careful of such a move.
+ Either set up btsync (and test to verify that your backups are working, we take
+**no responsibility** if the examples provided here do not produce
+a reliable backup system).
 
 ## Run (automated using rancher)
 
 An even nicer way to run the examples provided is to use our Rancher
-Catalogue Stack for GeoServer. See [http://rancher.com](http://rancher.com) 
-for more details on how to set up and configure your Rancher 
-environment. Once Rancher is set up, use the Admin -> Settings menu to 
+Catalogue Stack for GeoServer. See [http://rancher.com](http://rancher.com)
+for more details on how to set up and configure your Rancher
+environment. Once Rancher is set up, use the Admin -> Settings menu to
 add our Rancher catalogue using this URL:
 
 https://github.com/kartoza/kartoza-rancher-catalogue
 
-Once your settings are saved open a Rancher environment and set up a 
-stack from the catalogue's 'Kartoza' section - you will see 
+Once your settings are saved open a Rancher environment and set up a
+stack from the catalogue's 'Kartoza' section - you will see
 GeoServer listed there.
 
 If you want to synchronise your GeoServer settings and database backups
-(created by the nightly backup tool in the stack), use (Resilio 
-sync)[https://www.resilio.com/] to create two Read/Write keys:
+(created by the nightly backup tool in the stack), use [Resilio
+sync](https://www.Resilio.com/) to create two Read/Write keys:
 
 * one for database backups
 * one for GeoServer media backups
@@ -237,12 +232,11 @@ sync)[https://www.resilio.com/] to create two Read/Write keys:
 **Note:** Resilio sync is not Free Software. It is free to use for
 individuals. Business users need to pay - see their web site for details.
 
-
-You can try a similar approach with Syncthing or Seafile (for free options) 
+You can try a similar approach with Syncthing or Seafile (for free options)
 or Dropbox or Google Drive if you want to use another commercial product. These
-products all have one limitation though: they require interaction 
-to register applications or keys. With Resilio Sync you can completely 
-automate the process without user intervention. 
+products all have one limitation though: they require interaction
+to register applications or keys. With Resilio Sync you can completely
+automate the process without user intervention.
 
 ## Storing data on the host rather than the container.
 
@@ -253,14 +247,14 @@ it from [geonode](http://build.geonode.org/geoserver/latest/) site as indicated 
 
 ```shell
 
-# Example - ${GS_VERSION} is the geoserver version i.e 2.13.0 
+# Example - ${GS_VERSION} is the geoserver version i.e 2.13.0
 wget http://build.geonode.org/geoserver/latest/data-2.13.x.zip
 unzip data-2.13.x.zip -d ~/geoserver_data
 cp scripts/controlflow.properties ~/geoserver_data
 chmod -R a+rwx ~/geoserver_data
 docker run -d -p 8580:8080 --name "geoserver" -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver:${GS_VERSION}
-
 ```
+
 Create an empty data directory to use to persist your data.
 
 ```shell
@@ -269,11 +263,11 @@ docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver
 ```
 
 ### Control flow properties
+
 The control flow module is installed by default and it is used to manage request in geoserver. In order
-to customise it based on your resources and use case read the instructions from 
+to customise it based on your resources and use case read the instructions from
 [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html). Modify
 the file scripts/controlflow.properties before building the image.
-
 
 ## Credits
 
@@ -281,3 +275,4 @@ the file scripts/controlflow.properties before building the image.
 * Shane St Clair (shane@axiomdatascience.com)
 * Alex Leith (alexgleith@gmail.com)
 * Admire Nyakudya (admire@kartoza.com)
+* Gavin Fleming (gavin@kartoza.com)
