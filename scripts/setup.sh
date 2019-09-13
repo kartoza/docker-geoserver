@@ -177,6 +177,19 @@ if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
     mv /usr/local/gdal_data/gdal-data/* /usr/local/gdal_data && rm -rf /usr/local/gdal_data/gdal-data && \
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs; \
     fi;
+# Install Marlin render
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2/marlin-0.9.4.2-Unsafe-sun-java2d.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2/marlin-0.9.4.2-Unsafe.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar;
+fi
+
 
 # Overlay files and directories in resources/overlays if they exist
 rm -f /tmp/resources/overlays/README.txt && \
