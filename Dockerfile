@@ -57,6 +57,10 @@ ADD scripts/controlflow.properties $GEOSERVER_DATA_DIR
 ADD scripts/sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 
 RUN /scripts/setup.sh \
+    && groupadd -r geoserver && useradd --no-log-init -r -g geoserver geoserver \
+    && chown --verbose --recursive geoserver:geoserver /opt/geoserver \
+    && chown --verbose --recursive geoserver:geoserver /opt/footprints_dir \
+    && chown --verbose --recursive geoserver:geoserver /usr/local/tomcat \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
     && dpkg --remove --force-depends  unzip
 
@@ -65,5 +69,7 @@ ENV \
     INITIAL_MEMORY="2G" \
     ## Maximum Memory that Java can allocate
     MAXIMUM_MEMORY="4G"
+
+USER geoserver
 
 CMD ["/scripts/entrypoint.sh"]
