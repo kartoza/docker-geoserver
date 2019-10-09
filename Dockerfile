@@ -12,7 +12,7 @@ ARG GS_VERSION=2.16.0
 ARG ORACLE_JDK=false
 
 ## Would you like to keep default Tomcat webapps
-ARG TOMCAT_EXTRAS=true
+ARG TOMCAT_EXTRAS=false
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ## Would you like to install community modules
