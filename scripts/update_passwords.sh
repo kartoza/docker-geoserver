@@ -3,7 +3,7 @@
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
 if [ -f "${SETUP_LOCKFILE}" ]; then
-	exit 0
+    exit 0
 fi
 
 if [ ${DEBUG} ]; then
