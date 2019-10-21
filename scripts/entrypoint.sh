@@ -8,7 +8,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Dorg.geotools.shapefile.datetime=true -Ds3.properties.location=/opt/geoserver/data_dir/s3.properties \
        -Xbootclasspath/a:${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar \
        -Xbootclasspath/p:${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar \
-       -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine"
+       -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine -Djava.library.path=/usr/local/gdal_native_lib"
 
 
 ## Preparare the JVM command line arguments

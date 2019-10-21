@@ -19,6 +19,8 @@ create_dir ${resources_dir}
 pushd ${resources_dir}
 
 
+
+
 #Policy
 
 if [[ ! -f /tmp/resources/jce_policy.zip ]]; then \
