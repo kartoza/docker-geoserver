@@ -54,9 +54,6 @@ ADD resources /tmp/resources
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh
 ADD scripts/controlflow.properties $GEOSERVER_DATA_DIR
-ADD scripts/sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
-ADD scripts/jetty-util-9.4.21.v20190926.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
-ADD scripts/jetty-servlets-9.4.21.v20190926.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 
 RUN /scripts/setup.sh \
     && groupadd -r geoserver && useradd --no-log-init -r -g geoserver geoserver \
