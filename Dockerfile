@@ -18,14 +18,13 @@ ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VE
 ## Would you like to install community modules
 ARG COMMUNITY_MODULES=true
 
-RUN apt-get -y update && apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams \
-    ttf-bitstream-vera ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev default-jdk gdal-bin libgdal-java
-
 RUN set -e \
     export DEBIAN_FRONTEND=noninteractive \
     dpkg-divert --local --rename --add /sbin/initctl \
-
+    apt-get -y update \
     #Install extra fonts to use with sld font markers
+    apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts \
+        build-essential libapr1-dev libssl-dev default-jdk \
     # Set JAVA_HOME to /usr/lib/jvm/default-java and link it to OpenJDK installation
     && ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/default-java \
     && (echo "Yes, do as I say!" | apt-get remove --force-yes login) \
@@ -55,15 +54,12 @@ ADD resources /tmp/resources
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh
 ADD scripts/controlflow.properties $GEOSERVER_DATA_DIR
-ADD scripts/sqljdbc4-4.0.jar $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
 
 RUN /scripts/setup.sh \
     && groupadd -r geoserver && useradd --no-log-init -r -g geoserver geoserver \
     && chown --verbose --recursive geoserver:geoserver /opt/geoserver \
     && chown --verbose --recursive geoserver:geoserver /opt/footprints_dir \
     && chown --verbose --recursive geoserver:geoserver /usr/local/tomcat \
-    && chown --verbose --recursive geoserver:geoserver /usr/local/gdal_native_libs \
-    && chown --verbose --recursive geoserver:geoserver /usr/local/gdal_data \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  \
     && dpkg --remove --force-depends  unzip
 

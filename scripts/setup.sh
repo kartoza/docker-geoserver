@@ -192,6 +192,24 @@ if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar ]]; then \
   -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar;
 fi
 
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar;
+fi
+
 
 # Overlay files and directories in resources/overlays if they exist
 rm -f /tmp/resources/overlays/README.txt && \
