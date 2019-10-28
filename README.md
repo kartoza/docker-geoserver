@@ -130,11 +130,33 @@ You can also use the following environment variables to pass arguments to GeoSer
 * `FOOTPRINTS_DATA_DIR=<PATH>`
 * `GEOWEBCACHE_CACHE_DIR=<PATH>`
 * `GEOSERVER_ADMIN_PASSWORD=<password>`
+In order to prevent clickjacking attacks GeoServer defaults to 
+setting the X-Frame-Options HTTP header to SAMEORIGIN
+* `XFRAME_OPTIONS="SAMEORIGIN"`
 * Tomcat properties:
 
   * You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html). These arguments operate on the `-Xms` and `-Xmx` options of the Java Virtual Machine
   * `INITIAL_MEMORY=<size>` : Initial Memory that Java can allocate, default `2G`
   * `MAXIMUM_MEMORY=<size>` : Maximum Memory that Java can allocate, default `4G`
+* Control flow properties environment variables
+    if a request waits in queue for more than 60 seconds it's not worth executing,
+    the client will  likely have given up by then
+    * REQUEST_TIMEOUT=60 
+    don't allow the execution of more than 100 requests total in parallel
+    * PARARELL_REQUEST=100 
+    don't allow more than 10 GetMap in parallel
+    * GETMAP=10 
+    don't allow more than 4 outputs with Excel output as it's memory bound
+    * REQUEST_EXCEL=4 
+    don't allow a single user to perform more than 6 requests in parallel
+    (6 being the Firefox default concurrency level at the time of writing)
+    * SINGLE_USER=6 
+    don't allow the execution of more than 16 tile requests in parallel
+    (assuming a server with 4 cores, GWC empirical tests show that throughput
+    peaks up at 4 x number of cores. Adjust as appropriate to your system)
+    * GWC_REQUEST=16 
+    * WPS_REQUEST=1000/d;30s
+
 
 **Note:**
 

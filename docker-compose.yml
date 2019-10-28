@@ -6,10 +6,20 @@ volumes:
    geo-db-data:
 
 services:
-
+   db:
+      image: kartoza/postgis:11.0-2.5
+      volumes:
+         - geo-db-data:/var/lib/postgresql
+      ports:
+        - "25434:5432"
+      env_file:
+      - docker-env/db.env
+      restart: on-failure
+      healthcheck:
+        test: "exit 0"
 
    geoserver:
-      image: kartoza/geoserver:2.16.0
+      image: kartoza/geoserver:2.15.0
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
       ports:
@@ -17,6 +27,23 @@ services:
       restart: on-failure
       env_file:
         - docker-env/geoserver.env
+      depends_on:
+        db:
+          condition: service_healthy
+      healthcheck:
+        test: curl --fail -s http://localhost:8080/ || exit 1
+        interval: 1m30s
+        timeout: 10s
+        retries: 3
 
 
-
+   db-dbbackups:
+     image: kartoza/pg-backup:11.0
+     volumes:
+     - db-backups:/backups
+     env_file:
+     - docker-env/db-backups.env
+     restart: on-failure
+     depends_on:
+       db:
+         condition: service_healthy

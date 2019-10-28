@@ -40,7 +40,7 @@ array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-css-pl
 geoserver-$GS_VERSION-csw-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
 geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip \
 geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip \
-geoserver-$GS_VERSION-sldservice-plugin.zip geoserver-$GS_VERSION-monitor-plugin.zip \
+geoserver-$GS_VERSION-sldservice-plugin.zip  \
 geoserver-$GS_VERSION-importer-plugin.zip geoserver-$GS_VERSION-charts-plugin.zip)
 for i in "${array[@]}"
 do
@@ -161,6 +161,7 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
     fi; \
     unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
     && cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
+    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
     && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${CATALINA_HOME} \
     && rm -rf ${CATALINA_HOME}/webapps/geoserver/data \
     && rm -rf /tmp/geoserver
