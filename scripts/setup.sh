@@ -19,6 +19,8 @@ create_dir ${resources_dir}
 pushd ${resources_dir}
 
 
+
+
 #Policy
 
 if [[ ! -f /tmp/resources/jce_policy.zip ]]; then \
@@ -38,7 +40,7 @@ array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-css-pl
 geoserver-$GS_VERSION-csw-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
 geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip \
 geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip \
-geoserver-$GS_VERSION-sldservice-plugin.zip geoserver-$GS_VERSION-monitor-plugin.zip \
+geoserver-$GS_VERSION-sldservice-plugin.zip  \
 geoserver-$GS_VERSION-importer-plugin.zip geoserver-$GS_VERSION-charts-plugin.zip)
 for i in "${array[@]}"
 do
@@ -159,6 +161,7 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
     fi; \
     unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
     && cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
+    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
     && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${CATALINA_HOME} \
     && rm -rf ${CATALINA_HOME}/webapps/geoserver/data \
     && rm -rf /tmp/geoserver
@@ -188,6 +191,24 @@ if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar ]]; then \
   wget --progress=bar:force:noscroll -c --no-check-certificate \
   https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2/marlin-0.9.4.2-Unsafe.jar \
   -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar;
 fi
 
 

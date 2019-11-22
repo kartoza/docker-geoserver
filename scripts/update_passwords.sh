@@ -3,7 +3,7 @@
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
 if [ -f "${SETUP_LOCKFILE}" ]; then
-    exit 0
+	exit 0
 fi
 
 if [ ${DEBUG} ]; then
@@ -19,7 +19,7 @@ fi
 
 GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER:-admin}
 GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD:-geoserver}
-USERS_XML=${USERS_XML:-/opt/geoserver/data_dir/security/usergroup/default/users.xml}
+USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
 CLASSPATH=${CLASSPATH:-/usr/local/tomcat/webapps/geoserver/WEB-INF/lib/}
 
 make_hash(){
