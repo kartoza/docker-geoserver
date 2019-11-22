@@ -1,7 +1,7 @@
 #!/bin/sh
 
-BUGFIX=0
-MINOR=16
+BUGFIX=2
+MINOR=15
 MAJOR=2
 
 # Build Geoserver
