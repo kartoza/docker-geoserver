@@ -1,6 +1,7 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 ARG IMAGE_VERSION=9.0.7-jre8
 
+
 FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
@@ -64,14 +65,17 @@ ENV \
     INITIAL_MEMORY="2G" \
     ## Maximum Memory that Java can allocate
     MAXIMUM_MEMORY="4G" \
-    XFRAME_OPTIONS="SAMEORIGIN" \
+    XFRAME_OPTIONS="true" \
     REQUEST_TIMEOUT=60 \
     PARARELL_REQUEST=100 \
     GETMAP=10 \
     REQUEST_EXCEL=4 \
     SINGLE_USER=6 \
     GWC_REQUEST=16 \
-    WPS_REQUEST=1000/d;30s
+    WPS_REQUEST=1000/d;30s \
+    S3_SERVER_URL='' \
+    S3_USERNAME='' \
+    S3_PASSWORD=''
 
 
 CMD ["/scripts/entrypoint.sh"]

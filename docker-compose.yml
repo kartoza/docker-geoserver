@@ -19,7 +19,7 @@ services:
         test: "exit 0"
 
    geoserver:
-      image: kartoza/geoserver:2.15.0
+      image: kartoza/geoserver:2.15.2
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
       ports:
