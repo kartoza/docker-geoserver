@@ -130,6 +130,7 @@ You can also use the following environment variables to pass arguments to GeoSer
 * `FOOTPRINTS_DATA_DIR=<PATH>`
 * `GEOWEBCACHE_CACHE_DIR=<PATH>`
 * `GEOSERVER_ADMIN_PASSWORD=<password>`
+
 In order to prevent clickjacking attacks GeoServer defaults to 
 setting the X-Frame-Options HTTP header to SAMEORIGIN. Controls whether the X-Frame-Options 
 filter should be set at all. Default is true

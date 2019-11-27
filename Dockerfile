@@ -17,7 +17,7 @@ ARG TOMCAT_EXTRAS=true
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ## Would you like to install community modules
-ARG COMMUNITY_MODULES=true
+ARG COMMUNITY_MODULES=false
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
     ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev default-jdk gdal-bin libgdal-java
