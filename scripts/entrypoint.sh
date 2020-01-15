@@ -1,13 +1,44 @@
 #!/bin/bash
 set -e
 
+if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then \
+  echo "Installing default data directory"
+  cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
+fi
 
-if [[ -f ${GEOSERVER_DATA_DIR}/controlflow.properties  ]]; then \
-    rm ${GEOSERVER_DATA_DIR}/controlflow.properties
+# Install stable plugins
+ for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
+        echo "Enabling ${ext} for GeoServer"
+        if [[  -z "${STABLE_EXTENSIONS}" ]]; then \
+          echo "Do not install any plugins"
+        else
+            echo "Installing ${ext}.zip plugin"
+            unzip /plugins/${ext}.zip -d /tmp/gs_plugin \
+            && mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ \
+            && rm -rf /tmp/gs_plugin
+        fi
+done
+
+# Install community modules plugins
+ for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+        echo "Enabling ${ext} for GeoServer"
+        if [[  -z ${COMMUNITY_EXTENSIONS} ]]; then \
+          echo "Do not install any plugins"
+        else
+            echo "Installing ${ext}.zip plugin"
+            unzip /plugins/${ext}.zip -d /tmp/gs_plugin \
+            && mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ \
+            && rm -rf /tmp/gs_plugin
+        fi
+done
+
+
+if [[ -f "${GEOSERVER_DATA_DIR}"/controlflow.properties  ]]; then \
+    rm "${GEOSERVER_DATA_DIR}"/controlflow.properties
 fi;
 
 
-cat > ${GEOSERVER_DATA_DIR}/controlflow.properties <<EOF
+cat > "${GEOSERVER_DATA_DIR}"/controlflow.properties <<EOF
 timeout=${REQUEST_TIMEOUT}
 ows.global=${PARARELL_REQUEST}
 ows.wms.getmap=${GETMAP}
@@ -17,12 +48,12 @@ ows.gwc=${GWC_REQUEST}
 user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
-if [[ -f ${GEOSERVER_DATA_DIR}/s3.properties  ]]; then \
-    rm ${GEOSERVER_DATA_DIR}/s3.properties
+if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties  ]]; then \
+    rm "${GEOSERVER_DATA_DIR}"/s3.properties
 fi;
 
 
-cat > ${GEOSERVER_DATA_DIR}/s3.properties <<EOF
+cat > "${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
 alias.s3.endpoint=${S3_SERVER_URL}
 alias.s3.user=${S3_USERNAME}
 alias.s3.password=${S3_PASSWORD}
@@ -33,9 +64,10 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -XX:+CMSClassUnloadingEnabled -Dfile.encoding=UTF8 -Duser.timezone=GMT -Djavax.servlet.request.encoding=UTF-8 \
        -Djavax.servlet.response.encoding=UTF-8 -Duser.timezone=GMT -Dorg.geotools.shapefile.datetime=true \
        -Dorg.geotools.shapefile.datetime=true -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
-       -Xbootclasspath/a:${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar \
-       -Xbootclasspath/p:${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar \
+       -Dsun.java2d.renderer.useThreadLocal=false -Dsun.java2d.renderer.pixelsize=8192 \
+       --patch-module java.desktop=${CATALINA_HOME}/marlin-0.9.4.2-Unsafe-OpenJDK9.jar  \
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS}"
+
 
 ## Preparare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
