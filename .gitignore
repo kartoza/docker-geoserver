@@ -1,3 +1,4 @@
+geoserver_data
 resources/*
 !resources/plugins/
 resources/plugins/*

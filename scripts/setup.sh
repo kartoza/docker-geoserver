@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Download geoserver extensions and other resources
 
+
 function create_dir() {
 DATA_PATH=$1
 
