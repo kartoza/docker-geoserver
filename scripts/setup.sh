@@ -94,7 +94,7 @@ if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then \
     dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
 
 pushd /tmp/
-create_dir ${JAVA_HOME}/ext
+
  if [[ ! -f ${resources_dir}/jai-1_1_3-lib-linux-amd64.tar.gz ]]; then \
     wget --progress=bar:force:noscroll -c --no-check-certificate \
     http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz \
@@ -110,10 +110,10 @@ create_dir ${JAVA_HOME}/ext
     gunzip -c jai-1_1_3-lib-linux-amd64.tar.gz | tar xf - && \
     gunzip -c jai_imageio-1_1-lib-linux-amd64.tar.gz | tar xf - && \
 
-    mv /tmp/jai-1_1_3/lib/*.jar ${JAVA_HOME}/ext/ && \
-    mv /tmp/jai-1_1_3/lib/*.so ${JAVA_HOME}/ext/ && \
-    mv /tmp/jai_imageio-1_1/lib/*.jar ${JAVA_HOME}/ext/ && \
-    mv /tmp/jai_imageio-1_1/lib/*.so ${JAVA_HOME}/ext/ && \
+    mv /tmp/jai-1_1_3/lib/*.jar ${JAVA_HOME} && \
+    mv /tmp/jai-1_1_3/lib/*.so ${JAVA_HOME} && \
+    mv /tmp/jai_imageio-1_1/lib/*.jar ${JAVA_HOME} && \
+    mv /tmp/jai_imageio-1_1/lib/*.so ${JAVA_HOME} && \
     rm /tmp/jai-1_1_3-lib-linux-amd64.tar.gz && \
     rm -r /tmp/jai-1_1_3 && \
     rm /tmp/jai_imageio-1_1-lib-linux-amd64.tar.gz && \

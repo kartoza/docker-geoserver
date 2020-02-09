@@ -21,7 +21,6 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
 ## Preparare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
-if [[ -z "${EXISTING_DATA_DIR}" ]]; then \
-    /scripts/update_passwords.sh
-fi;
+
+chown -R geoserveruser:geoserverusers $CATALINA_HOME ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts
 exec /usr/local/tomcat/bin/catalina.sh run
