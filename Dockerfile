@@ -43,6 +43,7 @@ ENV \
     ENABLE_JSONP=true \
     MAX_FILTER_RULES=20 \
     OPTIMIZE_LINE_WIDTH=false \
+    SSL=false \
     HTTP_PORT=8080 \
     HTTP_PROXY_NAME= \
     HTTP_PROXY_PORT= \
@@ -57,8 +58,8 @@ ENV \
     JKS_KEY_PASSWORD= \
     KEY_ALIAS=letsencrypt \
     JKS_STORE_PASSWORD= \
-    P12_FILE=letsencrypt.p12 \
-    SSL=false
+    P12_FILE=letsencrypt.p12
+
 
 
 WORKDIR /scripts
@@ -101,8 +102,8 @@ EXPOSE  $HTTPS_PORT
 RUN groupadd -r geoserverusers -g 10001 && \
     useradd -M -u 10000 -g geoserverusers geoserveruser
 RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts
-USER geoserveruser
+#USER geoserveruser
 
-
+WORKDIR ${CATALINA_HOME}
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]

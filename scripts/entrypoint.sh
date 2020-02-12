@@ -22,5 +22,5 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
 
-chown -R geoserveruser:geoserverusers $CATALINA_HOME ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts
+
 exec /usr/local/tomcat/bin/catalina.sh run

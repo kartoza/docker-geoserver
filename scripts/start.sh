@@ -62,6 +62,8 @@ EOF
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
 
+  # WORKDIR $CATALINA_HOME
+
   if [ -z "$LETSENCRYPT_CERT_DIR" ] ; then
       echo '$LETSENCRYPT_CERT_DIR not set'
       exit 1
@@ -86,7 +88,6 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
   # https://community.letsencrypt.org/t/cry-for-help-windows-tomcat-ssl-lets-encrypt/22902/4
 
   # remove existing keystores
-
 
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
@@ -177,7 +178,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
   fi
 
   transform="xsltproc \
-    --output ${CATALINA_HOME}/conf/server.xml \
+    --output conf/server.xml \
     $HTTP_PORT_PARAM \
     $HTTP_PROXY_NAME_PARAM \
     $HTTP_PROXY_PORT_PARAM \
@@ -194,10 +195,11 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
     $JKS_KEY_PASSWORD_PARAM \
     $KEY_ALIAS_PARAM \
     $JKS_STORE_PASSWORD_PARAM \
-    ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl \
-    ${CATALINA_HOME}/conf/server.xml"
+    conf/letsencrypt-tomcat.xsl \
+    conf/server.xml"
 
   eval "$transform"
+
 fi;
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then \
