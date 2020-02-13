@@ -55,10 +55,11 @@ ENV \
     HTTPS_PROXY_NAME= \
     HTTPS_PROXY_PORT= \
     JKS_FILE=letsencrypt.jks \
-    JKS_KEY_PASSWORD= \
+    JKS_KEY_PASSWORD='geoserver' \
     KEY_ALIAS=letsencrypt \
-    JKS_STORE_PASSWORD= \
+    JKS_STORE_PASSWORD='geoserver' \
     P12_FILE=letsencrypt.p12 \
+    PKCS12_PASSWORD='geoserver' \
     LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
     RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
     GEOSERVER_CSRF_DISABLED=true
