@@ -104,19 +104,19 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
     -in "$LETSENCRYPT_CERT_DIR"/fullchain.pem \
     -inkey "$LETSENCRYPT_CERT_DIR"/privkey.pem \
     -name "$KEY_ALIAS" \
-    -out "$P12_FILE" \
+    -out ${LETSENCRYPT_CERT_DIR}/"$P12_FILE" \
     -password pass:"$PKCS12_PASSWORD"
 
   # import PKCS12 into JKS
 
   keytool -importkeystore \
     -noprompt \
-    -trustcacerts
+    -trustcacerts \
     -alias "$KEY_ALIAS" \
     -destkeypass "$JKS_KEY_PASSWORD" \
-    -destkeystore "$JKS_FILE" \
+    -destkeystore ${LETSENCRYPT_CERT_DIR}/"$JKS_FILE" \
     -deststorepass "$JKS_STORE_PASSWORD" \
-    -srckeystore "$P12_FILE" \
+    -srckeystore ${LETSENCRYPT_CERT_DIR}/"$P12_FILE" \
     -srcstorepass "$PKCS12_PASSWORD" \
     -srcstoretype PKCS12
 
@@ -171,7 +171,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
   fi
 
   if [ -n "$JKS_FILE" ] ; then
-      JKS_FILE_PARAM="--stringparam https.keystoreFile $JKS_FILE "
+      JKS_FILE_PARAM="--stringparam https.keystoreFile ${LETSENCRYPT_CERT_DIR}/$JKS_FILE "
   fi
   if [ -n "$JKS_KEY_PASSWORD" ] ; then
       JKS_KEY_PASSWORD_PARAM="--stringparam https.keystorePass $JKS_KEY_PASSWORD "

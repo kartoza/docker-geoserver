@@ -60,7 +60,8 @@ ENV \
     JKS_STORE_PASSWORD= \
     P12_FILE=letsencrypt.p12 \
     LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
-    RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd
+    RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
+    GEOSERVER_CSRF_DISABLED=true
 
 
 
@@ -99,6 +100,7 @@ ENV \
     SAMPLE_DATA='FALSE'
 
 
+
 EXPOSE  $HTTPS_PORT
 
 RUN groupadd -r geoserverusers -g 10001 && \
@@ -110,5 +112,6 @@ RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DI
 
 
 WORKDIR ${CATALINA_HOME}
+
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]
