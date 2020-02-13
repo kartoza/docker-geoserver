@@ -146,7 +146,11 @@ create the file at `resources/overlays/usr/local/tomcat/bin/setenv.sh`.
 You can use this functionality to write a static GeoServer directory to
 `/opt/geoserver/data_dir`, include additional jar files, and more.
 
+If you have an already existing `data_dir` with a security setup from another Geoserver: set `EXISTING_DATA_DIR=true`.
+This will keep the passwords from getting changed by docker. 
+
 Overlay files will overwrite existing destination files, so be careful!
+
 
 #### Build with CORS Support
 
