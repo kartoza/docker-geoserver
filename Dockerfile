@@ -58,12 +58,14 @@ ENV \
     JKS_KEY_PASSWORD= \
     KEY_ALIAS=letsencrypt \
     JKS_STORE_PASSWORD= \
-    P12_FILE=letsencrypt.p12
+    P12_FILE=letsencrypt.p12 \
+    LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
+    RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd
 
 
 
 WORKDIR /scripts
-RUN mkdir -p ${GEOSERVER_DATA_DIR}
+RUN mkdir -p ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR}
 
 
 ADD resources /tmp/resources
@@ -101,8 +103,11 @@ EXPOSE  $HTTPS_PORT
 
 RUN groupadd -r geoserverusers -g 10001 && \
     useradd -M -u 10000 -g geoserverusers geoserveruser
-RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts
+RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR}
+
+
 #USER geoserveruser
+
 
 WORKDIR ${CATALINA_HOME}
 

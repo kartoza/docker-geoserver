@@ -92,6 +92,12 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
 
+  # Check if mounted file contains proper keys otherwise use open ssl
+  if [[ ! -f ${LETSENCRYPT_CERT_DIR}/fullchain.pem ]]; then \
+    openssl req -x509 -newkey rsa:4096 -keyout ${LETSENCRYPT_CERT_DIR}/privkey.pem -out \
+    ${LETSENCRYPT_CERT_DIR}/fullchain.pem -days 3650 -nodes -sha256 -subj '/CN=geoserver'
+  fi
+
   # convert PEM to PKCS12
 
   openssl pkcs12 -export \
@@ -104,6 +110,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
   # import PKCS12 into JKS
 
   keytool -importkeystore \
+    -noprompt \
+    -trustcacerts
     -alias "$KEY_ALIAS" \
     -destkeypass "$JKS_KEY_PASSWORD" \
     -destkeystore "$JKS_FILE" \
