@@ -22,7 +22,7 @@ Edit the build script to change the following variables:
 
    ```text
    BUGFIX=2
-   MINOR=15
+   MINOR=16
    MAJOR=2
    ```
 
@@ -47,24 +47,79 @@ docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/pro
 
 **Note: war file version should match the version number provided by `GS_VERSION` argument otherwise we will have a mismatch of plugins and GeoServer installed.**
 
-### Building with Oracle JDK
 
-Download `jdk-8u201-linux-x64.tar.gz` or the latest version from [Oracle Java](https://www.oracle.com) and save the contents into
-the resources folder. This used to be done by the setup scripts but no longer works due to the changes
-in the licencing terms from Oracle which require users to login to their site.
+### Activate plugins on runtime
 
-To replace OpenJDK Java with the Oracle JDK, set build-arg `ORACLE_JDK=true`:
+The image is shipped with the following stable plugins:
+* vectortiles-plugin
+* wps-plugin
+* printing-plugin
+* libjpeg-turbo-plugin 
+* control-flow-plugin 
+* pyramid-plugin 
+* gdal-plugin
 
-```shell
-docker build --build-arg ORACLE_JDK=true --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
+If you need to use other plugin you just pass an environment variable on startup which will
+activate the plugin ie
+```
+docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,charts-plugin kartoza/geoserver:2.16.1
+
+```
+You can pass as many comma separated plugins as defined in the text file `stable_plugins.txt`
+
+You can also activate the community plugins as defined in `community_plugins.txt`
+``` 
+docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-plugin,ogr-datastore-plugin
+ kartoza/geoserver:2.16.1
+
+```
+### Using sample data
+
+If you need to play around with the default data directory you can activate it using the environment
+variable `SAMPLE_DATA=true` 
+
+``` 
+docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserver:2.16.1
+
 ```
 
-### Building with plugins
+### Running under SSL
+You can use the environment variables to specify whether you want to run the GeoServer under SSL.
+Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for providing the solution to
+run under SSL. Currently the container does not use PFX files , it ony uses pkcs12
 
-Inspect setup.sh to confirm which plugins (community modules or standard plugins) you want to include in
-the build process, then add them in their respective sections in the script.
+If you set the environment variable `SSL=true` but do not provide the pem files (fullchain.pem and privkey.pem)
+the container will generate a self signed SSL certificates.
 
-You should ensure that the plugins match the  version for the GeoServer WAR zip file.
+```
+docker run -it --name geo  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:2.16.1 
+```
+
+ If you already have your own perm files (fullchain.pem and privkey.pem) you can mount the directory containing your keys as:
+
+``` 
+docker run -it --name geo -v /etc/letsencrpt:/etc/letsencrypt  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:2.16.1 
+
+```
+A full list of SSL variables is provided here
+* HTTP_PORT
+* HTTP_PROXY_NAME
+* HTTP_PROXY_PORT
+* HTTP_REDIRECT_PORT
+* HTTP_CONNECTION_TIMEOUT
+* HTTP_COMPRESSION
+* HTTPS_PORT
+* HTTPS_MAX_THREADS
+* HTTPS_CLIENT_AUTH
+* HTTPS_PROXY_NAME
+* HTTPS_PROXY_PORT
+* HTTPS_COMPRESSION
+* JKS_FILE
+* JKS_KEY_PASSWORD
+* KEY_ALIAS
+* JKS_STORE_PASSWORD
+* P12_FILE
+
 
 ### Removing Tomcat extras during build
 
