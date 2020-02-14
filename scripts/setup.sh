@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Download geoserver extensions and other resources
 
+
 function create_dir() {
 DATA_PATH=$1
 
@@ -19,29 +20,48 @@ create_dir ${resources_dir}
 pushd ${resources_dir}
 
 
+create_dir /plugins
 
+pushd /plugins
+#Extensions
+# Download all other plugins to keep for activating using env variables
+cp /tmp/stable_plugins.txt .
 
-#Policy
+for plugin in `cat stable_plugins.txt`;do
+  url="${STABLE_PLUGIN_URL}/geoserver-${GS_VERSION}-${plugin}.zip"
+  if curl --output /dev/null --silent --head --fail "${url}"; then
+      echo "URL exists: ${url}"
+      wget --progress=bar:force:noscroll -c --no-check-certificate "${url}" -O ${plugin}.zip
+    else
+      echo "URL does not exist: ${url}"
+  fi
+done
 
-if [[ ! -f /tmp/resources/jce_policy.zip ]]; then \
-    wget --progress=bar:force:noscroll -c --no-check-certificate --no-cookies --header \
-    "Cookie: oraclelicense=accept-securebackup-cookie" \
-    http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip -O /tmp/resources/jce_policy.zip
-fi;
+# Download community modules
 
-work_dir=`pwd`
+create_dir /community_plugins
+pushd /community_plugins
 
-create_dir ${work_dir}/plugins
+cp /tmp/community_plugins.txt .
 
-pushd ${work_dir}/plugins
+for plugin in `cat community_plugins.txt`;do
+  url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
+  if curl --output /dev/null --silent --head --fail "${url}"; then
+      echo "URL exists: ${url}"
+      wget --progress=bar:force:noscroll -c --no-check-certificate "${url}" -O ${plugin}.zip
+    else
+      echo "URL does not exist: ${url}"
+  fi
+done
+
+create_dir ${resources_dir}/plugins
+
+pushd ${resources_dir}/plugins
 #Extensions
 
-array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-css-plugin.zip \
-geoserver-$GS_VERSION-csw-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
+array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
 geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip \
-geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip \
-geoserver-$GS_VERSION-sldservice-plugin.zip  \
-geoserver-$GS_VERSION-importer-plugin.zip geoserver-$GS_VERSION-charts-plugin.zip)
+geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip )
 for i in "${array[@]}"
 do
     url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
@@ -68,76 +88,32 @@ popd
 if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then \
     wget --progress=bar:force:noscroll -c --no-check-certificate \
     https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb \
-    -P /tmp/resources;\
+    -P ${resources_dir};\
     fi; \
-    cd /tmp/resources/ && \
+    cd ${resources_dir} && \
     dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
-
-# If a matching Oracle JDK tar.gz exists in /tmp/resources, move it to /var/cache/oracle-jdk8-installer
-# where oracle-java8-installer will detect it
-if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
-      mkdir /var/cache/oracle-jdk8-installer && \
-      mv /tmp/resources/*jdk-*-linux-x64.tar.gz /var/cache/oracle-jdk8-installer/; \
-    fi;
-
-# Build geogig and other community modules
-
-if  [[ "$COMMUNITY_MODULES" == true ]]; then
-    array=( geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip \
-    geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbstyle-plugin.zip \
-    geoserver-${GS_VERSION:0:4}-SNAPSHOT-s3-geotiff-plugin.zip geoserver-${GS_VERSION:0:4}-SNAPSHOT-gwc-s3-plugin.zip)
-    for i in "${array[@]}"
-    do
-	    wget --progress=bar:force:noscroll -c --no-check-certificate \
-	    https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/${i} \
-	    -O /tmp/resources/plugins/${i}
-    done
-
-else
-    echo "Building community modules will be disabled"
-fi;
-# Install Oracle JDK (and uninstall OpenJDK JRE) if the build-arg ORACLE_JDK = true or an Oracle tar.gz
-# was found in /tmp/resources
-
-if ls /var/cache/oracle-jdk8-installer/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1 || [[ "${ORACLE_JDK}" = true ]]; then \
-       apt-get autoremove --purge -y openjdk-8-jre-headless && \
-       echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true \
-         | debconf-set-selections && \
-       echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" \
-         > /etc/apt/sources.list.d/webupd8team-java.list && \
-       apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886 && \
-       rm -rf /var/lib/apt/lists/* && \
-       apt-get update && \
-       apt-get install -y oracle-java8-installer oracle-java8-set-default && \
-       ln -s --force /usr/lib/jvm/java-8-oracle /usr/lib/jvm/default-java && \
-       rm -rf /var/lib/apt/lists/* && \
-       rm -rf /var/cache/oracle-jdk8-installer; \
-       if [[ -f /tmp/resources/jce_policy.zip ]]; then \
-         unzip -j /tmp/resources/jce_policy.zip -d /tmp/jce_policy && \
-         mv /tmp/jce_policy/*.jar ${JAVA_HOME}/jre/lib/security/; \
-       fi; \
-    fi;
 
 pushd /tmp/
 
- if [[ ! -f /tmp/resources/jai-1_1_3-lib-linux-amd64.tar.gz ]]; then \
+ if [[ ! -f ${resources_dir}/jai-1_1_3-lib-linux-amd64.tar.gz ]]; then \
     wget --progress=bar:force:noscroll -c --no-check-certificate \
     http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz \
-    -P /tmp/resources;\
+    -P ${resources_dir};\
     fi; \
-    if [[ ! -f /tmp/resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ]]; then \
+    if [[ ! -f ${resources_dir}/jai_imageio-1_1-lib-linux-amd64.tar.gz ]]; then \
     wget --progress=bar:force:noscroll -c --no-check-certificate \
     http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz \
-    -P /tmp/resources;\
+    -P ${resources_dir};\
     fi; \
     mv ./resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ && \
     mv ./resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ./ && \
     gunzip -c jai-1_1_3-lib-linux-amd64.tar.gz | tar xf - && \
     gunzip -c jai_imageio-1_1-lib-linux-amd64.tar.gz | tar xf - && \
-    mv /tmp/jai-1_1_3/lib/*.jar ${JAVA_HOME}/jre/lib/ext/ && \
-    mv /tmp/jai-1_1_3/lib/*.so ${JAVA_HOME}/jre/lib/amd64/ && \
-    mv /tmp/jai_imageio-1_1/lib/*.jar ${JAVA_HOME}/jre/lib/ext/ && \
-    mv /tmp/jai_imageio-1_1/lib/*.so ${JAVA_HOME}/jre/lib/amd64/ && \
+
+    mv /tmp/jai-1_1_3/lib/*.jar ${JAVA_HOME} && \
+    mv /tmp/jai-1_1_3/lib/*.so ${JAVA_HOME} && \
+    mv /tmp/jai_imageio-1_1/lib/*.jar ${JAVA_HOME} && \
+    mv /tmp/jai_imageio-1_1/lib/*.so ${JAVA_HOME} && \
     rm /tmp/jai-1_1_3-lib-linux-amd64.tar.gz && \
     rm -r /tmp/jai-1_1_3 && \
     rm /tmp/jai_imageio-1_1-lib-linux-amd64.tar.gz && \
@@ -162,9 +138,9 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
     unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
     && cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
     && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
-    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${CATALINA_HOME} \
-    && rm -rf ${CATALINA_HOME}/webapps/geoserver/data \
+    && cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} \
     && rm -rf /tmp/geoserver
+
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
@@ -183,15 +159,11 @@ if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
 # Install Marlin render
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then \
   wget --progress=bar:force:noscroll -c --no-check-certificate \
-  https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2/marlin-0.9.4.2-Unsafe-sun-java2d.jar \
-  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar;
+  https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar;
 fi
 
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar ]]; then \
-  wget --progress=bar:force:noscroll -c --no-check-certificate \
-  https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2/marlin-0.9.4.2-Unsafe.jar \
-  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar;
-fi
+
 
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then \
   wget --progress=bar:force:noscroll -c --no-check-certificate \
@@ -224,7 +196,7 @@ if ls /tmp/resources/fonts/*.ttf > /dev/null 2>&1; then \
 	fi;
 
 # Optionally remove Tomcat manager, docs, and examples
-if [[ "${TOMCAT_EXTRAS}" = false ]]; then \
+if [[ "${TOMCAT_EXTRAS}" =~ [Fa][Ll][Ss][Ee] ]]; then \
     rm -rf ${CATALINA_HOME}/webapps/ROOT && \
     rm -rf ${CATALINA_HOME}/webapps/docs && \
     rm -rf ${CATALINA_HOME}/webapps/examples && \
