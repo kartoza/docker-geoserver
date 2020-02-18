@@ -108,8 +108,8 @@ RUN groupadd -r geoserverusers -g 10001 && \
     useradd -M -u 10000 -g geoserverusers geoserveruser
 RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR}
 
-
-#USER geoserveruser
+RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
+USER geoserveruser
 
 
 WORKDIR ${CATALINA_HOME}
