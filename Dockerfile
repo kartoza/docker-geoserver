@@ -37,7 +37,7 @@ ENV \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/gdal_native_libs:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     ENABLE_JSONP=true \
@@ -67,7 +67,9 @@ ENV \
 
 
 WORKDIR /scripts
-RUN mkdir -p ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR}
+
+
+RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR}
 
 
 ADD resources /tmp/resources
@@ -109,10 +111,8 @@ RUN groupadd -r geoserverusers -g 10001 && \
 RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR}
 
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
+
 USER geoserveruser
-
-
 WORKDIR ${CATALINA_HOME}
-
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]
