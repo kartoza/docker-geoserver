@@ -1,6 +1,6 @@
 #!/bin/sh
 
-BUGFIX=1
+BUGFIX=2
 MINOR=16
 MAJOR=2
 

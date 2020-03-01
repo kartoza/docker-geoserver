@@ -7,7 +7,7 @@ FROM tomcat:$IMAGE_VERSION
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
 
-ARG GS_VERSION=2.16.0
+ARG GS_VERSION=2.16.2
 
 
 ## Would you like to keep default Tomcat webapps
@@ -18,7 +18,8 @@ ARG STABLE_PLUGIN_URL=https://liquidtelecom.dl.sourceforge.net/project/geoserver
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
-    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  gdal-bin libgdal-java wget zip curl
+    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  gdal-bin libgdal-java wget zip curl xsltproc certbot \
+    certbot
 
 RUN set -e \
     export DEBIAN_FRONTEND=noninteractive \
@@ -36,24 +37,44 @@ ENV \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/gdal_native_libs:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/gdal_native_libs:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     ENABLE_JSONP=true \
     MAX_FILTER_RULES=20 \
     OPTIMIZE_LINE_WIDTH=false \
-    ## Unset Java related ENVs since they may change with Oracle JDK
-    JAVA_VERSION= \
-    JAVA_DEBIAN_VERSION=
+    SSL=false \
+    HTTP_PORT=8080 \
+    HTTP_PROXY_NAME= \
+    HTTP_PROXY_PORT= \
+    HTTP_REDIRECT_PORT= \
+    HTTP_CONNECTION_TIMEOUT=20000 \
+    HTTPS_PORT=8443 \
+    HTTPS_MAX_THREADS=150 \
+    HTTPS_CLIENT_AUTH= \
+    HTTPS_PROXY_NAME= \
+    HTTPS_PROXY_PORT= \
+    JKS_FILE=letsencrypt.jks \
+    JKS_KEY_PASSWORD='geoserver' \
+    KEY_ALIAS=letsencrypt \
+    JKS_STORE_PASSWORD='geoserver' \
+    P12_FILE=letsencrypt.p12 \
+    PKCS12_PASSWORD='geoserver' \
+    LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
+    RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
+    GEOSERVER_CSRF_DISABLED=true
+
+
 
 WORKDIR /scripts
-RUN mkdir -p ${GEOSERVER_DATA_DIR}
+RUN mkdir -p ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR}
 
 
 ADD resources /tmp/resources
 ADD stable_plugins.txt /tmp/stable_plugins.txt
 ADD community_plugins.txt /tmp/community_plugins.txt
 ADD scripts /scripts
+ADD letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl
 RUN chmod +x /scripts/*.sh
 
 
@@ -80,4 +101,18 @@ ENV \
     SAMPLE_DATA='FALSE'
 
 
-CMD ["/scripts/entrypoint.sh"]
+
+EXPOSE  $HTTPS_PORT
+
+RUN groupadd -r geoserverusers -g 10001 && \
+    useradd -M -u 10000 -g geoserverusers geoserveruser
+RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR}
+
+
+#USER geoserveruser
+
+
+WORKDIR ${CATALINA_HOME}
+
+
+CMD ["/bin/sh", "/scripts/entrypoint.sh"]

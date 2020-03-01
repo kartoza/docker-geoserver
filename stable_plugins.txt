@@ -1,4 +1,5 @@
-app-schema-plugin  arcsde-plugin  
+app-schema-plugin
+arcsde-plugin
 authkey-plugin  
 cas-plugin  
 charts-plugin  
