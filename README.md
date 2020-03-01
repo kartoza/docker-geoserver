@@ -62,15 +62,16 @@ The image is shipped with the following stable plugins:
 If you need to use other plugin you just pass an environment variable on startup which will
 activate the plugin ie
 ```
-docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,charts-plugin kartoza/geoserver:2.16.1
+ie VERSION=2.16.2
+docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,db2-plugin kartoza/geoserver:${VERSION} 
 
 ```
 You can pass as many comma separated plugins as defined in the text file `stable_plugins.txt`
 
 You can also activate the community plugins as defined in `community_plugins.txt`
 ``` 
-docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-plugin,ogr-datastore-plugin
- kartoza/geoserver:2.16.1
+ie VERSION=2.16.2
+docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-plugin,ogr-datastore-plugin kartoza/geoserver:${VERSION} 
 
 ```
 ### Using sample data
@@ -79,7 +80,8 @@ If you need to play around with the default data directory you can activate it u
 variable `SAMPLE_DATA=true` 
 
 ``` 
-docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserver:2.16.1
+ie VERSION=2.16.2
+docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserver:${VERSION} 
 
 ```
 
@@ -92,13 +94,15 @@ If you set the environment variable `SSL=true` but do not provide the pem files 
 the container will generate a self signed SSL certificates.
 
 ```
-docker run -it --name geo  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:2.16.1 
+ie VERSION=2.16.2
+docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION} 
 ```
 
  If you already have your own perm files (fullchain.pem and privkey.pem) you can mount the directory containing your keys as:
 
 ``` 
-docker run -it --name geo -v /etc/letsencrpt:/etc/letsencrypt  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:2.16.1 
+ie VERSION=2.16.2
+docker run -it --name geo -v /etc/letsencrpt:/etc/letsencrypt  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}  
 
 ```
 A full list of SSL variables is provided here
@@ -126,8 +130,9 @@ A full list of SSL variables is provided here
 To remove Tomcat extras including docs, examples, and the manager webapp, set the
 `TOMCAT_EXTRAS` build-arg to `false`:
 
-```shell
-docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver .
+```
+ie VERSION=2.16.2
+docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver:${VERSION} .
 ```
 
 ### Building with specific version of  Tomcat
@@ -136,8 +141,9 @@ To build using a specific tagged release for tomcat image set the
 `IMAGE_VERSION` build-arg to `8-jre8`: See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
 to choose which tag you need to build against.
 
-```shell
-docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver:2.13.0 .
+```
+ie VERSION=2.16.2
+docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver:${VERSION} .
 ```
 
 ### Building with file system overlays (advanced)
@@ -169,9 +175,10 @@ a repeatable orchestrated deployment system.
 You probably want to also have PostGIS running too. To create a running
 container do:
 
-```shell
-docker run --name "postgis" -d -t kartoza/postgis:9.4-2.1
-docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver
+```
+ie VERSION=2.16.2
+docker run --name "postgis" -d -t kartoza/postgis:12.0
+docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver:${VERSION}
 ```
 
 You can also use the following environment variables to pass a
@@ -235,7 +242,7 @@ These options can be controlled by environment variables
 The default GeoServer user is 'admin' and the password is 'geoserver'. You can pass the environment variable
 GEOSERVER_ADMIN_PASSWORD to  change it on runtime.
 
-```shell
+```
 docker run --name "geoserver"  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
 ```
 
