@@ -134,13 +134,15 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
         mkdir -p /tmp/geoserver/ && \
         wget --progress=bar:force:noscroll -c --no-check-certificate ${WAR_URL} -O ${destination};
     fi;\
-    fi; \
-    unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
-    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
-    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
-    && cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} \
-    && rm -rf /tmp/geoserver
-
+else
+    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver;
+fi; \
+unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
+&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
+&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
+&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${CATALINA_HOME} \
+&& rm -rf ${CATALINA_HOME}/webapps/geoserver/data \
+&& rm -rf /tmp/geoserver
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
