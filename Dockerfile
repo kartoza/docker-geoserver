@@ -73,8 +73,8 @@ RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DI
 
 
 ADD resources /tmp/resources
-ADD stable_plugins.txt /tmp/stable_plugins.txt
-ADD community_plugins.txt /tmp/community_plugins.txt
+ADD stable_plugins.txt /plugins/stable_plugins.txt
+ADD community_plugins.txt /community_plugins/community_plugins.txt
 ADD scripts /scripts
 ADD letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl
 RUN chmod +x /scripts/*.sh
