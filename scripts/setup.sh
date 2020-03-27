@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Download geoserver extensions and other resources
 
+request="wget --progress=bar:force:noscroll -c --no-check-certificate"
 
 function create_dir() {
 DATA_PATH=$1
@@ -14,44 +15,38 @@ else
 fi
 }
 
+function download_extension() {
+  URL=$1
+  plugin=$2
+  if curl --output /dev/null --silent --head --fail "${URL}"; then
+      echo "URL exists: ${URL}"
+      ${request} "${URL}" -O ${plugin}.zip
+    else
+      echo "URL does not exist: ${URL}"
+  fi
+
+}
 resources_dir="/tmp/resources"
-create_dir ${FOOTPRINTS_DATA_DIR}
 create_dir ${resources_dir}
-pushd ${resources_dir}
 
-
-create_dir /plugins
 
 pushd /plugins
 #Extensions
 # Download all other plugins to keep for activating using env variables
-cp /tmp/stable_plugins.txt .
 
 for plugin in `cat stable_plugins.txt`;do
   url="${STABLE_PLUGIN_URL}/geoserver-${GS_VERSION}-${plugin}.zip"
-  if curl --output /dev/null --silent --head --fail "${url}"; then
-      echo "URL exists: ${url}"
-      wget --progress=bar:force:noscroll -c --no-check-certificate "${url}" -O ${plugin}.zip
-    else
-      echo "URL does not exist: ${url}"
-  fi
+  download_extension ${url} ${plugin}
 done
 
 # Download community modules
 
-create_dir /community_plugins
 pushd /community_plugins
 
-cp /tmp/community_plugins.txt .
-
 for plugin in `cat community_plugins.txt`;do
-  url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-  if curl --output /dev/null --silent --head --fail "${url}"; then
-      echo "URL exists: ${url}"
-      wget --progress=bar:force:noscroll -c --no-check-certificate "${url}" -O ${plugin}.zip
-    else
-      echo "URL does not exist: ${url}"
-  fi
+  community_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
+  download_extension ${community_url} ${plugin}
+
 done
 
 create_dir ${resources_dir}/plugins
@@ -65,29 +60,21 @@ geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip )
 for i in "${array[@]}"
 do
     url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
-    if curl --output /dev/null --silent --head --fail "${url}"; then
-      echo "URL exists: ${url}"
-      wget --progress=bar:force:noscroll -c --no-check-certificate ${url} -O /tmp/resources/plugins/${i}
-    else
-      echo "URL does not exist: ${url}"
-    fi;
+    download_extension ${url} ${i}
 done
 
 create_dir gdal
 pushd gdal
 
-wget --progress=bar:force:noscroll -c --no-check-certificate \
-http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
+${request} http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
 popd
-wget --progress=bar:force:noscroll -c --no-check-certificate \
-http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
+${request} http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
 
 popd
 
 # Install libjpeg-turbo for that specific geoserver GS_VERSION
 if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then \
-    wget --progress=bar:force:noscroll -c --no-check-certificate \
-    https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb \
+    ${request} https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb \
     -P ${resources_dir};\
     fi; \
     cd ${resources_dir} && \
@@ -96,13 +83,11 @@ if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then \
 pushd /tmp/
 
  if [[ ! -f ${resources_dir}/jai-1_1_3-lib-linux-amd64.tar.gz ]]; then \
-    wget --progress=bar:force:noscroll -c --no-check-certificate \
-    http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz \
+    ${request} http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz \
     -P ${resources_dir};\
     fi; \
     if [[ ! -f ${resources_dir}/jai_imageio-1_1-lib-linux-amd64.tar.gz ]]; then \
-    wget --progress=bar:force:noscroll -c --no-check-certificate \
-    http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz \
+    ${request} http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz \
     -P ${resources_dir};\
     fi; \
     mv ./resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ && \
@@ -127,20 +112,22 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
     if [[ "${WAR_URL}" == *\.zip ]]
     then
         destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-        wget --progress=bar:force:noscroll -c --no-check-certificate ${WAR_URL} -O ${destination};
+        ${request} ${WAR_URL} -O ${destination};
         unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
     else
         destination=/tmp/geoserver/geoserver.war
         mkdir -p /tmp/geoserver/ && \
-        wget --progress=bar:force:noscroll -c --no-check-certificate ${WAR_URL} -O ${destination};
+        ${request} ${WAR_URL} -O ${destination};
     fi;\
-    fi; \
-    unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
-    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
-    && cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
-    && cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} \
-    && rm -rf /tmp/geoserver
-
+else
+    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver;
+fi; \
+unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
+&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
+&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
+&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${CATALINA_HOME} \
+&& rm -rf ${CATALINA_HOME}/webapps/geoserver/data \
+&& rm -rf /tmp/geoserver
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
@@ -158,28 +145,24 @@ if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
     fi;
 # Install Marlin render
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then \
-  wget --progress=bar:force:noscroll -c --no-check-certificate \
-  https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
+  ${request} https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
   -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar;
 fi
 
 
 
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then \
-  wget --progress=bar:force:noscroll -c --no-check-certificate \
-  https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
+  ${request} https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
   -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar;
 fi
 
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then \
-  wget --progress=bar:force:noscroll -c --no-check-certificate \
-  https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
+  ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
   -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar;
 fi
 
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then \
-  wget --progress=bar:force:noscroll -c --no-check-certificate \
-  https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
+  ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
   -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar;
 fi
 
