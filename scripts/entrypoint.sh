@@ -12,6 +12,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Dorg.geotools.shapefile.datetime=true -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
        -Dsun.java2d.renderer.useThreadLocal=false -Dsun.java2d.renderer.pixelsize=8192 -server -XX:NewSize=300m \
        --patch-module java.desktop=${CATALINA_HOME}/marlin-0.9.4.2-Unsafe-OpenJDK9.jar  -D-XX:SoftRefLRUPolicyMSPerMB=36000\
+       -Dlog4j.configuration=${CATALINA_HOME}/log4j.properties \
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} \
        --add-modules java.se --add-exports java.base/jdk.internal.ref=ALL-UNNAMED \
        --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED \
