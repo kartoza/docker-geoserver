@@ -6,6 +6,33 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then \
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
+function s3_config() {
+  if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties  ]]; then \
+    rm "${GEOSERVER_DATA_DIR}"/s3.properties
+  fi;
+
+
+cat > "${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
+alias.s3.endpoint=${S3_SERVER_URL}
+alias.s3.user=${S3_USERNAME}
+alias.s3.password=${S3_PASSWORD}
+EOF
+
+}
+
+function install_plugin() {
+  DATA_PATH=/community_plugins
+  if [ -n "$1" ]
+  then
+      DATA_PATH=$1
+  fi
+
+  unzip ${DATA_PATH}/${ext}.zip -d /tmp/gs_plugin \
+  && mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ \
+  && rm -rf /tmp/gs_plugin
+
+}
+
 # Install stable plugins
  for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
         echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
@@ -13,9 +40,7 @@ fi
           echo "Do not install any plugins"
         else
             echo "Installing ${ext} plugin"
-            unzip /plugins/${ext}.zip -d /tmp/gs_plugin \
-            && mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ \
-            && rm -rf /tmp/gs_plugin
+            install_plugin /plugins
         fi
 done
 
@@ -25,10 +50,14 @@ done
         if [[  -z ${COMMUNITY_EXTENSIONS} ]]; then \
           echo "Do not install any plugins"
         else
-            echo "Installing ${ext} plugin"
-            unzip /community_plugins/${ext}.zip -d /tmp/gs_plugin \
-            && mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ \
-            && rm -rf /tmp/gs_plugin
+            if [[ ${ext} == 's3-geotiff-plugin' ]]; then \
+              s3_config
+              install_plugin /community_plugins
+            elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
+              echo "Installing ${ext} plugin"
+              install_plugin /community_plugins
+
+            fi
         fi
 done
 
@@ -48,16 +77,6 @@ ows.gwc=${GWC_REQUEST}
 user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
-if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties  ]]; then \
-    rm "${GEOSERVER_DATA_DIR}"/s3.properties
-fi;
-
-
-cat > "${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
-alias.s3.endpoint=${S3_SERVER_URL}
-alias.s3.user=${S3_USERNAME}
-alias.s3.password=${S3_PASSWORD}
-EOF
 
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
