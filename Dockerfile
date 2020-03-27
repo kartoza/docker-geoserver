@@ -73,8 +73,8 @@ RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DI
 
 
 ADD resources /tmp/resources
-ADD stable_plugins.txt /tmp/stable_plugins.txt
-ADD community_plugins.txt /tmp/community_plugins.txt
+ADD stable_plugins.txt /plugins/stable_plugins.txt
+ADD community_plugins.txt /community_plugins/community_plugins.txt
 ADD log4j.properties  ${CATALINA_HOME}/log4j.properties
 ADD scripts /scripts
 ADD letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl
@@ -101,7 +101,9 @@ ENV \
     S3_SERVER_URL='' \
     S3_USERNAME='' \
     S3_PASSWORD='' \
-    SAMPLE_DATA='FALSE'
+    SAMPLE_DATA='FALSE'\
+    GEOSERVER_FILEBROWSER_HIDEFS=false
+
 
 
 
