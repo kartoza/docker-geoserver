@@ -160,6 +160,15 @@ This will keep the passwords from getting changed by docker.
 
 Overlay files will overwrite existing destination files, so be careful!
 
+### Upgrading image to use a specific version
+During initialization the image will run a script that updates the passwords. This is
+recommended to change passwords the first time that GeoServer runs but on subsequent 
+upgrades a use should use the environment variable
+
+`EXISTING_DATA_DIR=true`
+
+This basically tells GeoServer that we are using a data directory that already exists
+and no passwords should be changed.
 
 #### Build with CORS Support
 
