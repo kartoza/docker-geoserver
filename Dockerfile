@@ -76,6 +76,7 @@ ADD resources /tmp/resources
 ADD stable_plugins.txt /plugins/stable_plugins.txt
 ADD community_plugins.txt /community_plugins/community_plugins.txt
 ADD log4j.properties  ${CATALINA_HOME}/log4j.properties
+ADD web.xml ${CATALINA_HOME}/conf/web.xml
 ADD scripts /scripts
 ADD letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl
 RUN chmod +x /scripts/*.sh
