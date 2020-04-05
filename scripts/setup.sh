@@ -17,10 +17,10 @@ fi
 
 function download_extension() {
   URL=$1
-  plugin=$2
+  PLUGIN=$2
   if curl --output /dev/null --silent --head --fail "${URL}"; then
       echo "URL exists: ${URL}"
-      ${request} "${URL}" -O ${plugin}.zip
+      ${request} "${URL}" -O ${PLUGIN}.zip
     else
       echo "URL does not exist: ${URL}"
   fi

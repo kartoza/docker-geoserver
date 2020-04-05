@@ -26,8 +26,9 @@ function install_plugin() {
   then
       DATA_PATH=$1
   fi
+  EXT=$2
 
-  unzip ${DATA_PATH}/${ext}.zip -d /tmp/gs_plugin \
+  unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin \
   && mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ \
   && rm -rf /tmp/gs_plugin
 
@@ -40,7 +41,7 @@ function install_plugin() {
           echo "Do not install any plugins"
         else
             echo "Installing ${ext} plugin"
-            install_plugin /plugins
+            install_plugin /plugins ${ext}
         fi
 done
 
@@ -52,10 +53,10 @@ done
         else
             if [[ ${ext} == 's3-geotiff-plugin' ]]; then \
               s3_config
-              install_plugin /community_plugins
+              install_plugin /community_plugins ${ext}
             elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
               echo "Installing ${ext} plugin"
-              install_plugin /community_plugins
+              install_plugin /community_plugins ${ext}
 
             fi
         fi
