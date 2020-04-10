@@ -14,7 +14,6 @@ fi
 }
 
 resources_dir="/tmp/resources"
-create_dir ${FOOTPRINTS_DATA_DIR}
 create_dir ${resources_dir}
 pushd ${resources_dir}
 
@@ -27,19 +26,48 @@ if [[ ! -f /tmp/resources/jce_policy.zip ]]; then \
     http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip -O /tmp/resources/jce_policy.zip
 fi;
 
-work_dir=`pwd`
+create_dir /plugins
 
-create_dir ${work_dir}/plugins
+pushd /plugins
+#Extensions
+# Download all other plugins to keep for activating using env variables
+cp /tmp/stable_plugins.txt .
 
-pushd ${work_dir}/plugins
+for plugin in `cat stable_plugins.txt`;do
+  url="${STABLE_PLUGIN_URL}/geoserver-${GS_VERSION}-${plugin}.zip"
+  if curl --output /dev/null --silent --head --fail "${url}"; then
+      echo "URL exists: ${url}"
+      wget --progress=bar:force:noscroll -c --no-check-certificate "${url}" -O ${plugin}.zip
+    else
+      echo "URL does not exist: ${url}"
+  fi
+done
+
+# Download community modules
+
+create_dir /community_plugins
+pushd /community_plugins
+
+cp /tmp/community_plugins.txt .
+
+for plugin in `cat community_plugins.txt`;do
+  url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
+  if curl --output /dev/null --silent --head --fail "${url}"; then
+      echo "URL exists: ${url}"
+      wget --progress=bar:force:noscroll -c --no-check-certificate "${url}" -O ${plugin}.zip
+    else
+      echo "URL does not exist: ${url}"
+  fi
+done
+
+create_dir ${resources_dir}/plugins
+
+pushd ${resources_dir}/plugins
 #Extensions
 
-array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-css-plugin.zip \
-geoserver-$GS_VERSION-csw-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
+array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
 geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip \
-geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip \
-geoserver-$GS_VERSION-sldservice-plugin.zip geoserver-$GS_VERSION-monitor-plugin.zip \
-geoserver-$GS_VERSION-importer-plugin.zip geoserver-$GS_VERSION-charts-plugin.zip)
+geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip )
 for i in "${array[@]}"
 do
     url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
@@ -78,22 +106,7 @@ if ls /tmp/resources/*jdk-*-linux-x64.tar.gz > /dev/null 2>&1; then \
       mv /tmp/resources/*jdk-*-linux-x64.tar.gz /var/cache/oracle-jdk8-installer/; \
     fi;
 
-# Build geogig and other community modules
 
-if  [[ "$COMMUNITY_MODULES" == true ]]; then
-    array=( geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbtiles-plugin.zip \
-    geoserver-${GS_VERSION:0:4}-SNAPSHOT-mbstyle-plugin.zip \
-    geoserver-${GS_VERSION:0:4}-SNAPSHOT-s3-geotiff-plugin.zip geoserver-${GS_VERSION:0:4}-SNAPSHOT-gwc-s3-plugin.zip)
-    for i in "${array[@]}"
-    do
-	    wget --progress=bar:force:noscroll -c --no-check-certificate \
-	    https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/${i} \
-	    -O /tmp/resources/plugins/${i}
-    done
-
-else
-    echo "Building community modules will be disabled"
-fi;
 # Install Oracle JDK (and uninstall OpenJDK JRE) if the build-arg ORACLE_JDK = true or an Oracle tar.gz
 # was found in /tmp/resources
 
@@ -156,6 +169,8 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
         mkdir -p /tmp/geoserver/ && \
         wget --progress=bar:force:noscroll -c --no-check-certificate ${WAR_URL} -O ${destination};
     fi;\
+else
+    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver;
     fi; \
     unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
     && cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
@@ -177,6 +192,37 @@ if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
     mv /usr/local/gdal_data/gdal-data/* /usr/local/gdal_data && rm -rf /usr/local/gdal_data/gdal-data && \
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs; \
     fi;
+
+# Install Marlin render
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2/marlin-0.9.4.2-Unsafe-sun-java2d.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2/marlin-0.9.4.2-Unsafe.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar;
+fi
+
+if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then \
+  wget --progress=bar:force:noscroll -c --no-check-certificate \
+  https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
+  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar;
+fi
 
 # Overlay files and directories in resources/overlays if they exist
 rm -f /tmp/resources/overlays/README.txt && \
