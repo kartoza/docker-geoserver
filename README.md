@@ -170,6 +170,17 @@ upgrades a use should use the environment variable
 This basically tells GeoServer that we are using a data directory that already exists
 and no passwords should be changed.
 
+### Installing extra fonts
+
+If you have downloaded extra fonts you can mount the folder to the path
+/opt/fonts. This will ensure that all the .ttf files are copied to the correct
+path during initialisation.
+
+```
+ie VERSION=2.16.2
+docker run -v fonts:/opt/fonts -p 8080:8080 -t kartoza/geoserver:${VERSION} .
+```
+
 #### Build with CORS Support
 
 The contents of `resources/overlays` will be copied to the image file system
@@ -349,19 +360,6 @@ automate the process without user intervention.
 ## Storing data on the host rather than the container.
 
 Docker volumes can be used to persist your data.
-
-If you need to use geoserver data directory that contains sample examples and configurations download
-it from [geonode](http://build.geonode.org/geoserver/latest/) site as indicated below:
-
-```shell
-
-# Example - ${GS_VERSION} is the geoserver version i.e 2.13.0
-wget http://build.geonode.org/geoserver/latest/data-2.13.x.zip
-unzip data-2.13.x.zip -d ~/geoserver_data
-cp scripts/controlflow.properties ~/geoserver_data
-chmod -R a+rwx ~/geoserver_data
-docker run -d -p 8580:8080 --name "geoserver" -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver:${GS_VERSION}
-```
 
 Create an empty data directory to use to persist your data.
 

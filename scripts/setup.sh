@@ -17,10 +17,10 @@ fi
 
 function download_extension() {
   URL=$1
-  plugin=$2
+  PLUGIN=$2
   if curl --output /dev/null --silent --head --fail "${URL}"; then
       echo "URL exists: ${URL}"
-      ${request} "${URL}" -O ${plugin}.zip
+      ${request} "${URL}" -O ${PLUGIN}.zip
     else
       echo "URL does not exist: ${URL}"
   fi
@@ -173,10 +173,7 @@ rm -f /tmp/resources/overlays/README.txt && \
       cp -rf /tmp/resources/overlays/* /; \
     fi;
 
-# install Font files in resources/fonts if they exist
-if ls /tmp/resources/fonts/*.ttf > /dev/null 2>&1; then \
-      cp -rf /tmp/resources/fonts/*.ttf /usr/share/fonts/truetype/; \
-	fi;
+
 
 # Optionally remove Tomcat manager, docs, and examples
 if [[ "${TOMCAT_EXTRAS}" =~ [Fa][Ll][Ss][Ee] ]]; then \
