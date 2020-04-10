@@ -62,23 +62,24 @@ ENV \
     PKCS12_PASSWORD='geoserver' \
     LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
     RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
-    GEOSERVER_CSRF_DISABLED=true
+    GEOSERVER_CSRF_DISABLED=true \
+    FONTS_DIR=/opt/fonts
 
 
 
 WORKDIR /scripts
 
 
-RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR}
+RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR}
 
 
 ADD resources /tmp/resources
-ADD stable_plugins.txt /plugins/stable_plugins.txt
-ADD community_plugins.txt /community_plugins/community_plugins.txt
-ADD log4j.properties  ${CATALINA_HOME}/log4j.properties
-ADD web.xml ${CATALINA_HOME}/conf/web.xml
+ADD build_data/stable_plugins.txt /plugins/stable_plugins.txt
+ADD build_data/community_plugins.txt /community_plugins/community_plugins.txt
+ADD build_data/log4j.properties  ${CATALINA_HOME}/log4j.properties
+ADD build_data/web.xml ${CATALINA_HOME}/conf/web.xml
 ADD scripts /scripts
-ADD letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl
+ADD build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl
 RUN chmod +x /scripts/*.sh
 
 
@@ -112,7 +113,8 @@ EXPOSE  $HTTPS_PORT
 
 RUN groupadd -r geoserverusers -g 10001 && \
     useradd -M -u 10000 -g geoserverusers geoserveruser
-RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}   ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR}
+RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}  \
+ ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/
 
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
