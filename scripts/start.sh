@@ -3,7 +3,7 @@
 # install Font files in resources/fonts if they exist
 
 if ls ${FONTS_DIR}/*.ttf > /dev/null 2>&1; then \
-      cp -rf /tmp/resources/fonts/*.ttf /usr/share/fonts/truetype/; \
+      cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/; \
 	fi;
 
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then \

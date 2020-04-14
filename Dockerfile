@@ -118,7 +118,7 @@ RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DI
 
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
-USER geoserveruser
+#USER geoserveruser
 WORKDIR ${CATALINA_HOME}
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]
