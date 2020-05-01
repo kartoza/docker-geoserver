@@ -84,9 +84,7 @@ user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
-
-  # shellcheck disable=SC2016
-  sed -i 's/TOMCAT_PASS/${TOMCAT_PASSWORD}/g' /usr/local/tomcat/conf/tomcat-users.xml
+  sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
   else
     rm -rf "${CATALINA_HOME}"/webapps/ROOT && \
     rm -rf "${CATALINA_HOME}"/webapps/docs && \
