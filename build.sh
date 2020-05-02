@@ -1,8 +1,9 @@
 #!/bin/sh
 
-BUGFIX=2
-MINOR=16
 MAJOR=2
+MINOR=17
+BUGFIX=0
+
 
 # Build Geoserver
 echo "Building GeoServer ${MAJOR}.${MINOR}.${BUGFIX} "
