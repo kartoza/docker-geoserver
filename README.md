@@ -332,6 +332,10 @@ products all have one limitation though: they require interaction
 to register applications or keys. With Resilio Sync you can completely
 automate the process without user intervention.
 
+### Support
+
+If you require more substantial assistance from [kartoza](https://kartoza.com)  (because our work and interaction on docker-geoserver is pro bono),
+please consider taking out a [Support Level Agreeement](https://kartoza.com/en/shop/product/support) 
 ## Credits
 
 * Tim Sutton (tim@kartoza.com)
