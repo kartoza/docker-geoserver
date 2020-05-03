@@ -3,7 +3,7 @@
 # install Font files in resources/fonts if they exist
 
 if ls ${FONTS_DIR}/*.ttf > /dev/null 2>&1; then \
-      cp -rf /tmp/resources/fonts/*.ttf /usr/share/fonts/truetype/; \
+      cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/; \
 	fi;
 
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then \
@@ -83,7 +83,15 @@ ows.gwc=${GWC_REQUEST}
 user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
-
+if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
+  sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
+  else
+    rm -rf "${CATALINA_HOME}"/webapps/ROOT && \
+    rm -rf "${CATALINA_HOME}"/webapps/docs && \
+    rm -rf "${CATALINA_HOME}"/webapps/examples && \
+    rm -rf "${CATALINA_HOME}"/webapps/host-manager && \
+    rm -rf "${CATALINA_HOME}"/webapps/manager; \
+  fi;
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
 
