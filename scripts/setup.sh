@@ -56,7 +56,7 @@ pushd ${resources_dir}/plugins
 
 array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
 geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip \
-geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip )
+geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip geoserver-$GS_VERSION-monitor-plugin.zip )
 for i in "${array[@]}"
 do
     url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
@@ -172,17 +172,6 @@ rm -f /tmp/resources/overlays/README.txt && \
     if ls /tmp/resources/overlays/* > /dev/null 2>&1; then \
       cp -rf /tmp/resources/overlays/* /; \
     fi;
-
-
-
-# Optionally remove Tomcat manager, docs, and examples
-if [[ "${TOMCAT_EXTRAS}" =~ [Fa][Ll][Ss][Ee] ]]; then \
-    rm -rf ${CATALINA_HOME}/webapps/ROOT && \
-    rm -rf ${CATALINA_HOME}/webapps/docs && \
-    rm -rf ${CATALINA_HOME}/webapps/examples && \
-    rm -rf ${CATALINA_HOME}/webapps/host-manager && \
-    rm -rf ${CATALINA_HOME}/webapps/manager; \
-  fi;
 
 # Delete resources after installation
 rm -rf /tmp/resources
