@@ -19,7 +19,10 @@ ARG STABLE_PLUGIN_URL=https://liquidtelecom.dl.sourceforge.net/project/geoserver
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
-    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  default-jdk wget zip curl xsltproc certbot
+    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  default-jdk wget zip curl xsltproc certbot cabextract
+
+RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
+    dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
 
 RUN set -e \
     export DEBIAN_FRONTEND=noninteractive \
