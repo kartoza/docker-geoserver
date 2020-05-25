@@ -175,3 +175,5 @@ rm -f /tmp/resources/overlays/README.txt && \
 
 # Delete resources after installation
 rm -rf /tmp/resources
+
+create_dir /usr/share/fonts/opentype

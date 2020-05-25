@@ -5,7 +5,11 @@
 if ls ${FONTS_DIR}/*.ttf > /dev/null 2>&1; then \
       cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/; \
 	fi;
-
+	
+if ls ${FONTS_DIR}/*.otf > /dev/null 2>&1; then \
+      cp -rf ${FONTS_DIR}/*.otf /usr/share/fonts/opentype/; \
+	fi;
+	
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then \
   echo "Installing default data directory"
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
