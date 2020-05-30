@@ -42,7 +42,7 @@ ENV \
     MAX_FILTER_RULES=20 \
     OPTIMIZE_LINE_WIDTH=false \
     SSL=false \
-    TOMCAT_EXTRAS=true \
+    TOMCAT_EXTRAS=false \
     HTTP_PORT=8080 \
     HTTP_PROXY_NAME= \
     HTTP_PROXY_PORT= \
@@ -73,7 +73,6 @@ RUN mkdir /community_plugins /stable_plugins /plugins
 RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
     cp /build_data/log4j.properties  ${CATALINA_HOME} && cp /build_data/web.xml ${CATALINA_HOME}/conf && \
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf && \
-    cp /build_data/tomcat-users.xml /usr/local/tomcat/conf && \
     cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF
 
 ADD scripts /scripts
