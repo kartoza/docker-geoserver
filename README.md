@@ -161,14 +161,15 @@ A full list of SSL variables is provided here
 
 ### Removing Tomcat extras 
 
-To remove Tomcat extras including docs, examples, and the manager webapp, set the
-`TOMCAT_EXTRAS` environment variable to `false`:
+To include Tomcat extras including docs, examples, and the manager webapp, set the
+`TOMCAT_EXTRAS` environment variable to `true`:
+**NB** You should configure the env variable `TOMCAT_PASSWORD` to use a 
+strong password otherwise the default one is setup.
 
 ```
 ie VERSION=2.16.2
-docker run -it --name geoserver  -e TOMCAT_EXTRAS=false -p 8600:8080 kartoza/geoserver:${VERSION} 
+docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION} 
 ```
-
 
 
 ### Upgrading image to use a specific version
@@ -331,6 +332,11 @@ or Dropbox or Google Drive if you want to use another commercial product. These
 products all have one limitation though: they require interaction
 to register applications or keys. With Resilio Sync you can completely
 automate the process without user intervention.
+
+### Contributing to the image
+We welcome users who want to contribute in enriching this service. We follow
+the git principles and all pull requests should be against the develop branch so that
+we can test them and when we are happy we push to the master branch.
 
 ### Support
 
