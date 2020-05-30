@@ -91,6 +91,7 @@ EOF
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
   unzip tomcat_apps.zip -d /tmp/tomcat && \
   mv /tmp/tomcat/tomcat_apps/* ${CATALINA_HOME}/webapps/ && \
+  rm -r /tmp/tomcat && \
   cp /build_data/tomcat-users.xml /usr/local/tomcat/conf && \
   sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
   else
