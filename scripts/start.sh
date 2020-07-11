@@ -6,6 +6,11 @@ if ls ${FONTS_DIR}/*.ttf > /dev/null 2>&1; then \
       cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/; \
 	fi;
 
+# Install opentype fonts
+if ls ${FONTS_DIR}/*.otf > /dev/null 2>&1; then \
+      cp -rf ${FONTS_DIR}/*.otf /usr/share/fonts/opentype/; \
+	fi;
+
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then \
   echo "Installing default data directory"
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
@@ -84,6 +89,10 @@ user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
+  unzip tomcat_apps.zip -d /tmp/tomcat && \
+  mv /tmp/tomcat/tomcat_apps/* ${CATALINA_HOME}/webapps/ && \
+  rm -r /tmp/tomcat && \
+  cp /build_data/tomcat-users.xml /usr/local/tomcat/conf && \
   sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
   else
     rm -rf "${CATALINA_HOME}"/webapps/ROOT && \
