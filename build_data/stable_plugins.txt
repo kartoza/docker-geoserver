@@ -33,5 +33,5 @@ teradata-plugin
 wcs2_0-eo-plugin
 web-resource-plugin
 wps-cluster-hazelcast-plugin
-xslt-plugin.zip
-ysld-plugin.zip
+xslt-plugin
+ysld-plugin
