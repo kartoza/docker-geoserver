@@ -56,8 +56,13 @@ To build using a specific tagged release for tomcat image set the
 to choose which tag you need to build against.
 
 ```
-ie VERSION=2.16.2
-docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver:${VERSION} .
+ie VERSION=2.17.0
+docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.17.0 -t kartoza/geoserver:${VERSION} .
+```
+
+For some recent builds it is necessary to set the JAVA_PATH as well (e.g. Apache Tomcat/9.0.36)
+```
+docker build --build-arg IMAGE_VERSION=9-jdk11-openjdk-slim --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.17.0 -t kartoza/geoserver:2.17.0 .
 ```
 
 ### Building with file system overlays (advanced)
@@ -161,14 +166,15 @@ A full list of SSL variables is provided here
 
 ### Removing Tomcat extras 
 
-To remove Tomcat extras including docs, examples, and the manager webapp, set the
-`TOMCAT_EXTRAS` environment variable to `false`:
+To include Tomcat extras including docs, examples, and the manager webapp, set the
+`TOMCAT_EXTRAS` environment variable to `true`:
+**NB** You should configure the env variable `TOMCAT_PASSWORD` to use a 
+strong password otherwise the default one is setup.
 
 ```
 ie VERSION=2.16.2
-docker run -it --name geoserver  -e TOMCAT_EXTRAS=false -p 8600:8080 kartoza/geoserver:${VERSION} 
+docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION} 
 ```
-
 
 
 ### Upgrading image to use a specific version
@@ -331,6 +337,11 @@ or Dropbox or Google Drive if you want to use another commercial product. These
 products all have one limitation though: they require interaction
 to register applications or keys. With Resilio Sync you can completely
 automate the process without user intervention.
+
+### Contributing to the image
+We welcome users who want to contribute in enriching this service. We follow
+the git principles and all pull requests should be against the develop branch so that
+we can test them and when we are happy we push to the master branch.
 
 ### Support
 

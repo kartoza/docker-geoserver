@@ -1,15 +1,16 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 ARG IMAGE_VERSION=9-jre11-slim
 
+ARG JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
-ARG GS_VERSION=2.17.0
+ARG GS_VERSION=2.17.2
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
-ARG STABLE_PLUGIN_URL=https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions
+ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
@@ -22,14 +23,12 @@ RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscore
 RUN set -e \
     export DEBIAN_FRONTEND=noninteractive \
     dpkg-divert --local --rename --add /sbin/initctl \
-    # Set JAVA_HOME to /usr/lib/jvm/default-java and link it to OpenJDK installation
-    && ln -s /usr/lib/jvm/java-11-openjdk-amd64 /usr/lib/jvm/default-java \
     && (echo "Yes, do as I say!" | apt-get remove --force-yes login) \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 ENV \
-    JAVA_HOME=/usr/lib/jvm/default-java \
+    JAVA_HOME=${JAVA_HOME} \
     STABLE_EXTENSIONS='' \
     COMMUNITY_EXTENSIONS='' \
     DEBIAN_FRONTEND=noninteractive \
@@ -42,7 +41,7 @@ ENV \
     MAX_FILTER_RULES=20 \
     OPTIMIZE_LINE_WIDTH=false \
     SSL=false \
-    TOMCAT_EXTRAS=true \
+    TOMCAT_EXTRAS=false \
     HTTP_PORT=8080 \
     HTTP_PROXY_NAME= \
     HTTP_PROXY_PORT= \
@@ -73,7 +72,9 @@ RUN mkdir /community_plugins /stable_plugins /plugins
 RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
     cp /build_data/log4j.properties  ${CATALINA_HOME} && cp /build_data/web.xml ${CATALINA_HOME}/conf && \
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf && \
-    cp /build_data/tomcat-users.xml /usr/local/tomcat/conf && \
+    cp /build_data/tomcat-users.xml /usr/local/tomcat/conf
+
+RUN if [ -d $CATALINA_HOME/webapps.dist/manager ]; then cp -avT $CATALINA_HOME/webapps.dist/manager $CATALINA_HOME/webapps/manager; fi &&\
     cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF
 
 ADD scripts /scripts
