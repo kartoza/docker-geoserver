@@ -377,6 +377,11 @@ We welcome users who want to contribute in enriching this service. We follow
 the git principles and all pull requests should be against the develop branch so that
 we can test them and when we are happy we push to the master branch.
 
+### Contributing to the image
+We welcome users who want to contribute in enriching this service. We follow
+the git principles and all pull requests should be against the develop branch so that
+we can test them and when we are happy we push to the master branch.
+
 ### Support
 
 If you require more substantial assistance from [kartoza](https://kartoza.com)  (because our work and interaction on docker-geoserver is pro bono),
