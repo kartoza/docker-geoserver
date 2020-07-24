@@ -13,6 +13,8 @@ get our docker trusted build like this:
 ```shell
 docker pull kartoza/geoserver
 ```
+## Building the image
+
 
 ### To build yourself with a local checkout using the build script:
 
@@ -47,6 +49,43 @@ docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/pro
 
 **Note: war file version should match the version number provided by `GS_VERSION` argument otherwise we will have a mismatch of plugins and GeoServer installed.**
 
+### Building with specific version of  Tomcat
+
+To build using a specific tagged release for tomcat image set the
+`IMAGE_VERSION` build-arg to `8-jre8`: See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
+to choose which tag you need to build against.
+
+```
+ie VERSION=2.17.0
+docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.17.0 -t kartoza/geoserver:${VERSION} .
+```
+
+For some recent builds it is necessary to set the JAVA_PATH as well (e.g. Apache Tomcat/9.0.36)
+```
+docker build --build-arg IMAGE_VERSION=9-jdk11-openjdk-slim --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.17.0 -t kartoza/geoserver:2.17.0 .
+```
+
+### Building with file system overlays (advanced)
+
+The contents of `resources/overlays` will be copied to the image file system
+during the build. For example, to include a static Tomcat `setenv.sh`,
+create the file at `resources/overlays/usr/local/tomcat/bin/setenv.sh`.
+
+You can use this functionality to write a static GeoServer directory to
+`/opt/geoserver/data_dir`, include additional jar files, and more.
+
+If you have an already existing `data_dir` with a security setup from another Geoserver: set `EXISTING_DATA_DIR=true`.
+This will keep the passwords from getting changed by docker. 
+
+Overlay files will overwrite existing destination files, so be careful!
+
+#### Build with CORS Support
+
+The contents of `resources/overlays` will be copied to the image file system
+during the build. For example, to include a static web xml with CORS support `web.xml`,
+create the file at `resources/overlays/usr/local/tomcat/conf/web.xml`.
+
+## Environment Variables
 
 ### Activate plugins on runtime
 
@@ -125,40 +164,18 @@ A full list of SSL variables is provided here
 * P12_FILE
 
 
-### Removing Tomcat extras during build
+### Removing Tomcat extras 
 
-To remove Tomcat extras including docs, examples, and the manager webapp, set the
-`TOMCAT_EXTRAS` build-arg to `false`:
-
-```
-ie VERSION=2.16.2
-docker build --build-arg TOMCAT_EXTRAS=false --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver:${VERSION} .
-```
-
-### Building with specific version of  Tomcat
-
-To build using a specific tagged release for tomcat image set the
-`IMAGE_VERSION` build-arg to `8-jre8`: See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
-to choose which tag you need to build against.
+To include Tomcat extras including docs, examples, and the manager webapp, set the
+`TOMCAT_EXTRAS` environment variable to `true`:
+**NB** You should configure the env variable `TOMCAT_PASSWORD` to use a 
+strong password otherwise the default one is setup.
 
 ```
 ie VERSION=2.16.2
-docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.13.0 -t kartoza/geoserver:${VERSION} .
+docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION} 
 ```
 
-### Building with file system overlays (advanced)
-
-The contents of `resources/overlays` will be copied to the image file system
-during the build. For example, to include a static Tomcat `setenv.sh`,
-create the file at `resources/overlays/usr/local/tomcat/bin/setenv.sh`.
-
-You can use this functionality to write a static GeoServer directory to
-`/opt/geoserver/data_dir`, include additional jar files, and more.
-
-If you have an already existing `data_dir` with a security setup from another Geoserver: set `EXISTING_DATA_DIR=true`.
-This will keep the passwords from getting changed by docker. 
-
-Overlay files will overwrite existing destination files, so be careful!
 
 ### Upgrading image to use a specific version
 During initialization the image will run a script that updates the passwords. This is
@@ -170,32 +187,18 @@ upgrades a use should use the environment variable
 This basically tells GeoServer that we are using a data directory that already exists
 and no passwords should be changed.
 
-#### Build with CORS Support
+### Installing extra fonts
 
-The contents of `resources/overlays` will be copied to the image file system
-during the build. For example, to include a static web xml with CORS support `web.xml`,
-create the file at `resources/overlays/usr/local/tomcat/conf/web.xml`.
-
-## Run (manual docker commands)
-
-**Note:** You probably want to use docker-compose for running as it will provide
-a repeatable orchestrated deployment system.
-
-You probably want to also have PostGIS running too. To create a running
-container do:
+If you have downloaded extra fonts you can mount the folder to the path
+/opt/fonts. This will ensure that all the .ttf files are copied to the correct
+path during initialisation.
 
 ```
 ie VERSION=2.16.2
-docker run --name "postgis" -d -t kartoza/postgis:12.0
-docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver:${VERSION}
+docker run -v fonts:/opt/fonts -p 8080:8080 -t kartoza/geoserver:${VERSION} .
 ```
 
-You can also use the following environment variables to pass a
-user name and password to PostGIS:
-
-* `-e USERNAME=<PGUSER>`
-* `-e PASS=<PGPASSWORD>`
-
+### Other Environment variables supported
 You can also use the following environment variables to pass arguments to GeoServer:
 
 * `GEOSERVER_DATA_DIR=<PATH>`
@@ -205,6 +208,8 @@ You can also use the following environment variables to pass arguments to GeoSer
 * `FOOTPRINTS_DATA_DIR=<PATH>`
 * `GEOWEBCACHE_CACHE_DIR=<PATH>`
 * `GEOSERVER_ADMIN_PASSWORD=<password>`
+* `GEOSERVER_ADMIN_USER=<username>`
+* `GEOSERVER_FILEBROWSER_HIDEFS=<false or true>`
 
 In order to prevent clickjacking attacks GeoServer defaults to 
 setting the X-Frame-Options HTTP header to SAMEORIGIN. Controls whether the X-Frame-Options 
@@ -243,25 +248,39 @@ These options can be controlled by environment variables
     * GWC_REQUEST=16 
     * WPS_REQUEST=1000/d;30s
 
-
-**Note:**
-
-### Changing GeoServer password on runtime
+### Changing GeoServer password and username on runtime
 
 The default GeoServer user is 'admin' and the password is 'geoserver'. You can pass the environment variable
-GEOSERVER_ADMIN_PASSWORD to  change it on runtime.
+GEOSERVER_ADMIN_PASSWORD and GEOSERVER_ADMIN_USER to  change it on runtime.
 
 ```
-docker run --name "geoserver"  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
+docker run --name "geoserver" -e GEOSERVER_ADMIN_USER=kartoza  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
 ```
 
-## Run (automated using docker-compose)
+## Running the Image 
+
+### (manual docker commands)
+
+You probably want to also have PostGIS running too. To create a running
+container do:
+
+```
+ie VERSION=2.16.2
+docker run --name "postgis" -d -t kartoza/postgis:12.0
+docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver:${VERSION}
+```
+You can read more about PostGIS environment variables from [docker-postgis](https://github.com/kartoza/docker-postgis)
+
+### Run (automated using docker-compose)
+
+**Note:** You probably want to use docker-compose for running as it will provide
+a repeatable orchestrated deployment system.
+
 
 We provide a sample ``docker-compose.yml`` file that illustrates
-how you can establish a GeoServer + PostGIS + GeoGig orchestrated environment
-with nightly backups that are synchronised to your backup server via btsync.
+how you can establish a GeoServer + PostGIS with nightly backups.
 
-If you are **not** interested in the backups, GeoGig and btsync options, comment
+If you are **not** interested in the backups , comment
 out those services in the ``docker-compose.yml`` file.
 
 If you start the stack using the compose file make sure you login into GeoServer using username:`admin`
@@ -271,31 +290,6 @@ Please read the ``docker-compose``
 [documentation](https://docs.docker.com/compose/) for details
 on usage and syntax of ``docker-compose`` - it is not covered here.
 
-If you **are** interested in btsync backups, install [Resilio sync]
-on your desktop NAS or other backup  destination and create two
-folders:
-
-* one for database backup dumps
-* one for geoserver data dir
-
-Then make a copy of each of the provided EXAMPLE environment files e.g.:
-
-```shell
-cp docker-env/btsync-db.env.EXAMPLE docker-env/btsync-db.env
-cp docker-env/btsync-media.env.EXAMPLE docker-env/btsync-media.env
-```
-
-Then edit the two env files, placing your Read/Write Resilio keys
-in the place provided.
-
-To run the example do:
-
-```shell
-docker-compose up
-```
-
-Which will run everything in the foreground giving you the opportunity
-to peruse logs and see that everything spins up nicely.
 
 Once all services are started, test by visiting the GeoServer landing
 page in your browser: [http://localhost:8600/geoserver](http://localhost:8600/geoserver).
@@ -312,9 +306,7 @@ when you remove the containers, **all data will be kept**. Using host based volu
  ensures that your data persists between invocations of the compose file. If you need
  to delete the container data you need to run `docker volume prune`. Pruning the volumes will
  remove all the storage volumes that are not in use so users need to be careful of such a move.
- Either set up btsync (and test to verify that your backups are working, we take
-**no responsibility** if the examples provided here do not produce
-a reliable backup system).
+
 
 ## Run (automated using rancher)
 
@@ -346,31 +338,15 @@ products all have one limitation though: they require interaction
 to register applications or keys. With Resilio Sync you can completely
 automate the process without user intervention.
 
-## Storing data on the host rather than the container.
+### Contributing to the image
+We welcome users who want to contribute in enriching this service. We follow
+the git principles and all pull requests should be against the develop branch so that
+we can test them and when we are happy we push to the master branch.
 
-Docker volumes can be used to persist your data.
+### Support
 
-If you need to use geoserver data directory that contains sample examples and configurations download
-it from [geonode](http://build.geonode.org/geoserver/latest/) site as indicated below:
-
-```shell
-
-# Example - ${GS_VERSION} is the geoserver version i.e 2.13.0
-wget http://build.geonode.org/geoserver/latest/data-2.13.x.zip
-unzip data-2.13.x.zip -d ~/geoserver_data
-cp scripts/controlflow.properties ~/geoserver_data
-chmod -R a+rwx ~/geoserver_data
-docker run -d -p 8580:8080 --name "geoserver" -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver:${GS_VERSION}
-```
-
-Create an empty data directory to use to persist your data.
-
-```shell
-mkdir -p ~/geoserver_data && chmod -R a+rwx ~/geoserver_data
-docker run -d -v $HOME/geoserver_data:/opt/geoserver/data_dir kartoza/geoserver
-```
-
-
+If you require more substantial assistance from [kartoza](https://kartoza.com)  (because our work and interaction on docker-geoserver is pro bono),
+please consider taking out a [Support Level Agreeement](https://kartoza.com/en/shop/product/support) 
 ## Credits
 
 * Tim Sutton (tim@kartoza.com)

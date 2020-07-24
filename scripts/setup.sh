@@ -17,10 +17,10 @@ fi
 
 function download_extension() {
   URL=$1
-  plugin=$2
+  PLUGIN=$2
   if curl --output /dev/null --silent --head --fail "${URL}"; then
       echo "URL exists: ${URL}"
-      ${request} "${URL}" -O ${plugin}.zip
+      ${request} "${URL}" -O ${PLUGIN}.zip
     else
       echo "URL does not exist: ${URL}"
   fi
@@ -56,7 +56,7 @@ pushd ${resources_dir}/plugins
 
 array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip \
 geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip \
-geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip )
+geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip geoserver-$GS_VERSION-monitor-plugin.zip )
 for i in "${array[@]}"
 do
     url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
@@ -173,19 +173,29 @@ rm -f /tmp/resources/overlays/README.txt && \
       cp -rf /tmp/resources/overlays/* /; \
     fi;
 
-# install Font files in resources/fonts if they exist
-if ls /tmp/resources/fonts/*.ttf > /dev/null 2>&1; then \
-      cp -rf /tmp/resources/fonts/*.ttf /usr/share/fonts/truetype/; \
-	fi;
+create_dir /tomcat_apps
+create_dir /usr/share/fonts/opentype
 
-# Optionally remove Tomcat manager, docs, and examples
-if [[ "${TOMCAT_EXTRAS}" =~ [Fa][Ll][Ss][Ee] ]]; then \
-    rm -rf ${CATALINA_HOME}/webapps/ROOT && \
-    rm -rf ${CATALINA_HOME}/webapps/docs && \
-    rm -rf ${CATALINA_HOME}/webapps/examples && \
-    rm -rf ${CATALINA_HOME}/webapps/host-manager && \
-    rm -rf ${CATALINA_HOME}/webapps/manager; \
-  fi;
+if [[ ! -f /tomcat_apps.zip ]]; then \
+
+  cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps && \
+  cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps && \
+  cp -r  "${CATALINA_HOME}"/webapps/examples /tomcat_apps && \
+  cp -r "${CATALINA_HOME}"/webapps/host-manager  /tomcat_apps&& \
+  cp -r  "${CATALINA_HOME}"/webapps/manager /tomcat_apps && \
+  zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
+fi
+
+#Remove default tomcat extras
+
+rm -rf "${CATALINA_HOME}"/webapps/ROOT && \
+rm -rf "${CATALINA_HOME}"/webapps/docs && \
+rm -rf "${CATALINA_HOME}"/webapps/examples && \
+rm -rf "${CATALINA_HOME}"/webapps/host-manager && \
+rm -rf "${CATALINA_HOME}"/webapps/manager; \
+
+
+
 
 # Delete resources after installation
 rm -rf /tmp/resources

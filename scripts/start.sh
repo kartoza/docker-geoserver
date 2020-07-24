@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# install Font files in resources/fonts if they exist
+
+if ls ${FONTS_DIR}/*.ttf > /dev/null 2>&1; then \
+      cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/; \
+	fi;
+
+# Install opentype fonts
+if ls ${FONTS_DIR}/*.otf > /dev/null 2>&1; then \
+      cp -rf ${FONTS_DIR}/*.otf /usr/share/fonts/opentype/; \
+	fi;
 
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then \
   echo "Installing default data directory"
@@ -26,8 +36,9 @@ function install_plugin() {
   then
       DATA_PATH=$1
   fi
+  EXT=$2
 
-  unzip ${DATA_PATH}/${ext}.zip -d /tmp/gs_plugin \
+  unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin \
   && mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ \
   && rm -rf /tmp/gs_plugin
 
@@ -40,7 +51,7 @@ function install_plugin() {
           echo "Do not install any plugins"
         else
             echo "Installing ${ext} plugin"
-            install_plugin /plugins
+            install_plugin /plugins ${ext}
         fi
 done
 
@@ -52,10 +63,10 @@ done
         else
             if [[ ${ext} == 's3-geotiff-plugin' ]]; then \
               s3_config
-              install_plugin /community_plugins
+              install_plugin /community_plugins ${ext}
             elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
               echo "Installing ${ext} plugin"
-              install_plugin /community_plugins
+              install_plugin /community_plugins ${ext}
 
             fi
         fi
@@ -77,7 +88,19 @@ ows.gwc=${GWC_REQUEST}
 user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
-
+if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
+  unzip tomcat_apps.zip -d /tmp/tomcat && \
+  mv /tmp/tomcat/tomcat_apps/* ${CATALINA_HOME}/webapps/ && \
+  rm -r /tmp/tomcat && \
+  cp /build_data/tomcat-users.xml /usr/local/tomcat/conf && \
+  sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
+  else
+    rm -rf "${CATALINA_HOME}"/webapps/ROOT && \
+    rm -rf "${CATALINA_HOME}"/webapps/docs && \
+    rm -rf "${CATALINA_HOME}"/webapps/examples && \
+    rm -rf "${CATALINA_HOME}"/webapps/host-manager && \
+    rm -rf "${CATALINA_HOME}"/webapps/manager; \
+  fi;
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
 
