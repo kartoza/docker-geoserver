@@ -12,7 +12,7 @@ if [ ${DEBUG} ]; then
 fi;
 
 if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
-  cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
+  cp -r ${CATALINA_HOME}/geoserver-data/data/security ${GEOSERVER_DATA_DIR}
 fi
 
 

@@ -104,31 +104,28 @@ pushd /tmp/
     rm /tmp/jai_imageio-1_1-lib-linux-amd64.tar.gz && \
     rm -r /tmp/jai_imageio-1_1
 
-pushd ${CATALINA_HOME}
+pushd /
 
 # A little logic that will fetch the geoserver war zip file if it
 # is not available locally in the resources dir
-if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
-    if [[ "${WAR_URL}" == *\.zip ]]
-    then
-        destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-        ${request} ${WAR_URL} -O ${destination};
-        unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
-    else
-        destination=/tmp/geoserver/geoserver.war
-        mkdir -p /tmp/geoserver/ && \
-        ${request} ${WAR_URL} -O ${destination};
-    fi;\
-else
-    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver;
-fi; \
-unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
-&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
-&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
-&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${CATALINA_HOME} \
-&& rm -rf ${CATALINA_HOME}/webapps/geoserver/data \
-&& rm -rf /tmp/geoserver
 
+${request} https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-bin.zip && \
+${request} https://build.geo-solutions.it/geonode/geoserver/latest/geoserver-${GS_VERSION}.war --no-check-certificate && \
+mkdir -p geoserver-${GS_VERSION} && \
+unzip geoserver-${GS_VERSION}-bin.zip -d geoserver-${GS_VERSION} && \
+mv geoserver-${GS_VERSION} geoserver && \
+rm ./geoserver-${GS_VERSION}-bin.zip && \
+rm ./geoserver-${GS_VERSION}/webapps/geoserver/* -rf && \
+unzip -o geoserver-${GS_VERSION}.war -d /geoserver/webapps/geoserver/ && \
+rm ./geoserver-${GS_VERSION}.war \
+&& ${request} https://build.geo-solutions.it/geonode/geoserver/latest/data-${GS_VERSION}.zip  \
+&& unzip -o ./data-${GS_VERSION}.zip -d ${CATALINA_HOME}/geoserver-data \
+&& rm ./data-${GS_VERSION}.zip \
+&& cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/
+
+
+
+pushd ${CATALINA_HOME}
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
       for p in /tmp/resources/plugins/*.zip; do \

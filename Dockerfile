@@ -7,7 +7,8 @@ FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
-ARG GS_VERSION=2.17.2
+ARG GS_VERSION=2.17.1
+ARG GEONODE=true
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions
@@ -40,7 +41,7 @@ ENV \
     ENABLE_JSONP=true \
     MAX_FILTER_RULES=20 \
     OPTIMIZE_LINE_WIDTH=false \
-    SSL=false \
+    SSL=true \
     TOMCAT_EXTRAS=false \
     HTTP_PORT=8080 \
     HTTP_PROXY_NAME= \
@@ -61,7 +62,8 @@ ENV \
     LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
     RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
     GEOSERVER_CSRF_DISABLED=true \
-    FONTS_DIR=/opt/fonts
+    FONTS_DIR=/opt/fonts \
+    GEOSERVER_HOME=/geoserver
 
 WORKDIR /scripts
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR}
@@ -99,7 +101,7 @@ ENV \
     S3_SERVER_URL='' \
     S3_USERNAME='' \
     S3_PASSWORD='' \
-    SAMPLE_DATA='FALSE'\
+    SAMPLE_DATA='TRUE'\
     GEOSERVER_FILEBROWSER_HIDEFS=false \
     TOMCAT_PASSWORD='tomcat'
 
@@ -108,6 +110,7 @@ ENV \
 
 EXPOSE  $HTTPS_PORT
 
+RUN cp /scripts/startup.sh ${GEOSERVER_HOME}/bin && cp -r ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/* ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/
 RUN groupadd -r geoserverusers -g 10001 && \
     useradd -M -u 10000 -g geoserverusers geoserveruser
 RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}  \
@@ -118,4 +121,4 @@ RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 #USER geoserveruser
 WORKDIR ${CATALINA_HOME}
 
-CMD ["/bin/sh", "/scripts/entrypoint.sh"]
+CMD ["/bin/sh", "/geoserver/bin/startup.sh"]
