@@ -10,8 +10,6 @@ if [[ ! -d ${DATA_PATH} ]];
 then
     echo "Creating" ${DATA_PATH}  "directory"
     mkdir -p ${DATA_PATH}
-else
-    echo ${DATA_PATH} "exists - skipping creation"
 fi
 }
 
@@ -120,8 +118,7 @@ unzip -o geoserver-${GS_VERSION}.war -d /geoserver/webapps/geoserver/ && \
 rm ./geoserver-${GS_VERSION}.war \
 && ${request} https://build.geo-solutions.it/geonode/geoserver/latest/data-${GS_VERSION}.zip  \
 && unzip -o ./data-${GS_VERSION}.zip -d ${CATALINA_HOME}/geoserver-data \
-&& rm ./data-${GS_VERSION}.zip \
-&& cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/
+&& rm ./data-${GS_VERSION}.zip
 
 
 
@@ -130,7 +127,7 @@ pushd ${CATALINA_HOME}
 if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
       for p in /tmp/resources/plugins/*.zip; do \
         unzip $p -d /tmp/gs_plugin \
-        && mv /tmp/gs_plugin/*.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/ \
+        && mv /tmp/gs_plugin/*.jar ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/ \
         && rm -rf /tmp/gs_plugin; \
       done; \
     fi; \
@@ -141,26 +138,26 @@ if ls /tmp/resources/plugins/*.zip > /dev/null 2>&1; then \
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs; \
     fi;
 # Install Marlin render
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then \
+if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then \
   ${request} https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
-  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar;
+  -O ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar;
 fi
 
 
 
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then \
+if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then \
   ${request} https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
-  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar;
+  -O ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar;
 fi
 
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then \
+if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then \
   ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
-  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar;
+  -O ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar;
 fi
 
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then \
+if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then \
   ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
-  -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar;
+  -O ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar;
 fi
 
 

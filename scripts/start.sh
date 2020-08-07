@@ -38,7 +38,7 @@ function install_plugin() {
   EXT=$2
 
   unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin \
-  && mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ \
+  && mv /tmp/gs_plugin/*.jar "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/ \
   && rm -rf /tmp/gs_plugin
 
 }
@@ -101,29 +101,11 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
     rm -rf "${CATALINA_HOME}"/webapps/manager; \
   fi;
 
+
+
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
 
   # WORKDIR $CATALINA_HOME
-
-  if [ -z "$LETSENCRYPT_CERT_DIR" ] ; then
-      echo '$LETSENCRYPT_CERT_DIR not set'
-      exit 1
-  fi
-
-  if [ -z "$PKCS12_PASSWORD" ] ; then
-      echo '$PKCS12_PASSWORD not set'
-      exit 1
-  fi
-
-  if [ -z "$JKS_KEY_PASSWORD" ] ; then
-      echo '$JKS_KEY_PASSWORD not set'
-      exit 1
-  fi
-
-  if [ -z "$JKS_STORE_PASSWORD" ] ; then
-      echo '$JKS_STORE_PASSWORD not set'
-      exit 1
-  fi
 
   # convert LetsEncrypt certificates
   # https://community.letsencrypt.org/t/cry-for-help-windows-tomcat-ssl-lets-encrypt/22902/4
@@ -244,8 +226,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
     $JKS_KEY_PASSWORD_PARAM \
     $KEY_ALIAS_PARAM \
     $JKS_STORE_PASSWORD_PARAM \
-    conf/letsencrypt-tomcat.xsl \
-    conf/server.xml"
+    ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl \
+    ${CATALINA_HOME}/conf/server.xml"
 
   eval "$transform"
 
@@ -345,3 +327,4 @@ if [[ GEONODE =~ [Tt][Rr][Uu][Ee] ]];then \
   echo "FINISHED GEOSERVER ENTRYPOINT -----------------------"
   echo "-----------------------------------------------------"
 fi;
+

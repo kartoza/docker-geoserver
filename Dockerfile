@@ -110,7 +110,7 @@ ENV \
 
 EXPOSE  $HTTPS_PORT
 
-RUN cp /scripts/startup.sh ${GEOSERVER_HOME}/bin && cp -r ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/* ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/
+RUN cp /scripts/entrypoint.sh ${GEOSERVER_HOME}/
 RUN groupadd -r geoserverusers -g 10001 && \
     useradd -M -u 10000 -g geoserverusers geoserveruser
 RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}  \
@@ -119,6 +119,6 @@ RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DI
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
 #USER geoserveruser
-WORKDIR ${CATALINA_HOME}
+WORKDIR ${GEOSERVER_HOME}
 
-CMD ["/bin/sh", "/geoserver/bin/startup.sh"]
+ CMD ["/bin/sh", "entrypoint.sh"]
