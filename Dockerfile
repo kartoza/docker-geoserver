@@ -16,8 +16,11 @@ ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
     ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  gdal-bin libgdal-java wget zip curl xsltproc certbot \
-    certbot  cabextract
+    certbot  cabextract lsb-release
+RUN sh -c "echo \"deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main\" > /etc/apt/sources.list.d/pgdg.list" \
+    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc -O- | apt-key add -
 
+RUN apt-get update;apt-get -y --no-install-recommends install postgresql-client
 RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
 
@@ -48,7 +51,7 @@ ENV \
     HTTP_PROXY_PORT= \
     HTTP_REDIRECT_PORT= \
     HTTP_CONNECTION_TIMEOUT=20000 \
-    HTTPS_PORT=8443 \
+    HTTPS_PORT=443 \
     HTTPS_MAX_THREADS=150 \
     HTTPS_CLIENT_AUTH= \
     HTTPS_PROXY_NAME= \
@@ -63,7 +66,12 @@ ENV \
     RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
     GEOSERVER_CSRF_DISABLED=true \
     FONTS_DIR=/opt/fonts \
-    GEOSERVER_HOME=/geoserver
+    GEOSERVER_HOME=/geoserver \
+    DOCKERIZE_VERSION=v0.6.1
+
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 WORKDIR /scripts
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR}
@@ -121,4 +129,5 @@ RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 #USER geoserveruser
 WORKDIR ${GEOSERVER_HOME}
 
- CMD ["/bin/sh", "entrypoint.sh"]
+
+CMD [ "dockerize", "-wait","tcp://postgres:5432", "-timeout" , "60s", "/bin/bash" , "entrypoint.sh" ]
