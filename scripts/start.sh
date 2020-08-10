@@ -105,7 +105,7 @@ fi;
 
 
 
-
+# logic adapted from GeoNode https://github.com/GeoNode/geonode/blob/master/scripts/spcgeonode/geoserver/docker-entrypoint.sh
 
 ############################
 # 0. Defining BASEURL
