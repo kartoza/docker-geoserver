@@ -108,7 +108,7 @@ pushd /
 # is not available locally in the resources dir
 
 ${request} https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-bin.zip && \
-${request} https://build.geo-solutions.it/geonode/geoserver/latest/geoserver-${GS_VERSION}.war --no-check-certificate && \
+${request} $WAR_URL  && \
 mkdir -p geoserver-${GS_VERSION} && \
 unzip geoserver-${GS_VERSION}-bin.zip -d geoserver-${GS_VERSION} && \
 mv geoserver-${GS_VERSION} geoserver && \

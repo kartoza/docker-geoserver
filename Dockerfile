@@ -8,9 +8,8 @@ FROM tomcat:$IMAGE_VERSION
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
 ARG GS_VERSION=2.17.1
-ARG GEONODE=true
 
-ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+ARG WAR_URL=https://build.geo-solutions.it/geonode/geoserver/latest/geoserver-${GS_VERSION}.war
 ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions
 
 #Install extra fonts to use with sld font markers
@@ -109,7 +108,7 @@ ENV \
     S3_SERVER_URL='' \
     S3_USERNAME='' \
     S3_PASSWORD='' \
-    SAMPLE_DATA='TRUE'\
+    SAMPLE_DATA='FALSE'\
     GEOSERVER_FILEBROWSER_HIDEFS=false \
     TOMCAT_PASSWORD='tomcat'
 

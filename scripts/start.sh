@@ -11,7 +11,7 @@ if ls ${FONTS_DIR}/*.otf > /dev/null 2>&1; then \
       cp -rf ${FONTS_DIR}/*.otf /usr/share/fonts/opentype/; \
 	fi;
 
-if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee]  ]]; then \
+if [[ ${SAMPLE_DATA} =~ [Fa][Ll][Ss][Ee]  ]]; then \
     cp -r ${CATALINA_HOME}/geoserver-data/data/* ${GEOSERVER_DATA_DIR}
 fi
 
@@ -140,13 +140,10 @@ echo "BASEURL is $BASEURL"
 echo "-----------------------------------------------------"
 echo "1. Initializing Geodatadir"
 
-
-
-if [ "$(ls -A "${GEOSERVER_DATA_DIR}")" ]; then
-    echo 'Geodatadir not empty, skipping initialization...'
-else
-    echo 'Geodatadir empty, we run initialization...'
+GEODATA_LOCKFILE="${GEOSERVER_DATA_DIR}/.config_password.lock"
+if [ ! -f "${GEODATA_LOCKFILE}" ]; then
     cp -r ${CATALINA_HOME}/geoserver-data/data/* ${GEOSERVER_DATA_DIR}
+    touch ${GEODATA_LOCKFILE}
 fi
 
 ############################
@@ -229,7 +226,7 @@ echo "-----------------------------------------------------"
 echo "5. (Re)setting Baseurl"
 
 sed -i -r "s|<proxyBaseUrl>.*</proxyBaseUrl>|<proxyBaseUrl>$BASEURL</proxyBaseUrl>|" "${GEOSERVER_DATA_DIR}/global.xml"
-cat ${GEOSERVER_DATA_DIR}/global.xml
+
 ############################
 # 6. IMPORTING SSL CERTIFICATE
 ############################
