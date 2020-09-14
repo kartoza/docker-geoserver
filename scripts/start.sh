@@ -104,28 +104,6 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
 
-  # WORKDIR $CATALINA_HOME
-
-  if [ -z "$LETSENCRYPT_CERT_DIR" ] ; then
-      echo '$LETSENCRYPT_CERT_DIR not set'
-      exit 1
-  fi
-
-  if [ -z "$PKCS12_PASSWORD" ] ; then
-      echo '$PKCS12_PASSWORD not set'
-      exit 1
-  fi
-
-  if [ -z "$JKS_KEY_PASSWORD" ] ; then
-      echo '$JKS_KEY_PASSWORD not set'
-      exit 1
-  fi
-
-  if [ -z "$JKS_STORE_PASSWORD" ] ; then
-      echo '$JKS_STORE_PASSWORD not set'
-      exit 1
-  fi
-
   # convert LetsEncrypt certificates
   # https://community.letsencrypt.org/t/cry-for-help-windows-tomcat-ssl-lets-encrypt/22902/4
 
@@ -133,6 +111,16 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
 
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
+
+  if [[  -f ${LETSENCRYPT_CERT_DIR}/certificate.pfx ]]; then \
+    # Generate private key
+      openssl pkcs12 -in ${LETSENCRYPT_CERT_DIR}/certificate.pfx -nocerts \
+      -out ${LETSENCRYPT_CERT_DIR}/privkey.pem -nodes -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
+      # Generate certificate only
+      openssl pkcs12 -in ${LETSENCRYPT_CERT_DIR}/certificate.pfx -clcerts -nodes -nokeys \
+      -out ${LETSENCRYPT_CERT_DIR}/fullchain.pem -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
+  fi
+
 
   # Check if mounted file contains proper keys otherwise use open ssl
   if [[ ! -f ${LETSENCRYPT_CERT_DIR}/fullchain.pem ]]; then \
