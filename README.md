@@ -127,7 +127,8 @@ docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserve
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
 Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for providing the solution to
-run under SSL. Currently the container does not use PFX files , it ony uses pkcs12
+run under SSL. 
+
 
 If you set the environment variable `SSL=true` but do not provide the pem files (fullchain.pem and privkey.pem)
 the container will generate a self signed SSL certificates.
@@ -144,6 +145,15 @@ ie VERSION=2.16.2
 docker run -it --name geo -v /etc/letsencrpt:/etc/letsencrypt  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}  
 
 ```
+
+You can also use a PFX file with this image.
+Rename your PFX file as certificate.pfx and then mount the folder containing
+your pfx file. This will be converted to perm files. 
+
+**NB** When using PFX files make sure that the ALIAS_KEY you specify as
+an environment variable matches the ALIAS_KEY that was used when generating
+your PFX key.
+
 A full list of SSL variables is provided here
 * HTTP_PORT
 * HTTP_PROXY_NAME
