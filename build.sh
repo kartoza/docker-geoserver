@@ -2,7 +2,7 @@
 
 MAJOR=2
 MINOR=17
-BUGFIX=1
+BUGFIX=2
 
 
 # Build Geoserver
