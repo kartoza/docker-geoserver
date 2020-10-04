@@ -1,5 +1,5 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9-jre11-slim
+ARG IMAGE_VERSION=9-jdk11-openjdk-slim
 
 ARG JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
@@ -14,7 +14,7 @@ ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
-    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  gdal-bin libgdal-java wget zip curl xsltproc certbot \
+    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev   wget zip curl xsltproc certbot \
     certbot  cabextract
 
 RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
@@ -34,14 +34,14 @@ ENV \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/gdal_native_libs:/opt/libjpeg-turbo/lib64" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     ENABLE_JSONP=true \
     MAX_FILTER_RULES=20 \
     OPTIMIZE_LINE_WIDTH=false \
     SSL=false \
-    TOMCAT_EXTRAS=false \
+    TOMCAT_EXTRAS=true \
     HTTP_PORT=8080 \
     HTTP_PROXY_NAME= \
     HTTP_PROXY_PORT= \
@@ -61,7 +61,13 @@ ENV \
     LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
     RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
     GEOSERVER_CSRF_DISABLED=true \
-    FONTS_DIR=/opt/fonts
+    FONTS_DIR=/opt/fonts \
+    ENCODING='UTF8' \
+    TIMEZONE='GMT' \
+    CHARACTER_ENCODING='UTF-8' \
+    USER_ID=10000 \
+    GROUP_ID=10001
+
 
 WORKDIR /scripts
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR}
@@ -74,8 +80,6 @@ RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugi
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf && \
     cp /build_data/tomcat-users.xml /usr/local/tomcat/conf
 
-RUN if [ -d $CATALINA_HOME/webapps.dist/manager ]; then cp -avT $CATALINA_HOME/webapps.dist/manager $CATALINA_HOME/webapps/manager; fi &&\
-    cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF
 
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh
@@ -108,14 +112,15 @@ ENV \
 
 EXPOSE  $HTTPS_PORT
 
-RUN groupadd -r geoserverusers -g 10001 && \
-    useradd -M -u 10000 -g geoserverusers geoserveruser
-RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}  \
- ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/
+
+RUN groupadd -r geoserverusers -g $GROUP_ID && \
+    useradd -M -u $USER_ID -g geoserverusers geoserver
+RUN chown -R geoserver:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}  \
+ ${GEOSERVER_DATA_DIR} /scripts  ${FONTS_DIR} /tmp/
 
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
-#USER geoserveruser
+#USER geoserver
 WORKDIR ${CATALINA_HOME}
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]

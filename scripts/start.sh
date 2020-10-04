@@ -16,6 +16,11 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then \
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
+if [[ ! -d ${GEOSERVER_DATA_DIR}/user_projections ]]; then \
+  echo "Adding custom projection directory"
+  cp -r ${CATALINA_HOME}/data/user_projections ${GEOSERVER_DATA_DIR}
+fi
+
 function s3_config() {
   if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties  ]]; then \
     rm "${GEOSERVER_DATA_DIR}"/s3.properties
@@ -89,11 +94,10 @@ user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
-  unzip tomcat_apps.zip -d /tmp/tomcat && \
-  mv /tmp/tomcat/tomcat_apps/* ${CATALINA_HOME}/webapps/ && \
-  rm -r /tmp/tomcat && \
-  cp /build_data/tomcat-users.xml /usr/local/tomcat/conf && \
-  sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
+    cp -r $CATALINA_HOME/webapps.dist/* $CATALINA_HOME/webapps/ &&\
+    cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF && \
+    cp /build_data/tomcat-users.xml /usr/local/tomcat/conf && \
+    sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
   else
     rm -rf "${CATALINA_HOME}"/webapps/ROOT && \
     rm -rf "${CATALINA_HOME}"/webapps/docs && \
