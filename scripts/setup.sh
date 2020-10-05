@@ -122,10 +122,10 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then \
 else
     unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver;
 fi; \
+
 unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver \
-&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/user_projections ${GEOSERVER_DATA_DIR} \
-&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${GEOSERVER_DATA_DIR} \
-&& cp -r ${CATALINA_HOME}/webapps/geoserver/data/security ${CATALINA_HOME} \
+&& cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} \
+&& mv  ${CATALINA_HOME}/data/security ${CATALINA_HOME} \
 && rm -rf ${CATALINA_HOME}/webapps/geoserver/data \
 && rm -rf /tmp/geoserver
 
@@ -173,29 +173,24 @@ rm -f /tmp/resources/overlays/README.txt && \
       cp -rf /tmp/resources/overlays/* /; \
     fi;
 
-create_dir /tomcat_apps
+
 create_dir /usr/share/fonts/opentype
 
-if [[ ! -f /tomcat_apps.zip ]]; then \
-
-  cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps && \
-  cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps && \
-  cp -r  "${CATALINA_HOME}"/webapps/examples /tomcat_apps && \
-  cp -r "${CATALINA_HOME}"/webapps/host-manager  /tomcat_apps&& \
-  cp -r  "${CATALINA_HOME}"/webapps/manager /tomcat_apps && \
-  zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
+if [ -d $CATALINA_HOME/webapps.dist ]; then
+    mv  $CATALINA_HOME/webapps.dist /tomcat_apps && \
+    zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
+else
+    create_dir /tomcat_apps
+    mv  "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps && \
+    mv  "${CATALINA_HOME}"/webapps/docs /tomcat_apps && \
+    mv  "${CATALINA_HOME}"/webapps/examples /tomcat_apps && \
+    mv  "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps && \
+    mv  "${CATALINA_HOME}"/webapps/manager /tomcat_apps && \
+    zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
 fi
 
-#Remove default tomcat extras
 
-rm -rf "${CATALINA_HOME}"/webapps/ROOT && \
-rm -rf "${CATALINA_HOME}"/webapps/docs && \
-rm -rf "${CATALINA_HOME}"/webapps/examples && \
-rm -rf "${CATALINA_HOME}"/webapps/host-manager && \
-rm -rf "${CATALINA_HOME}"/webapps/manager; \
-
-
-
+create_dir /usr/share/fonts/opentype
 
 # Delete resources after installation
 rm -rf /tmp/resources
