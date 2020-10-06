@@ -7,7 +7,7 @@ FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
-ARG GS_VERSION=2.17.2
+ARG GS_VERSION=2.18.0
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions
@@ -41,7 +41,7 @@ ENV \
     MAX_FILTER_RULES=20 \
     OPTIMIZE_LINE_WIDTH=false \
     SSL=false \
-    TOMCAT_EXTRAS=false \
+    TOMCAT_EXTRAS=true \
     HTTP_PORT=8080 \
     HTTP_PROXY_NAME= \
     HTTP_PROXY_PORT= \
@@ -61,7 +61,10 @@ ENV \
     LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
     RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
     GEOSERVER_CSRF_DISABLED=true \
-    FONTS_DIR=/opt/fonts
+    FONTS_DIR=/opt/fonts \
+    ENCODING='UTF8' \
+    TIMEZONE='GMT' \
+    CHARACTER_ENCODING='UTF-8'
 
 WORKDIR /scripts
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR}
@@ -74,8 +77,6 @@ RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugi
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf && \
     cp /build_data/tomcat-users.xml /usr/local/tomcat/conf
 
-RUN if [ -d $CATALINA_HOME/webapps.dist/manager ]; then cp -avT $CATALINA_HOME/webapps.dist/manager $CATALINA_HOME/webapps/manager; fi &&\
-    cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF
 
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh

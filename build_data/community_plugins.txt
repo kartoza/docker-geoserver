@@ -5,6 +5,8 @@ colormap-plugin
 csw-iso-plugin
 dds-plugin
 dyndimension-plugin
+elasticsearch-plugin
+features-templating-plugin
 flatgeobuf-plugin
 gdal-wcs-plugin
 gdal-wps-plugin
@@ -17,12 +19,12 @@ gwc-distributed-plugin
 gwc-s3-plugin
 gwc-sqlite-plugin
 hz-cluster-plugin
+imagemosaic-jdbc-plugin
 importer-jdbc-plugin
 jdbc-metrics-plugin
 jdbcconfig-plugin
 jdbcstore-plugin
 jms-cluster-plugin
-json-ld-plugin
 kmlppio-plugin
 mapml-plugin
 mbtiles-plugin
@@ -39,7 +41,6 @@ opensearch-eo-plugin
 ows-simulate-plugin
 params-extractor-plugin
 pgraster-plugin
-python-plugin
 qos-plugin
 s3-geotiff-plugin
 saml-plugin
