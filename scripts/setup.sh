@@ -95,10 +95,10 @@ pushd /tmp/
     gunzip -c jai-1_1_3-lib-linux-amd64.tar.gz | tar xf - && \
     gunzip -c jai_imageio-1_1-lib-linux-amd64.tar.gz | tar xf - && \
 
-    mv /tmp/jai-1_1_3/lib/*.jar ${JAVA_HOME} && \
-    mv /tmp/jai-1_1_3/lib/*.so ${JAVA_HOME} && \
+    mv /tmp/jai-1_1_3/lib/*.jar ${JAVA_HOME}/jre/lib/ext/ && \
+    mv /tmp/jai-1_1_3/lib/*.so ${JAVA_HOME}/jre/lib/amd64/ && \
     mv /tmp/jai_imageio-1_1/lib/*.jar ${JAVA_HOME} && \
-    mv /tmp/jai_imageio-1_1/lib/*.so ${JAVA_HOME} && \
+    mv /tmp/jai_imageio-1_1/lib/*.so ${JAVA_HOME}/jre/lib/amd64/ && \
     rm /tmp/jai-1_1_3-lib-linux-amd64.tar.gz && \
     rm -r /tmp/jai-1_1_3 && \
     rm /tmp/jai_imageio-1_1-lib-linux-amd64.tar.gz && \
