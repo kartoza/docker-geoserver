@@ -10,6 +10,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -XX:InitiatingHeapOccupancyPercent=70 -XX:+CMSClassUnloadingEnabled -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} -Djavax.servlet.request.encoding=${CHARACTER_ENCODING} \
        -Djavax.servlet.response.encoding=${CHARACTER_ENCODING} \
+       -DCLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR} \
        -DGEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR} -Dorg.geotools.shapefile.datetime=true \
        -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
        -Dsun.java2d.renderer.useThreadLocal=false -Dsun.java2d.renderer.pixelsize=8192 -server -XX:NewSize=300m \
@@ -18,10 +19,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
        -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} "
 
-
 ## Preparare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
-
-
 
 exec /usr/local/tomcat/bin/catalina.sh run

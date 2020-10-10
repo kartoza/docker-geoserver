@@ -64,7 +64,8 @@ ENV \
     FONTS_DIR=/opt/fonts \
     ENCODING='UTF8' \
     TIMEZONE='GMT' \
-    CHARACTER_ENCODING='UTF-8'
+    CHARACTER_ENCODING='UTF-8' \
+    CLUSTERING=False
 
 WORKDIR /scripts
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR}
@@ -110,13 +111,14 @@ ENV \
 EXPOSE  $HTTPS_PORT
 
 RUN groupadd -r geoserverusers -g 10001 && \
-    useradd -M -u 10000 -g geoserverusers geoserveruser
-RUN chown -R geoserveruser:geoserverusers /usr/local/tomcat ${FOOTPRINTS_DATA_DIR}  \
- ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/
+    useradd -m -d /home/geoserveruser/ --gid 10001 -s /bin/bash -G geoserverusers geoserveruser
+RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
+ ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
+ /plugins
 
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
-#USER geoserveruser
+USER geoserveruser
 WORKDIR ${CATALINA_HOME}
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]
