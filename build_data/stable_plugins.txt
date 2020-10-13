@@ -13,8 +13,6 @@ geofence-server-plugin
 grib-plugin
 h2-plugin
 imagemap-plugin
-imagemosaic-jdbc-plugin
-importer-bdb-plugin
 importer-plugin
 inspire-plugin
 jp2k-plugin
