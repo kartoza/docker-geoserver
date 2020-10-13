@@ -22,38 +22,65 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
 fi
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  if [[ ! -f ${GEOSERVER_DATA_DIR}/cluster ]]; then
-    CLUSTER_LOCKFILE="${GEOSERVER_DATA_DIR}/.cluster.lock"
-    RANDOMSTRING=$(openssl rand -hex 8)
-    INSTANCE_STRING=$(openssl rand -hex 32)
-    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
+  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
+  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+  if [[ ! -f $CLUSTER_LOCKFILE ]]; then
     mkdir -p ${CLUSTER_CONFIG_DIR}
     cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-    unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ &&
-      mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
-    touch ${CLUSTER_LOCKFILE}
+    unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ && \
+    mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ && \
+    touch ${CLUSTER_LOCKFILE} && rm -r /tmp/cluster/
   fi
+
 fi
 
-if [[ ! -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
+function cluster_config() {
+  if [[ -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
+    rm "${CLUSTER_CONFIG_DIR}"/cluster.properties
+  fi
+
   cat >>${CLUSTER_CONFIG_DIR}/cluster.properties <<EOF
 CLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR}
 instanceName=${INSTANCE_STRING}
-readOnly=disabled
-durable=true
-brokerURL=
-embeddedBroker=enabled
+readOnly=${READONLY}
+durable=${CLUSTER_DURABILITY}
+brokerURL=${BROKER_URL}
+embeddedBroker=${EMBEDDED_BROKER}
 connection.retry=10
-toggleMaster=true
+toggleMaster=${TOGGLE_MASTER}
 xbeanURL=./broker.xml
 embeddedBrokerProperties=embedded-broker.properties
 topicName=VirtualTopic.geoserver
 connection=enabled
-toggleSlave=true
+toggleSlave=${TOGGLE_SLAVE}
 connection.maxwait=500
 group=geoserver-cluster
 EOF
-fi
+}
+
+cluster_config
+
+function broker_config() {
+  if [[ -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
+    rm "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
+  fi
+
+  cat >>${CLUSTER_CONFIG_DIR}/embedded-broker.properties <<EOF
+activemq.jmx.useJmx=false
+activemq.jmx.port=1098
+activemq.jmx.host=localhost
+activemq.jmx.createConnector=false
+activemq.transportConnectors.server.uri=${BROKER_URL}?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true&trace=true
+activemq.transportConnectors.server.discoveryURI=multicast://default
+activemq.broker.persistent=true
+activemq.broker.systemUsage.memoryUsage=128 mb
+activemq.broker.systemUsage.storeUsage=1 gb
+activemq.broker.systemUsage.tempUsage=128 mb
+EOF
+}
+
+broker_config
+
 
 function s3_config() {
   if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then

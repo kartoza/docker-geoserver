@@ -65,7 +65,17 @@ ENV \
     ENCODING='UTF8' \
     TIMEZONE='GMT' \
     CHARACTER_ENCODING='UTF-8' \
-    CLUSTERING=False
+    # cluster env variables
+    CLUSTERING=False \
+    CLUSTER_DURABILITY=true \
+    BROKER_URL='' \
+    READONLY=disabled \
+    RANDOMSTRING=23bd87cfa327d47e \
+    INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f \
+    TOGGLE_MASTER=true \
+    TOGGLE_SLAVE=true \
+    EMBEDDED_BROKER=enabled
+
 
 WORKDIR /scripts
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR}
