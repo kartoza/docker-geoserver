@@ -88,6 +88,7 @@ broker_config
 function disk_quota_config() {
   if [[  ${DB_BACKEND} == 'POSTGRES' ]]; then
 
+if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml ]]; then
   cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml <<EOF
 <gwcQuotaConfiguration>
   <enabled>true</enabled>
@@ -100,8 +101,11 @@ function disk_quota_config() {
     <units>GiB</units>
   </globalQuota>
  <quotaStore>JDBC</quotaStore>
+</gwcQuotaConfiguration>
 EOF
+fi
 
+if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
   cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml <<EOF
 <gwcJdbcConfiguration>
   <dialect>PostgreSQL</dialect>
@@ -117,6 +121,7 @@ EOF
   </connectionPool>
 </gwcJdbcConfiguration>
 EOF
+fi
 fi
 }
 

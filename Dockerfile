@@ -29,8 +29,8 @@ RUN set -e \
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
-    STABLE_EXTENSIONS='' \
-    COMMUNITY_EXTENSIONS='' \
+    STABLE_EXTENSIONS= \
+    COMMUNITY_EXTENSIONS= \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
