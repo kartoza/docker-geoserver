@@ -39,6 +39,7 @@ function cluster_config() {
     rm "${CLUSTER_CONFIG_DIR}"/cluster.properties
   fi
 
+if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   cat >>${CLUSTER_CONFIG_DIR}/cluster.properties <<EOF
 CLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR}
 instanceName=${INSTANCE_STRING}
@@ -56,6 +57,7 @@ toggleSlave=${TOGGLE_SLAVE}
 connection.maxwait=500
 group=geoserver-cluster
 EOF
+fi
 }
 
 cluster_config
@@ -65,6 +67,7 @@ function broker_config() {
     rm "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
   fi
 
+if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   cat >>${CLUSTER_CONFIG_DIR}/embedded-broker.properties <<EOF
 activemq.jmx.useJmx=false
 activemq.jmx.port=1098
@@ -77,10 +80,47 @@ activemq.broker.systemUsage.memoryUsage=128 mb
 activemq.broker.systemUsage.storeUsage=1 gb
 activemq.broker.systemUsage.tempUsage=128 mb
 EOF
+fi
 }
 
 broker_config
 
+function disk_quota_config() {
+  if [[  ${DB_BACKEND} == 'POSTGRES' ]]; then
+
+  cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml <<EOF
+<gwcQuotaConfiguration>
+  <enabled>true</enabled>
+  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
+  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
+  <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
+  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
+  <globalQuota>
+    <value>20</value>
+    <units>GiB</units>
+  </globalQuota>
+ <quotaStore>JDBC</quotaStore>
+EOF
+
+  cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml <<EOF
+<gwcJdbcConfiguration>
+  <dialect>PostgreSQL</dialect>
+  <connectionPool>
+    <driver>org.postgresql.Driver</driver>
+    <url>jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}</url>
+    <username>${POSTGRES_USER}</username>
+    <password>${POSTGRES_PASS}</password>
+    <minConnections>1</minConnections>
+    <maxConnections>100</maxConnections>
+    <connectionTimeout>10000</connectionTimeout>
+    <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
+  </connectionPool>
+</gwcJdbcConfiguration>
+EOF
+fi
+}
+
+disk_quota_config
 
 function s3_config() {
   if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
@@ -151,7 +191,7 @@ user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-  unzip /tomcat_apps.zip -d /tmp/tomcat &&
+  unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     mv /tmp/tomcat/tomcat_apps/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
     cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
