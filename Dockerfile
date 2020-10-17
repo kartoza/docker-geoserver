@@ -29,8 +29,8 @@ RUN set -e \
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
-    STABLE_EXTENSIONS='' \
-    COMMUNITY_EXTENSIONS='' \
+    STABLE_EXTENSIONS= \
+    COMMUNITY_EXTENSIONS= \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
@@ -68,17 +68,21 @@ ENV \
     # cluster env variables
     CLUSTERING=False \
     CLUSTER_DURABILITY=true \
-    BROKER_URL='' \
+    BROKER_URL= \
     READONLY=disabled \
     RANDOMSTRING=23bd87cfa327d47e \
     INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f \
     TOGGLE_MASTER=true \
     TOGGLE_SLAVE=true \
-    EMBEDDED_BROKER=enabled
+    EMBEDDED_BROKER=enabled \
+    DB_BACKEND= \
+    LOGIN_STATUS=on \
+    WEB_INTERFACE=false
 
 
 WORKDIR /scripts
-RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR}
+RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} ${GEOWEBCACHE_CACHE_DIR}
+
 
 ADD resources /tmp/resources
 ADD build_data /build_data
@@ -129,6 +133,7 @@ RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
 USER geoserveruser
+VOLUME ["${GEOSERVER_DATA_DIR}", "${LETSENCRYPT_CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}", "${GEOWEBCACHE_CACHE_DIR}"]
 WORKDIR ${CATALINA_HOME}
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]

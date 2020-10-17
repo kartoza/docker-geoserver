@@ -86,6 +86,7 @@ during the build. For example, to include a static web xml with CORS support `we
 create the file at `resources/overlays/usr/local/tomcat/conf/web.xml`.
 
 ## Environment Variables
+A full list of environment variables are specified in the .env file
 
 ### Activate plugins on runtime
 
@@ -124,6 +125,18 @@ docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserve
 
 ```
 
+### Enable disk quota storage in PostgreSQL backend
+
+By default GeoServer uses H2 datastore for configuring dsk quota. You can
+use the PostgreSQL backend as a disk quota store.
+
+You will need to run a PostgreSQL DB and link it to a GeoServer instance.
+
+``` 
+docker run -d -p 5432:5432 --name db kartoza/postgis:13.0
+docker run -d -p 8600:8080 --name geoserver -- link db:db -e DB_BACKEND=POSTGRES -e HOST=db -e POSTGRES_PORT=5432 -e POSTGRES_DB=gis -e POSTGRES_USER=docker -e POSTGRES_PASS=docker kartoza/geoserver:2.18.0
+
+```
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
 Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for providing the solution to

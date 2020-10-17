@@ -23,6 +23,8 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Dlog4j.configuration=${CATALINA_HOME}/log4j.properties \
        --patch-module java.desktop=${CATALINA_HOME}/marlin-0.9.4.2-Unsafe-OpenJDK9.jar  \
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
+       -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
+       -DGEOSERVER_CONSOLE_DISABLED=${WEB_INTERFACE} \
        -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} "
 
 ## Preparare the JVM command line arguments
