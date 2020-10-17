@@ -3,7 +3,6 @@ authkey-plugin
 cas-plugin
 charts-plugin
 css-plugin
-csw-plugin
 db2-plugin
 dxf-plugin
 excel-plugin
@@ -14,7 +13,6 @@ grib-plugin
 h2-plugin
 imagemap-plugin
 importer-plugin
-inspire-plugin
 jp2k-plugin
 mbstyle-plugin
 mongodb-plugin
