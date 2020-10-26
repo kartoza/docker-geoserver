@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+/scripts/openshift_entrypoint.sh
+
 /scripts/start.sh
 
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"

@@ -124,16 +124,19 @@ ENV \
 
 EXPOSE  $HTTPS_PORT
 
-RUN groupadd -r geoserverusers -g 10001 && \
-    useradd -m -d /home/geoserveruser/ --gid 10001 -s /bin/bash -G geoserverusers geoserveruser
-RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
- ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
- /plugins
+RUN chmod g=u /etc/passwd && mkdir -p /home/geoserveruser
+
+
+RUN chgrp -R 0 ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR} \
+    ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ /plugins && \
+    chmod -R g=u ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR} \
+    ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ /plugins
 
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
-USER geoserveruser
 VOLUME ["${GEOSERVER_DATA_DIR}", "${LETSENCRYPT_CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}", "${GEOWEBCACHE_CACHE_DIR}"]
 WORKDIR ${CATALINA_HOME}
+
+USER 1001
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]
