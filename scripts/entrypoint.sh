@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-/scripts/openshift_entrypoint.sh
+/scripts/entrypoint_openshift.sh
 
 /scripts/start.sh
 
