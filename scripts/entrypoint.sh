@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-/scripts/entrypoint_openshift.sh
+/scripts/ensure_passwd_entry.sh
 
 /scripts/start.sh
 
