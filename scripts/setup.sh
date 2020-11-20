@@ -133,6 +133,13 @@ if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
       rm -rf /tmp/gs_plugin
   done
 fi
+
+# Temporary fix for the print plugin https://github.com/georchestra/georchestra/pull/2517
+
+rm ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/json-20180813.jar && \
+${request} https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.jar \
+-O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/json-20080701.jar
+
 if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
   mkdir /usr/local/gdal_data && mkdir /usr/local/gdal_native_libs
   unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data &&
