@@ -280,6 +280,18 @@ GEOSERVER_ADMIN_PASSWORD and GEOSERVER_ADMIN_USER to  change it on runtime.
 docker run --name "geoserver" -e GEOSERVER_ADMIN_USER=kartoza  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
 ```
 
+#### Docker secrets
+
+To avoid passing sensitive information in environment variables, `_FILE` can be appended to
+some of the variables to read from files present in the container. This is particularly useful
+in conjunction with Docker secrets, as passwords can be loaded from `/run/secrets/<secret_name>` e.g.:
+
+* -e GEOSERVER_ADMIN_PASSWORD_FILE=/run/secrets/<geoserver_pass_secret>
+
+For more information see [https://docs.docker.com/engine/swarm/secrets/](https://docs.docker.com/engine/swarm/secrets/).
+
+Currently, `GEOSERVER_ADMIN_USER` and `GEOSERVER_ADMIN_PASSWORD` are supported.
+
 ## Clustering using JMS Plugin
 GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-broker. 
 
