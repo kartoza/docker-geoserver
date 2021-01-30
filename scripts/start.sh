@@ -1,6 +1,23 @@
 #!/bin/bash
 
+source /scripts/functions.sh
+
 # install Font files in resources/fonts if they exist
+if [ -n "${CUSTOM_UID}" ];then
+  echo "Using custom UID ${CUSTOM_UID}."
+  usermod -u ${CUSTOM_UID} geoserveruser
+  find / -user 10001 -exec chown -h geoserveruser {} \;
+fi
+
+if [ -n "${CUSTOM_GID}" ];then
+  echo "Using custom GID ${CUSTOM_GID}."
+  groupmod -g ${CUSTOM_GID} geoserverusers
+  find / -group 10001 -exec chgrp -h geoserverusers {} \;
+fi
+
+#We need this line to ensure that data has the correct rights
+chown -R geoserveruser:geoserverusers ${GEOSERVER_DATA_DIR} "${LETSENCRYPT_CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" ${GEOWEBCACHE_CACHE_DIR}
+
 
 if ls ${FONTS_DIR}/*.ttf >/dev/null 2>&1; then
   cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/
@@ -34,124 +51,14 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 fi
 
-function cluster_config() {
-  if [[ -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
-    rm "${CLUSTER_CONFIG_DIR}"/cluster.properties
-  fi
-
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  cat >>${CLUSTER_CONFIG_DIR}/cluster.properties <<EOF
-CLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR}
-instanceName=${INSTANCE_STRING}
-readOnly=${READONLY}
-durable=${CLUSTER_DURABILITY}
-brokerURL=${BROKER_URL}
-embeddedBroker=${EMBEDDED_BROKER}
-connection.retry=10
-toggleMaster=${TOGGLE_MASTER}
-xbeanURL=./broker.xml
-embeddedBrokerProperties=embedded-broker.properties
-topicName=VirtualTopic.geoserver
-connection=enabled
-toggleSlave=${TOGGLE_SLAVE}
-connection.maxwait=500
-group=geoserver-cluster
-EOF
-fi
-}
 
 cluster_config
 
-function broker_config() {
-  if [[ -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
-    rm "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
-  fi
-
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  cat >>${CLUSTER_CONFIG_DIR}/embedded-broker.properties <<EOF
-activemq.jmx.useJmx=false
-activemq.jmx.port=1098
-activemq.jmx.host=localhost
-activemq.jmx.createConnector=false
-activemq.transportConnectors.server.uri=${BROKER_URL}?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true&trace=true
-activemq.transportConnectors.server.discoveryURI=multicast://default
-activemq.broker.persistent=true
-activemq.broker.systemUsage.memoryUsage=128 mb
-activemq.broker.systemUsage.storeUsage=1 gb
-activemq.broker.systemUsage.tempUsage=128 mb
-EOF
-fi
-}
-
 broker_config
-
-function disk_quota_config() {
-  if [[  ${DB_BACKEND} == 'POSTGRES' ]]; then
-
-if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml ]]; then
-  cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml <<EOF
-<gwcQuotaConfiguration>
-  <enabled>true</enabled>
-  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
-  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
-  <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
-  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
-  <globalQuota>
-    <value>20</value>
-    <units>GiB</units>
-  </globalQuota>
- <quotaStore>JDBC</quotaStore>
-</gwcQuotaConfiguration>
-EOF
-fi
-
-if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
-  cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml <<EOF
-<gwcJdbcConfiguration>
-  <dialect>PostgreSQL</dialect>
-  <connectionPool>
-    <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}</url>
-    <username>${POSTGRES_USER}</username>
-    <password>${POSTGRES_PASS}</password>
-    <minConnections>1</minConnections>
-    <maxConnections>100</maxConnections>
-    <connectionTimeout>10000</connectionTimeout>
-    <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
-  </connectionPool>
-</gwcJdbcConfiguration>
-EOF
-fi
-fi
-}
 
 disk_quota_config
 
-function s3_config() {
-  if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
-    rm "${GEOSERVER_DATA_DIR}"/s3.properties
-  fi
 
-  cat >"${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
-alias.s3.endpoint=${S3_SERVER_URL}
-alias.s3.user=${S3_USERNAME}
-alias.s3.password=${S3_PASSWORD}
-EOF
-
-}
-
-function install_plugin() {
-  DATA_PATH=/community_plugins
-  if [ -n "$1" ]; then
-    DATA_PATH=$1
-  fi
-  EXT=$2
-
-  unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin &&
-    mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ &&
-    rm -rf /tmp/gs_plugin
-
-}
 
 # Install stable plugins
 for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
@@ -170,9 +77,13 @@ for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
   if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
     echo "Do not install any plugins"
   else
+    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
       s3_config
       install_plugin /community_plugins ${ext}
+    elif [[ ${ext} == 's3-geotiff-plugin' ]]; then
+        mkdir -p ${MONITOR_AUDIT_PATH}
+        install_plugin /community_plugins ${ext}
     elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
       echo "Installing ${ext} plugin"
       install_plugin /community_plugins ${ext}
@@ -196,14 +107,14 @@ user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-  unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
-    mv /tmp/tomcat/tomcat_apps/* ${CATALINA_HOME}/webapps/ &&
+    unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
+    cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
     cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
     cp /build_data/tomcat-users.xml /usr/local/tomcat/conf &&
     sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
 else
-  rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
+    rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
     rm -rf "${CATALINA_HOME}"/webapps/docs &&
     rm -rf "${CATALINA_HOME}"/webapps/examples &&
     rm -rf "${CATALINA_HOME}"/webapps/host-manager &&

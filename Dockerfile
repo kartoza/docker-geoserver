@@ -1,16 +1,18 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9-jre11-slim
+ARG IMAGE_VERSION=10.0.0-jdk11-openjdk-slim
 
-ARG JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ARG JAVA_HOME=/usr/local/openjdk-11
 
 FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
-ARG GS_VERSION=2.18.0
+ARG GS_VERSION=2.18.2
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions
+ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
+ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=1
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \

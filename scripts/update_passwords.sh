@@ -1,4 +1,6 @@
 #!/bin/bash
+
+source /scripts/env-data.sh
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
