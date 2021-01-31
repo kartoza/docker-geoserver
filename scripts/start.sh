@@ -1,6 +1,8 @@
 #!/bin/bash
 
+
 source /scripts/functions.sh
+
 
 # install Font files in resources/fonts if they exist
 if [ -n "${CUSTOM_UID}" ];then
