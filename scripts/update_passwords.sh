@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+source /scripts/functions.sh
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
@@ -37,23 +37,6 @@ if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
   cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
 fi
 
-function file_env {
-	local var="$1"
-	local fileVar="${var}_FILE"
-	local def="${2:-}"
-	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
-		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
-		exit 1
-	fi
-	local val="$def"
-	if [ "${!var:-}" ]; then
-		val="${!var}"
-	elif [ "${!fileVar:-}" ]; then
-		val="$(< "${!fileVar}")"
-	fi
-	export "$var"="$val"
-	unset "$fileVar"
-}
 
 file_env 'GEOSERVER_ADMIN_USER'
 file_env 'GEOSERVER_ADMIN_PASSWORD'
