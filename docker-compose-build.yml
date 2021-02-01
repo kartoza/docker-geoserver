@@ -1,0 +1,31 @@
+version: '3'
+
+volumes:
+   geoserver-data:
+
+services:
+
+   geoserver:
+      image: kartoza/geoserver:${GS_VERSION}
+      build:
+        context: .
+        args:
+          IMAGE_VERSION: ${IMAGE_VERSION}
+          JAVA_HOME: ${JAVA_HOME}
+          GS_VERSION: ${GS_VERSION}
+          WAR_URL: ${WAR_URL}
+          ACTIVATE_ALL_STABLE_EXTENTIONS: ${ACTIVATE_ALL_STABLE_EXTENTIONS}
+          ACTIVATE_ALL_COMMUNITY_EXTENTIONS: ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
+      volumes:
+        - geoserver-data:/opt/geoserver/data_dir
+      ports:
+        - "8600:8080"
+      restart: on-failure
+      environment:
+        - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+        - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
+        - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+        - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
+        - INITIAL_MEMORY=${INITIAL_MEMORY}
+        - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+
