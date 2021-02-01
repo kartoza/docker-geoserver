@@ -98,15 +98,7 @@ if [[ -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
   rm "${GEOSERVER_DATA_DIR}"/controlflow.properties
 fi
 
-cat >"${GEOSERVER_DATA_DIR}"/controlflow.properties <<EOF
-timeout=${REQUEST_TIMEOUT}
-ows.global=${PARARELL_REQUEST}
-ows.wms.getmap=${GETMAP}
-ows.wfs.getfeature.application/msexcel=${REQUEST_EXCEL}
-user=${SINGLE_USER}
-ows.gwc=${GWC_REQUEST}
-user.ows.wps.execute=${WPS_REQUEST}
-EOF
+setup_control_flow
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&

@@ -11,49 +11,47 @@ create_dir /tomcat_apps
 
 
 pushd /plugins
-#Extensions
-# Download all other plugins to keep for activating using env variables
 
+# Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
-approved_plugins_url="${STABLE_PLUGIN_URL}/geoserver-${GS_VERSION}-${plugin}.zip"
 if [ -z "${ACTIVATE_ALL_STABLE_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_STABLE_EXTENTIONS} -eq 0 ]; then
-  plugin=$(head -n 1 stable_plugins.txt) ${plugin}
-  echo $approved_plugins_url
-  download_extension ${approved_plugins_url}
+  plugin=$(head -n 1 stable_plugins.txt)
+  approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+  download_extension ${approved_plugins_url} ${plugin}
 else
   for plugin in $(cat stable_plugins.txt); do
+    approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
     download_extension ${approved_plugins_url} ${plugin}
   done
 fi
-# Download community modules
 
+# Download community extensions. This needs to be checked on each iterations as they sometimes become unavailable
 pushd /community_plugins
 
-community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
 if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} -eq 0 ]; then
   plugin=$(head -n 1 community_plugins.txt)
-  echo $community_plugins_url
+  community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
   download_extension ${community_plugins_url} ${plugin}
 else
   for plugin in $(cat community_plugins.txt); do
+    community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
     download_extension ${community_plugins_url} ${plugin}
 
   done
 fi
 
-
-
+#Install some mandatory stable extensions
 pushd ${resources_dir}/plugins
-#Extensions
 
 array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip
   geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip
   geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip
   geoserver-$GS_VERSION-monitor-plugin.zip geoserver-$GS_VERSION-inspire-plugin.zip geoserver-$GS_VERSION-csw-plugin.zip )
 for i in "${array[@]}"; do
-  url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
-  download_extension ${url} ${i}
+  url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
+  download_extension ${url} ${i%.*}
 done
+
 
 
 pushd gdal
@@ -64,7 +62,7 @@ ${request} http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/
 
 popd
 
-# Install libjpeg-turbo for that specific geoserver GS_VERSION
+# Install libjpeg-turbo
 if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then
   ${request} https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb \
     -P ${resources_dir}
@@ -76,10 +74,10 @@ dpkg -i ${resources_dir}/libjpeg-turbo-official_1.5.3_amd64.deb
 
 pushd ${CATALINA_HOME}
 
-# A little logic that will fetch the geoserver war zip file if it
-# is not available locally in the resources dir
+# Download geoserver
 download_geoserver
 
+# Install geoserver in the tomcat dir
 unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver &&
   cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} &&
   mv ${CATALINA_HOME}/data/security ${CATALINA_HOME} &&
@@ -101,6 +99,7 @@ rm ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/json-20180813.jar && \
 ${request} https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.jar \
 -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/json-20080701.jar
 
+# Activate gdal plugin in geoserver
 if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
   mkdir /usr/local/gdal_data && mkdir /usr/local/gdal_native_libs
   unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data &&
@@ -138,7 +137,7 @@ rm -f /tmp/resources/overlays/README.txt &&
   fi
 
 
-
+# Package tomcat webapps - useful to activate later
 if [ -d $CATALINA_HOME/webapps.dist ]; then
     cp -r $CATALINA_HOME/webapps.dist /tomcat_apps &&
     zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps

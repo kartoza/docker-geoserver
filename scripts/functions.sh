@@ -12,6 +12,7 @@ function create_dir() {
   fi
 }
 
+# Helper function to download extensions
 function download_extension() {
   URL=$1
   PLUGIN=$2
@@ -24,6 +25,7 @@ function download_extension() {
 
 }
 
+# A little logic that will fetch the geoserver war zip file if it is not available locally in the resources dir
 function download_geoserver() {
 
   if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then
@@ -43,6 +45,7 @@ fi
 
 }
 
+# Helper function to setup cluster config for the clustering plugin
 function cluster_config() {
   if [[ -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
     rm "${CLUSTER_CONFIG_DIR}"/cluster.properties
@@ -69,6 +72,8 @@ EOF
 fi
 }
 
+# Helper function to setup broker config. Used with clustering configs
+
 function broker_config() {
   if [[ -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
     rm "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
@@ -90,7 +95,7 @@ EOF
 fi
 }
 
-
+# Helper function to configure s3 bucket
 function s3_config() {
   if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
     rm "${GEOSERVER_DATA_DIR}"/s3.properties
@@ -103,6 +108,8 @@ alias.s3.password=${S3_PASSWORD}
 EOF
 
 }
+
+# Helper function to install plugin in proper path
 
 function install_plugin() {
   DATA_PATH=/community_plugins
@@ -117,6 +124,7 @@ function install_plugin() {
 
 }
 
+# Helper function to setup disk quota configs and database configurations
 
 function disk_quota_config() {
   if [[  ${DB_BACKEND} == 'POSTGRES' ]]; then
@@ -156,4 +164,36 @@ if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
 EOF
 fi
 fi
+}
+
+function setup_control_flow() {
+  cat >"${GEOSERVER_DATA_DIR}"/controlflow.properties <<EOF
+timeout=${REQUEST_TIMEOUT}
+ows.global=${PARARELL_REQUEST}
+ows.wms.getmap=${GETMAP}
+ows.wfs.getfeature.application/msexcel=${REQUEST_EXCEL}
+user=${SINGLE_USER}
+ows.gwc=${GWC_REQUEST}
+user.ows.wps.execute=${WPS_REQUEST}
+EOF
+
+}
+
+# Function to read env variables from secrets
+function file_env {
+	local var="$1"
+	local fileVar="${var}_FILE"
+	local def="${2:-}"
+	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
+		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+		exit 1
+	fi
+	local val="$def"
+	if [ "${!var:-}" ]; then
+		val="${!var}"
+	elif [ "${!fileVar:-}" ]; then
+		val="$(< "${!fileVar}")"
+	fi
+	export "$var"="$val"
+	unset "$fileVar"
 }
