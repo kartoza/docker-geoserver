@@ -4,23 +4,7 @@
 source /scripts/functions.sh
 
 
-# install Font files in resources/fonts if they exist
-if [ -n "${CUSTOM_UID}" ];then
-  echo "Using custom UID ${CUSTOM_UID}."
-  usermod -u ${CUSTOM_UID} geoserveruser
-  find / -user 10001 -exec chown -h geoserveruser {} \;
-fi
-
-if [ -n "${CUSTOM_GID}" ];then
-  echo "Using custom GID ${CUSTOM_GID}."
-  groupmod -g ${CUSTOM_GID} geoserverusers
-  find / -group 10001 -exec chgrp -h geoserverusers {} \;
-fi
-
-#We need this line to ensure that data has the correct rights
-chown -R geoserveruser:geoserverusers ${GEOSERVER_DATA_DIR} "${LETSENCRYPT_CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" ${GEOWEBCACHE_CACHE_DIR}
-
-
+# install Font files in resources/fonts if they exists
 if ls ${FONTS_DIR}/*.ttf >/dev/null 2>&1; then
   cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/
 fi
@@ -52,7 +36,6 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
 
 fi
-
 
 cluster_config
 
