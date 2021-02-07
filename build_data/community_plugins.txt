@@ -1,6 +1,7 @@
 activeMQ-broker-plugin
 arcsde-plugin
 backup-restore-plugin
+cog-plugin
 colormap-plugin
 csw-iso-plugin
 dds-plugin
@@ -59,4 +60,3 @@ wmts-styles-plugin
 wps-download-plugin
 wps-jdbc-plugin
 wps-remote-plugin
-
