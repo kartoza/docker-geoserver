@@ -131,7 +131,7 @@ You will need to run a PostgreSQL DB and link it to a GeoServer instance.
 
 ``` 
 docker run -d -p 5432:5432 --name db kartoza/postgis:13.0
-docker run -d -p 8600:8080 --name geoserver -- link db:db -e DB_BACKEND=POSTGRES -e HOST=db -e POSTGRES_PORT=5432 -e POSTGRES_DB=gis -e POSTGRES_USER=docker -e POSTGRES_PASS=docker kartoza/geoserver:2.18.0
+docker run -d -p 8600:8080 --name geoserver --link db:db -e DB_BACKEND=POSTGRES -e HOST=db -e POSTGRES_PORT=5432 -e POSTGRES_DB=gis -e POSTGRES_USER=docker -e POSTGRES_PASS=docker kartoza/geoserver:2.18.0
 
 ```
 ### Running under SSL
