@@ -1,9 +1,11 @@
 #!/bin/bash
 set -e
 
+
 /scripts/start.sh
 
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
+MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
 export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
@@ -16,6 +18,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Djavax.servlet.response.encoding=${CHARACTER_ENCODING} \
        -DCLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR} \
        -DGEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR} \
+       -DGEOSERVER_AUDIT_PATH=${MONITOR_AUDIT_PATH} \
        -Dorg.geotools.shapefile.datetime=true \
        -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
        -Dsun.java2d.renderer.useThreadLocal=false \
