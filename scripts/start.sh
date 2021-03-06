@@ -88,19 +88,20 @@ ows.gwc=${GWC_REQUEST}
 user.ows.wps.execute=${WPS_REQUEST}
 EOF
 
-if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then \
-  unzip tomcat_apps.zip -d /tmp/tomcat && \
-  mv /tmp/tomcat/tomcat_apps/* ${CATALINA_HOME}/webapps/ && \
-  rm -r /tmp/tomcat && \
-  cp /build_data/tomcat-users.xml /usr/local/tomcat/conf && \
-  sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
-  else
-    rm -rf "${CATALINA_HOME}"/webapps/ROOT && \
-    rm -rf "${CATALINA_HOME}"/webapps/docs && \
-    rm -rf "${CATALINA_HOME}"/webapps/examples && \
-    rm -rf "${CATALINA_HOME}"/webapps/host-manager && \
-    rm -rf "${CATALINA_HOME}"/webapps/manager; \
-  fi;
+if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+    unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
+    cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
+    rm -r /tmp/tomcat &&
+    cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
+    cp /build_data/tomcat-users.xml /usr/local/tomcat/conf &&
+    sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
+else
+    rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
+    rm -rf "${CATALINA_HOME}"/webapps/docs &&
+    rm -rf "${CATALINA_HOME}"/webapps/examples &&
+    rm -rf "${CATALINA_HOME}"/webapps/host-manager &&
+    rm -rf "${CATALINA_HOME}"/webapps/manager
+fi
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then \
 
