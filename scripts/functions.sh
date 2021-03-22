@@ -16,11 +16,11 @@ function create_dir() {
 function download_extension() {
   URL=$1
   PLUGIN=$2
+  OUTPUT_PATH=$3
   if curl --output /dev/null --silent --head --fail "${URL}"; then
-    echo "URL exists: ${URL}"
-    ${request} "${URL}" -O ${PLUGIN}.zip
+    ${request} "${URL}" -O ${OUTPUT_PATH}/${PLUGIN}.zip
   else
-    echo "URL does not exist: ${URL}"
+    echo "Plugin URL does not exist: ${URL}"
   fi
 
 }
@@ -47,12 +47,7 @@ fi
 
 # Helper function to setup cluster config for the clustering plugin
 function cluster_config() {
-  if [[ -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
-    rm "${CLUSTER_CONFIG_DIR}"/cluster.properties
-  fi
-
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  cat >>${CLUSTER_CONFIG_DIR}/cluster.properties <<EOF
+  cat >${CLUSTER_CONFIG_DIR}/cluster.properties <<EOF
 CLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR}
 instanceName=${INSTANCE_STRING}
 readOnly=${READONLY}
@@ -69,18 +64,13 @@ toggleSlave=${TOGGLE_SLAVE}
 connection.maxwait=500
 group=geoserver-cluster
 EOF
-fi
+
 }
 
 # Helper function to setup broker config. Used with clustering configs
 
 function broker_config() {
-  if [[ -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
-    rm "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
-  fi
-
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  cat >>${CLUSTER_CONFIG_DIR}/embedded-broker.properties <<EOF
+  cat >${CLUSTER_CONFIG_DIR}/embedded-broker.properties <<EOF
 activemq.jmx.useJmx=false
 activemq.jmx.port=1098
 activemq.jmx.host=localhost
@@ -92,15 +82,10 @@ activemq.broker.systemUsage.memoryUsage=128 mb
 activemq.broker.systemUsage.storeUsage=1 gb
 activemq.broker.systemUsage.tempUsage=128 mb
 EOF
-fi
 }
 
 # Helper function to configure s3 bucket
 function s3_config() {
-  if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
-    rm "${GEOSERVER_DATA_DIR}"/s3.properties
-  fi
-
   cat >"${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
 alias.s3.endpoint=${S3_SERVER_URL}
 alias.s3.user=${S3_USERNAME}
@@ -127,10 +112,7 @@ function install_plugin() {
 # Helper function to setup disk quota configs and database configurations
 
 function disk_quota_config() {
-  if [[  ${DB_BACKEND} == 'POSTGRES' ]]; then
-
-if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml ]]; then
-  cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml <<EOF
+  cat >${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml <<EOF
 <gwcQuotaConfiguration>
   <enabled>true</enabled>
   <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
@@ -144,10 +126,8 @@ if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml ]]; then
  <quotaStore>JDBC</quotaStore>
 </gwcQuotaConfiguration>
 EOF
-fi
 
-if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
-  cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml <<EOF
+  cat >${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml <<EOF
 <gwcJdbcConfiguration>
   <dialect>PostgreSQL</dialect>
   <connectionPool>
@@ -162,8 +142,7 @@ if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
   </connectionPool>
 </gwcJdbcConfiguration>
 EOF
-fi
-fi
+
 }
 
 function setup_control_flow() {

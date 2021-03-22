@@ -15,13 +15,13 @@ pushd /plugins
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
 if [ -z "${ACTIVATE_ALL_STABLE_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_STABLE_EXTENTIONS} -eq 0 ]; then
-  plugin=$(head -n 1 stable_plugins.txt)
+  plugin=$(head -n 1 /plugins/stable_plugins.txt)
   approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-  download_extension ${approved_plugins_url} ${plugin}
+  download_extension ${approved_plugins_url} ${plugin} /plugins
 else
-  for plugin in $(cat stable_plugins.txt); do
+  for plugin in $(cat /plugins/stable_plugins.txt); do
     approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-    download_extension ${approved_plugins_url} ${plugin}
+    download_extension ${approved_plugins_url} ${plugin} /plugins
   done
 fi
 
@@ -29,13 +29,13 @@ fi
 pushd /community_plugins
 
 if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} -eq 0 ]; then
-  plugin=$(head -n 1 community_plugins.txt)
+  plugin=$(head -n 1 /community_plugins/community_plugins.txt)
   community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-  download_extension ${community_plugins_url} ${plugin}
+  download_extension ${community_plugins_url} ${plugin} /community_plugins
 else
-  for plugin in $(cat community_plugins.txt); do
+  for plugin in $(cat /community_plugins/community_plugins.txt); do
     community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-    download_extension ${community_plugins_url} ${plugin}
+    download_extension ${community_plugins_url} ${plugin} /community_plugins
 
   done
 fi
@@ -49,7 +49,7 @@ array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-pl
   geoserver-$GS_VERSION-monitor-plugin.zip geoserver-$GS_VERSION-inspire-plugin.zip geoserver-$GS_VERSION-csw-plugin.zip )
 for i in "${array[@]}"; do
   url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
-  download_extension ${url} ${i%.*}
+  download_extension ${url} ${i%.*} ${resources_dir}/plugins
 done
 
 

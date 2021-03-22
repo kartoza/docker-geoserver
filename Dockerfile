@@ -32,8 +32,6 @@ RUN set -e \
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
-    STABLE_EXTENSIONS= \
-    COMMUNITY_EXTENSIONS= \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
@@ -122,11 +120,8 @@ ENV \
     GEOSERVER_FILEBROWSER_HIDEFS=false \
     TOMCAT_PASSWORD='tomcat'
 
-
-
-
 EXPOSE  $HTTPS_PORT
-
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt
 RUN groupadd -r geoserverusers -g ${GEOSERVER_GID} && \
     useradd -m -d /home/geoserveruser/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G geoserverusers geoserveruser
 RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
