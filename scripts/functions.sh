@@ -28,16 +28,16 @@ function download_extension() {
 # A little logic that will fetch the geoserver war zip file if it is not available locally in the resources dir
 function download_geoserver() {
 
-  if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then
-  if [[ "${WAR_URL}" == *\.zip ]]; then
-    destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-    ${request} ${WAR_URL} -O ${destination}
-    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
-  else
-    destination=/tmp/geoserver/geoserver.war
-    mkdir -p /tmp/geoserver/ &&
-    ${request} ${WAR_URL} -O ${destination}
-  fi
+if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then
+    if [[ "${WAR_URL}" == *\.zip ]]; then
+      destination=/tmp/resources/geoserver-${GS_VERSION}.zip
+      ${request} ${WAR_URL} -O ${destination}
+      unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
+    else
+      destination=/tmp/geoserver/geoserver.war
+      mkdir -p /tmp/geoserver/ &&
+      ${request} ${WAR_URL} -O ${destination}
+    fi
 else
   unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
 fi

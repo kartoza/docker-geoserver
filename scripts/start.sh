@@ -49,7 +49,7 @@ fi
 
 # Install stable plugins
 if [[ -z "${STABLE_EXTENSIONS}" ]]; then
-  echo " ${STABLE_EXTENSIONS} is unset, so we do not install any stable extensions"
+  echo "STABLE_EXTENSIONS is unset, so we do not install any stable extensions"
 else
   for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
@@ -82,7 +82,7 @@ function community_config() {
 
 # Install community modules plugins
 if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
-  echo " ${COMMUNITY_EXTENSIONS} is unset, so we do not install any community extensions"
+  echo "COMMUNITY_EXTENSIONS is unset, so we do not install any community extensions"
 else
   for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
