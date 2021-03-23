@@ -12,6 +12,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -XX:SoftRefLRUPolicyMSPerMB=36000  -XX:NewRatio=2 \
        -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 \
        -XX:InitiatingHeapOccupancyPercent=70 -XX:+CMSClassUnloadingEnabled \
+       -Djts.overlay=ng \
        -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} \
        -Djavax.servlet.request.encoding=${CHARACTER_ENCODING} \
