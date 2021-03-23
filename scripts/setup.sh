@@ -86,7 +86,9 @@ if [[ -f /tmp/geoserver/geoserver.war ]]; then
   rm -rf /tmp/geoserver
 else
   mv /tmp/geoserver /geoserver &&
-  cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver
+  cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
+  cp -r /geoserver/data_dir ${CATALINA_HOME}/data &&
+  cp -r /geoserver/data_dir/security ${CATALINA_HOME}
 fi
 
 # Install any plugin zip files in resources/plugins

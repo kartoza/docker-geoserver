@@ -35,7 +35,8 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
 if ls /geoserver/start.jar >/dev/null 2>&1; then
- exec java $JAVA_OPTS  -jar /geoserver/start.jar
+  cd /geoserver/
+  exec java $JAVA_OPTS  -jar start.jar
 else
   exec /usr/local/tomcat/bin/catalina.sh run
 fi

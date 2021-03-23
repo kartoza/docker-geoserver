@@ -42,7 +42,6 @@ else
   unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
 fi
 
-
 }
 
 # Helper function to setup cluster config for the clustering plugin
