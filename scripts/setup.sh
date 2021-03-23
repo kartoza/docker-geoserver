@@ -78,11 +78,18 @@ pushd ${CATALINA_HOME}
 download_geoserver
 
 # Install geoserver in the tomcat dir
-unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver &&
+if [[ -f /tmp/geoserver/geoserver.war ]]; then
+  unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver &&
   cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} &&
   mv ${CATALINA_HOME}/data/security ${CATALINA_HOME} &&
   rm -rf ${CATALINA_HOME}/webapps/geoserver/data &&
   rm -rf /tmp/geoserver
+else
+  mv /tmp/geoserver /geoserver &&
+  cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
+  cp -r /geoserver/data_dir ${CATALINA_HOME}/data &&
+  cp -r /geoserver/data_dir/security ${CATALINA_HOME}
+fi
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then

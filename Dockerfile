@@ -1,5 +1,5 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=jdk11-openjdk-slim-buster
+ARG IMAGE_VERSION=10-jdk11-openjdk-slim-buster
 
 ARG JAVA_HOME=/usr/local/openjdk-11
 
@@ -7,7 +7,7 @@ FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
-ARG GS_VERSION=2.18.2
+ARG GS_VERSION=2.19.0
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
