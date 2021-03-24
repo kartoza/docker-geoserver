@@ -3,6 +3,7 @@ authkey-plugin
 cas-plugin
 charts-plugin
 css-plugin
+csw-plugin
 db2-plugin
 dxf-plugin
 excel-plugin
