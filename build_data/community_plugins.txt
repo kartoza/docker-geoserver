@@ -1,7 +1,8 @@
 activeMQ-broker-plugin
-arcsde-plugin
 backup-restore-plugin
+cog-plugin
 colormap-plugin
+cov-json-plugin
 csw-iso-plugin
 dds-plugin
 dyndimension-plugin
@@ -16,7 +17,6 @@ gpx-plugin
 gsr-plugin
 gwc-azure-blobstore-plugin
 gwc-distributed-plugin
-gwc-s3-plugin
 gwc-sqlite-plugin
 hz-cluster-plugin
 imagemosaic-jdbc-plugin
@@ -26,7 +26,6 @@ jdbcconfig-plugin
 jdbcstore-plugin
 jms-cluster-plugin
 kmlppio-plugin
-mapml-plugin
 mbtiles-plugin
 mbtiles-store-plugin
 metadata-plugin
@@ -39,7 +38,6 @@ ogcapi-plugin
 ogr-datastore-plugin
 opensearch-eo-plugin
 ows-simulate-plugin
-params-extractor-plugin
 pgraster-plugin
 qos-plugin
 s3-geotiff-plugin
@@ -49,14 +47,11 @@ sec-oauth2-geonode-plugin
 sec-oauth2-github-plugin
 sec-oauth2-google-plugin
 sec-oauth2-openid-connect-plugin
+smart-data-loader-plugin
 solr-plugin
 taskmanager-core-plugin
 taskmanager-s3-plugin
 wfs3-plugin
 wms-eo-plugin
-wmts-multi-dimensional-plugin
 wmts-styles-plugin
-wps-download-plugin
-wps-jdbc-plugin
 wps-remote-plugin
-

@@ -16,27 +16,26 @@ docker pull kartoza/geoserver
 ## Building the image
 
 
-### To build yourself with a local checkout using the build script:
+### To build yourself with a local checkout using the docker-compose.build.yaml:
 
-Edit the build script to change the following variables:
+Edit the `.env` to change the build arguments:
 
-- The variables below represent the latest stable release you need to build. i.e 2.15.2
-
-   ```text
-   BUGFIX=2
-   MINOR=16
-   MAJOR=2
-   ```
+```
+IMAGE_VERSION=tomcat image tag
+JAVA_HOME= java home path corresponding to the tomcat version
+WAR_URL= Default URL to fetch geoserver war or zip file
+STABLE_PLUGIN_URL= URL to fetch geoserver plugins
+ACTIVATE_ALL_STABLE_EXTENTIONS= Specifies whether to build all stable plugins or a single one
+ACTIVATE_ALL_COMMUNITY_EXTENTIONS=Specifies whether to build all community plugins or a single one
+GEOSERVER_UID=Specifies the uid to use for the user used to run GeoServer in the container
+GEOSERVER_GID=Specifies the gid to use for the group used to run GeoServer in the container
+```
 
 ```shell
 git clone git://github.com/kartoza/docker-geoserver
 cd docker-geoserver
-./build.sh
+docker-compose -f docker-compose-build.yml up -d --build
 ```
-
-Ensure that you look at the build script to see what other build arguments you can include whilst building your image.
-
-If you do not intend to jump between versions you need to specify that in the build script.
 
 ### Building with war file from a URL
 
@@ -86,6 +85,7 @@ during the build. For example, to include a static web xml with CORS support `we
 create the file at `resources/overlays/usr/local/tomcat/conf/web.xml`.
 
 ## Environment Variables
+A full list of environment variables are specified in the .env file
 
 ### Activate plugins on runtime
 
@@ -98,7 +98,7 @@ The image is shipped with the following stable plugins:
 * pyramid-plugin 
 * gdal-plugin
 
-If you need to use other plugin you just pass an environment variable on startup which will
+If you need to use other plugins you just pass an environment variable on start up which will
 activate the plugin ie
 ```
 ie VERSION=2.16.2
@@ -124,6 +124,18 @@ docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserve
 
 ```
 
+### Enable disk quota storage in PostgreSQL backend
+
+By default GeoServer uses H2 datastore for configuring dsk quota. You can
+use the PostgreSQL backend as a disk quota store.
+
+You will need to run a PostgreSQL DB and link it to a GeoServer instance.
+
+``` 
+docker run -d -p 5432:5432 --name db kartoza/postgis:13.0
+docker run -d -p 8600:8080 --name geoserver --link db:db -e DB_BACKEND=POSTGRES -e HOST=db -e POSTGRES_PORT=5432 -e POSTGRES_DB=gis -e POSTGRES_USER=docker -e POSTGRES_PASS=docker kartoza/geoserver:2.18.0
+
+```
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
 Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for providing the solution to
@@ -267,19 +279,39 @@ GEOSERVER_ADMIN_PASSWORD and GEOSERVER_ADMIN_USER to  change it on runtime.
 docker run --name "geoserver" -e GEOSERVER_ADMIN_USER=kartoza  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
 ```
 
+#### Docker secrets
+
+To avoid passing sensitive information in environment variables, `_FILE` can be appended to
+some of the variables to read from files present in the container. This is particularly useful
+in conjunction with Docker secrets, as passwords can be loaded from `/run/secrets/<secret_name>` e.g.:
+
+* -e GEOSERVER_ADMIN_PASSWORD_FILE=/run/secrets/<geoserver_pass_secret>
+
+For more information see [https://docs.docker.com/engine/swarm/secrets/](https://docs.docker.com/engine/swarm/secrets/).
+
+Currently, `GEOSERVER_ADMIN_USER` and `GEOSERVER_ADMIN_PASSWORD` are supported.
+
+## Clustering using JMS Plugin
+GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-broker. 
+
+This setup uses the JMS cluster plugin which uses an embedded broker. A docker-compose.yml
+is provided in the clustering folder which simulates the replication using 
+a shared data directory.
+
+The environment variables associated with replication are listed below
+* `CLUSTERING=True` - Specified whether clustering should be activated.
+* `BROKER_URL=tcp://0.0.0.0:61661` - This links to the internal broker provided by the JMS cluter plugin.
+This value will be different for (Master-Node)
+* `READONLY=disabled` - Determines if the GeoServer instance is Read only
+* `RANDOMSTRING=87ee2a9b6802b6da_master` - Used to create a unique CLUSTER_CONFIG_DIR for each instance. 
+* `INSTANCE_STRING=d8a167a4e61b5415ec263` - Used to differentiate cluster instance names
+* `CLUSTER_DURABILITY=false`
+* `TOGGLE_MASTER=true` - Differentiates if the instance will be a Master
+* `TOGGLE_SLAVE=true` - Differentiates if the instance will be a Node
+* `EMBEDDED_BROKER=disabled` - Should be disabled for the Node
+
 ## Running the Image 
 
-### (manual docker commands)
-
-You probably want to also have PostGIS running too. To create a running
-container do:
-
-```
-ie VERSION=2.16.2
-docker run --name "postgis" -d -t kartoza/postgis:12.0
-docker run --name "geoserver"  --link postgis:postgis -p 8080:8080 -d -t kartoza/geoserver:${VERSION}
-```
-You can read more about PostGIS environment variables from [docker-postgis](https://github.com/kartoza/docker-postgis)
 
 ### Run (automated using docker-compose)
 
@@ -288,17 +320,19 @@ a repeatable orchestrated deployment system.
 
 
 We provide a sample ``docker-compose.yml`` file that illustrates
-how you can establish a GeoServer + PostGIS with nightly backups.
+how you can establish a GeoServer + PostGIS.
 
-If you are **not** interested in the backups , comment
-out those services in the ``docker-compose.yml`` file.
+If you are interested in the backups , add a section in the `docker-compose.yml`
+following instructions from [docker-pg-backup](https://github.com/kartoza/docker-pg-backup/blob/master/docker-compose.yml#L23).
 
-If you start the stack using the compose file make sure you login into GeoServer using username:`admin`
-and password:`myawesomegeoserver` as specified by the env file `geoserver.env`
+If you start the stack using the compose file make sure you login into GeoServer using 
+username:`admin` and password:`myawesomegeoserver`. 
+
+**NB:** The username and password are specified in the `.env` file and it is encouraged 
+to change them into something more secure.
 
 Please read the ``docker-compose``
-[documentation](https://docs.docker.com/compose/) for details
-on usage and syntax of ``docker-compose`` - it is not covered here.
+[documentation](https://docs.docker.com/compose/) for details on usage and syntax of ``docker-compose`` - it is not covered here.
 
 
 Once all services are started, test by visiting the GeoServer landing
@@ -314,8 +348,7 @@ docker-compose up -d
 **Note:** The ``docker-compose.yml`` **uses host based volumes** so
 when you remove the containers, **all data will be kept**. Using host based volumes
  ensures that your data persists between invocations of the compose file. If you need
- to delete the container data you need to run `docker volume prune`. Pruning the volumes will
- remove all the storage volumes that are not in use so users need to be careful of such a move.
+ to delete the container data you need to run `docker-compose down -v`.
 
 
 ## Run (automated using rancher)
