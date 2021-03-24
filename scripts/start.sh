@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# install Font files in resources/fonts if they exist
 
+source /scripts/functions.sh
+GS_VERSION=$(cat /scripts/geoserver_version.txt)
+
+
+# install Font files in resources/fonts if they exists
 if ls ${FONTS_DIR}/*.ttf >/dev/null 2>&1; then
   cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/
 fi
@@ -17,7 +21,7 @@ if [[ ! -d ${GEOSERVER_DATA_DIR}/user_projections ]]; then
 fi
 
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
-  echo "Installing default data directory"
+  echo "Activating default data directory"
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
@@ -25,185 +29,92 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
   CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-    mkdir -p ${CLUSTER_CONFIG_DIR}
-    cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-    unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ && \
-    mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ && \
-    touch ${CLUSTER_LOCKFILE} && rm -r /tmp/cluster/
+      mkdir -p ${CLUSTER_CONFIG_DIR}
+      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
+      unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ && \
+      mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ && \
+      touch ${CLUSTER_LOCKFILE} && rm -r /tmp/cluster/
   fi
+  cluster_config
+  broker_config
 
 fi
 
-function cluster_config() {
-  if [[ -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
-    rm "${CLUSTER_CONFIG_DIR}"/cluster.properties
-  fi
 
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  cat >>${CLUSTER_CONFIG_DIR}/cluster.properties <<EOF
-CLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR}
-instanceName=${INSTANCE_STRING}
-readOnly=${READONLY}
-durable=${CLUSTER_DURABILITY}
-brokerURL=${BROKER_URL}
-embeddedBroker=${EMBEDDED_BROKER}
-connection.retry=10
-toggleMaster=${TOGGLE_MASTER}
-xbeanURL=./broker.xml
-embeddedBrokerProperties=embedded-broker.properties
-topicName=VirtualTopic.geoserver
-connection=enabled
-toggleSlave=${TOGGLE_SLAVE}
-connection.maxwait=500
-group=geoserver-cluster
-EOF
-fi
-}
-
-cluster_config
-
-function broker_config() {
-  if [[ -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
-    rm "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
-  fi
-
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  cat >>${CLUSTER_CONFIG_DIR}/embedded-broker.properties <<EOF
-activemq.jmx.useJmx=false
-activemq.jmx.port=1098
-activemq.jmx.host=localhost
-activemq.jmx.createConnector=false
-activemq.transportConnectors.server.uri=${BROKER_URL}?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true&trace=true
-activemq.transportConnectors.server.discoveryURI=multicast://default
-activemq.broker.persistent=true
-activemq.broker.systemUsage.memoryUsage=128 mb
-activemq.broker.systemUsage.storeUsage=1 gb
-activemq.broker.systemUsage.tempUsage=128 mb
-EOF
-fi
-}
-
-broker_config
-
-function disk_quota_config() {
-  if [[  ${DB_BACKEND} == 'POSTGRES' ]]; then
-
-if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml ]]; then
-  cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml <<EOF
-<gwcQuotaConfiguration>
-  <enabled>true</enabled>
-  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
-  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
-  <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
-  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
-  <globalQuota>
-    <value>20</value>
-    <units>GiB</units>
-  </globalQuota>
- <quotaStore>JDBC</quotaStore>
-</gwcQuotaConfiguration>
-EOF
+if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
+  disk_quota_config
 fi
 
-if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
-  cat >>${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml <<EOF
-<gwcJdbcConfiguration>
-  <dialect>PostgreSQL</dialect>
-  <connectionPool>
-    <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}</url>
-    <username>${POSTGRES_USER}</username>
-    <password>${POSTGRES_PASS}</password>
-    <minConnections>1</minConnections>
-    <maxConnections>100</maxConnections>
-    <connectionTimeout>10000</connectionTimeout>
-    <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
-  </connectionPool>
-</gwcJdbcConfiguration>
-EOF
-fi
-fi
-}
 
-disk_quota_config
-
-function s3_config() {
-  if [[ -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
-    rm "${GEOSERVER_DATA_DIR}"/s3.properties
-  fi
-
-  cat >"${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
-alias.s3.endpoint=${S3_SERVER_URL}
-alias.s3.user=${S3_USERNAME}
-alias.s3.password=${S3_PASSWORD}
-EOF
-
-}
-
-function install_plugin() {
-  DATA_PATH=/community_plugins
-  if [ -n "$1" ]; then
-    DATA_PATH=$1
-  fi
-  EXT=$2
-
-  unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin &&
-    mv /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ &&
-    rm -rf /tmp/gs_plugin
-
-}
 
 # Install stable plugins
-for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-  echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-  if [[ -z "${STABLE_EXTENSIONS}" ]]; then
-    echo "Do not install any plugins"
-  else
-    echo "Installing ${ext} plugin"
-    install_plugin /plugins ${ext}
-  fi
-done
-
-# Install community modules plugins
-for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-  echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-  if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
-    echo "Do not install any plugins"
-  else
-    if [[ ${ext} == 's3-geotiff-plugin' ]]; then
-      s3_config
-      install_plugin /community_plugins ${ext}
-    elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
+if [[ -z "${STABLE_EXTENSIONS}" ]]; then
+  echo "STABLE_EXTENSIONS is unset, so we do not install any stable extensions"
+else
+  for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
+      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
       echo "Installing ${ext} plugin"
-      install_plugin /community_plugins ${ext}
+      if [[ ! -f /plugins/${ext}.zip ]]; then
+        approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+        download_extension ${approved_plugins_url} ${ext} /plugins
+        install_plugin /plugins ${ext}
+      else
+        install_plugin /plugins ${ext}
+      fi
+
+  done
+fi
+
+# Function to install community extensions
+function community_config() {
+    if [[ ${ext} == 's3-geotiff-plugin' ]]; then
+        s3_config
+        install_plugin /community_plugins ${ext}
+    elif [[ ${ext} == 's3-geotiff-plugin' ]]; then
+        mkdir -p ${MONITOR_AUDIT_PATH}
+        install_plugin /community_plugins ${ext}
+    elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
+        echo "Installing ${ext} plugin"
+        install_plugin /community_plugins ${ext}
 
     fi
-  fi
-done
+}
+
+# Install community modules plugins
+if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
+  echo "COMMUNITY_EXTENSIONS is unset, so we do not install any community extensions"
+else
+  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+      MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+      if [[ ! -f /community_plugins/${ext}.zip ]]; then
+        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+        download_extension ${community_plugins_url} ${ext} /community_plugins
+        community_config
+      else
+        community_config
+      fi
+  done
+fi
+
 
 if [[ -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
   rm "${GEOSERVER_DATA_DIR}"/controlflow.properties
 fi
 
-cat >"${GEOSERVER_DATA_DIR}"/controlflow.properties <<EOF
-timeout=${REQUEST_TIMEOUT}
-ows.global=${PARARELL_REQUEST}
-ows.wms.getmap=${GETMAP}
-ows.wfs.getfeature.application/msexcel=${REQUEST_EXCEL}
-user=${SINGLE_USER}
-ows.gwc=${GWC_REQUEST}
-user.ows.wps.execute=${WPS_REQUEST}
-EOF
+# Setup control flow properties
+setup_control_flow
 
+# Setup tomcat apps manager
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-  unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
-    mv /tmp/tomcat/tomcat_apps/* ${CATALINA_HOME}/webapps/ &&
+    unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
+    cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
     cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
     cp /build_data/tomcat-users.xml /usr/local/tomcat/conf &&
     sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
 else
-  rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
+    rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
     rm -rf "${CATALINA_HOME}"/webapps/docs &&
     rm -rf "${CATALINA_HOME}"/webapps/examples &&
     rm -rf "${CATALINA_HOME}"/webapps/host-manager &&

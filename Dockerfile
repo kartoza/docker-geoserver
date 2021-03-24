@@ -1,16 +1,19 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9-jre11-slim
+ARG IMAGE_VERSION=10-jdk11-openjdk-slim-buster
 
-ARG JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ARG JAVA_HOME=/usr/local/openjdk-11
 
 FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
-ARG GS_VERSION=2.18.0
+ARG GS_VERSION=2.19.0
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
-ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions
+ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
+ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=1
+ARG GEOSERVER_UID=1000
+ARG GEOSERVER_GID=10001
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
@@ -29,12 +32,10 @@ RUN set -e \
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
-    STABLE_EXTENSIONS= \
-    COMMUNITY_EXTENSIONS= \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/gdal_native_libs:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     ENABLE_JSONP=true \
@@ -119,13 +120,10 @@ ENV \
     GEOSERVER_FILEBROWSER_HIDEFS=false \
     TOMCAT_PASSWORD='tomcat'
 
-
-
-
 EXPOSE  $HTTPS_PORT
-
-RUN groupadd -r geoserverusers -g 10001 && \
-    useradd -m -d /home/geoserveruser/ --gid 10001 -s /bin/bash -G geoserverusers geoserveruser
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt
+RUN groupadd -r geoserverusers -g ${GEOSERVER_GID} && \
+    useradd -m -d /home/geoserveruser/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G geoserverusers geoserveruser
 RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
  ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
  /plugins
@@ -133,7 +131,7 @@ RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
 USER geoserveruser
-VOLUME ["${GEOSERVER_DATA_DIR}", "${LETSENCRYPT_CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}", "${GEOWEBCACHE_CACHE_DIR}"]
+VOLUME ["${GEOSERVER_DATA_DIR}", "${LETSENCRYPT_CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}"]
 WORKDIR ${CATALINA_HOME}
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]

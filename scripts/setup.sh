@@ -1,67 +1,59 @@
 #!/usr/bin/env bash
 # Download geoserver extensions and other resources
 
-request="wget --progress=bar:force:noscroll -c --no-check-certificate"
+source /scripts/functions.sh
 
-function create_dir() {
-  DATA_PATH=$1
-
-  if [[ ! -d ${DATA_PATH} ]]; then
-    echo "Creating" ${DATA_PATH} "directory"
-    mkdir -p ${DATA_PATH}
-  else
-    echo ${DATA_PATH} "exists - skipping creation"
-  fi
-}
-
-function download_extension() {
-  URL=$1
-  PLUGIN=$2
-  if curl --output /dev/null --silent --head --fail "${URL}"; then
-    echo "URL exists: ${URL}"
-    ${request} "${URL}" -O ${PLUGIN}.zip
-  else
-    echo "URL does not exist: ${URL}"
-  fi
-
-}
 resources_dir="/tmp/resources"
-create_dir ${resources_dir}
+create_dir ${resources_dir}/plugins/gdal
+create_dir /usr/share/fonts/opentype
+create_dir /tomcat_apps
+
+
 
 pushd /plugins
-#Extensions
-# Download all other plugins to keep for activating using env variables
 
-for plugin in $(cat stable_plugins.txt); do
-  url="${STABLE_PLUGIN_URL}/geoserver-${GS_VERSION}-${plugin}.zip"
-  download_extension ${url} ${plugin}
-done
+# Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
-# Download community modules
+if [ -z "${ACTIVATE_ALL_STABLE_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_STABLE_EXTENTIONS} -eq 0 ]; then
+  plugin=$(head -n 1 /plugins/stable_plugins.txt)
+  approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+  download_extension ${approved_plugins_url} ${plugin} /plugins
+else
+  for plugin in $(cat /plugins/stable_plugins.txt); do
+    approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+    download_extension ${approved_plugins_url} ${plugin} /plugins
+  done
+fi
 
+# Download community extensions. This needs to be checked on each iterations as they sometimes become unavailable
 pushd /community_plugins
 
-for plugin in $(cat community_plugins.txt); do
-  community_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-  download_extension ${community_url} ${plugin}
+if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} -eq 0 ]; then
+  plugin=$(head -n 1 /community_plugins/community_plugins.txt)
+  community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
+  download_extension ${community_plugins_url} ${plugin} /community_plugins
+else
+  for plugin in $(cat /community_plugins/community_plugins.txt); do
+    community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
+    download_extension ${community_plugins_url} ${plugin} /community_plugins
 
-done
+  done
+fi
 
-create_dir ${resources_dir}/plugins
-
+#Install some mandatory stable extensions
 pushd ${resources_dir}/plugins
-#Extensions
 
 array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip
   geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip
   geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip
   geoserver-$GS_VERSION-monitor-plugin.zip geoserver-$GS_VERSION-inspire-plugin.zip geoserver-$GS_VERSION-csw-plugin.zip )
 for i in "${array[@]}"; do
-  url="https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions/${i}/download"
-  download_extension ${url} ${i}
+  url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
+  download_extension ${url} ${i%.*} ${resources_dir}/plugins
 done
 
-create_dir gdal
+
+
 pushd gdal
 
 ${request} http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
@@ -70,60 +62,34 @@ ${request} http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/
 
 popd
 
-# Install libjpeg-turbo for that specific geoserver GS_VERSION
+# Install libjpeg-turbo
 if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then
   ${request} https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb \
     -P ${resources_dir}
 fi
-cd ${resources_dir} &&
-  dpkg -i libjpeg-turbo-official_1.5.3_amd64.deb
 
-pushd /tmp/
+dpkg -i ${resources_dir}/libjpeg-turbo-official_1.5.3_amd64.deb
 
-if [[ ! -f ${resources_dir}/jai-1_1_3-lib-linux-amd64.tar.gz ]]; then
-  ${request} http://download.java.net/media/jai/builds/release/1_1_3/jai-1_1_3-lib-linux-amd64.tar.gz \
-    -P ${resources_dir}
-fi
-if [[ ! -f ${resources_dir}/jai_imageio-1_1-lib-linux-amd64.tar.gz ]]; then
-  ${request} http://download.java.net/media/jai-imageio/builds/release/1.1/jai_imageio-1_1-lib-linux-amd64.tar.gz \
-    -P ${resources_dir}
-fi
-mv ./resources/jai-1_1_3-lib-linux-amd64.tar.gz ./ &&
-  mv ./resources/jai_imageio-1_1-lib-linux-amd64.tar.gz ./ &&
-  gunzip -c jai-1_1_3-lib-linux-amd64.tar.gz | tar xf - &&
-  gunzip -c jai_imageio-1_1-lib-linux-amd64.tar.gz | tar xf - &&
-  mv /tmp/jai-1_1_3/lib/*.jar ${JAVA_HOME}/jre/lib/ext/ &&
-  mv /tmp/jai-1_1_3/lib/*.so ${JAVA_HOME}/jre/lib/amd64/ &&
-  mv /tmp/jai_imageio-1_1/lib/*.jar ${JAVA_HOME} &&
-  mv /tmp/jai_imageio-1_1/lib/*.so ${JAVA_HOME}/jre/lib/amd64/ &&
-  rm /tmp/jai-1_1_3-lib-linux-amd64.tar.gz &&
-  rm -r /tmp/jai-1_1_3 &&
-  rm /tmp/jai_imageio-1_1-lib-linux-amd64.tar.gz &&
-  rm -r /tmp/jai_imageio-1_1
+
 
 pushd ${CATALINA_HOME}
 
-# A little logic that will fetch the geoserver war zip file if it
-# is not available locally in the resources dir
-if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]]; then
-  if [[ "${WAR_URL}" == *\.zip ]]; then
-    destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-    ${request} ${WAR_URL} -O ${destination}
-    unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
-  else
-    destination=/tmp/geoserver/geoserver.war
-    mkdir -p /tmp/geoserver/ &&
-      ${request} ${WAR_URL} -O ${destination}
-  fi
-else
-  unzip /tmp/resources/geoserver-${GS_VERSION}.zip -d /tmp/geoserver
-fi
+# Download geoserver
+download_geoserver
 
-unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver &&
+# Install geoserver in the tomcat dir
+if [[ -f /tmp/geoserver/geoserver.war ]]; then
+  unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver &&
   cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} &&
   mv ${CATALINA_HOME}/data/security ${CATALINA_HOME} &&
   rm -rf ${CATALINA_HOME}/webapps/geoserver/data &&
   rm -rf /tmp/geoserver
+else
+  mv /tmp/geoserver /geoserver &&
+  cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
+  cp -r /geoserver/data_dir ${CATALINA_HOME}/data &&
+  cp -r /geoserver/data_dir/security ${CATALINA_HOME}
+fi
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
@@ -133,6 +99,14 @@ if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
       rm -rf /tmp/gs_plugin
   done
 fi
+
+# Temporary fix for the print plugin https://github.com/georchestra/georchestra/pull/2517
+
+rm ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/json-20180813.jar && \
+${request} https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.jar \
+-O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/json-20080701.jar
+
+# Activate gdal plugin in geoserver
 if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
   mkdir /usr/local/gdal_data && mkdir /usr/local/gdal_native_libs
   unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data &&
@@ -145,16 +119,19 @@ if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar 
     -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar
 fi
 
+# Install sqljdbc
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then
   ${request} https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
     -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar
 fi
 
+# Install jetty-servlets
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
   ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
     -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
 fi
 
+# Install jetty-util
 if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then
   ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
     -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar
@@ -166,22 +143,21 @@ rm -f /tmp/resources/overlays/README.txt &&
     cp -rf /tmp/resources/overlays/* /
   fi
 
-create_dir /usr/share/fonts/opentype
 
+# Package tomcat webapps - useful to activate later
 if [ -d $CATALINA_HOME/webapps.dist ]; then
-  mv $CATALINA_HOME/webapps.dist /tomcat_apps &&
+    cp -r $CATALINA_HOME/webapps.dist /tomcat_apps &&
     zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
 else
-  create_dir /tomcat_apps
-  mv "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps &&
-    mv "${CATALINA_HOME}"/webapps/docs /tomcat_apps &&
-    mv "${CATALINA_HOME}"/webapps/examples /tomcat_apps &&
-    mv "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps &&
-    mv "${CATALINA_HOME}"/webapps/manager /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps &&
     zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
 fi
 
-create_dir /usr/share/fonts/opentype
+
 
 # Delete resources after installation
 rm -rf /tmp/resources

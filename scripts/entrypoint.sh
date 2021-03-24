@@ -1,21 +1,25 @@
 #!/bin/bash
 set -e
 
+
 /scripts/start.sh
 
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
+MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
 export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
        -XX:SoftRefLRUPolicyMSPerMB=36000  -XX:NewRatio=2 \
        -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 \
        -XX:InitiatingHeapOccupancyPercent=70 -XX:+CMSClassUnloadingEnabled \
+       -Djts.overlay=ng \
        -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} \
        -Djavax.servlet.request.encoding=${CHARACTER_ENCODING} \
        -Djavax.servlet.response.encoding=${CHARACTER_ENCODING} \
        -DCLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR} \
        -DGEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR} \
+       -DGEOSERVER_AUDIT_PATH=${MONITOR_AUDIT_PATH} \
        -Dorg.geotools.shapefile.datetime=true \
        -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
        -Dsun.java2d.renderer.useThreadLocal=false \
@@ -30,4 +34,9 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
 ## Preparare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
-exec /usr/local/tomcat/bin/catalina.sh run
+if ls /geoserver/start.jar >/dev/null 2>&1; then
+  cd /geoserver/
+  exec java $JAVA_OPTS  -jar start.jar
+else
+  exec /usr/local/tomcat/bin/catalina.sh run
+fi
