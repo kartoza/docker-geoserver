@@ -15,13 +15,13 @@ pushd /plugins
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
 if [ -z "${ACTIVATE_ALL_STABLE_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_STABLE_EXTENTIONS} -eq 0 ]; then
-  plugin=$(head -n 1 stable_plugins.txt)
+  plugin=$(head -n 1 /plugins/stable_plugins.txt)
   approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-  download_extension ${approved_plugins_url} ${plugin}
+  download_extension ${approved_plugins_url} ${plugin} /plugins
 else
-  for plugin in $(cat stable_plugins.txt); do
+  for plugin in $(cat /plugins/stable_plugins.txt); do
     approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-    download_extension ${approved_plugins_url} ${plugin}
+    download_extension ${approved_plugins_url} ${plugin} /plugins
   done
 fi
 
@@ -29,13 +29,13 @@ fi
 pushd /community_plugins
 
 if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} -eq 0 ]; then
-  plugin=$(head -n 1 community_plugins.txt)
+  plugin=$(head -n 1 /community_plugins/community_plugins.txt)
   community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-  download_extension ${community_plugins_url} ${plugin}
+  download_extension ${community_plugins_url} ${plugin} /community_plugins
 else
-  for plugin in $(cat community_plugins.txt); do
+  for plugin in $(cat /community_plugins/community_plugins.txt); do
     community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-    download_extension ${community_plugins_url} ${plugin}
+    download_extension ${community_plugins_url} ${plugin} /community_plugins
 
   done
 fi
@@ -49,7 +49,7 @@ array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-pl
   geoserver-$GS_VERSION-monitor-plugin.zip geoserver-$GS_VERSION-inspire-plugin.zip geoserver-$GS_VERSION-csw-plugin.zip )
 for i in "${array[@]}"; do
   url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
-  download_extension ${url} ${i%.*}
+  download_extension ${url} ${i%.*} ${resources_dir}/plugins
 done
 
 
@@ -78,11 +78,18 @@ pushd ${CATALINA_HOME}
 download_geoserver
 
 # Install geoserver in the tomcat dir
-unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver &&
+if [[ -f /tmp/geoserver/geoserver.war ]]; then
+  unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver &&
   cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} &&
   mv ${CATALINA_HOME}/data/security ${CATALINA_HOME} &&
   rm -rf ${CATALINA_HOME}/webapps/geoserver/data &&
   rm -rf /tmp/geoserver
+else
+  mv /tmp/geoserver /geoserver &&
+  cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
+  cp -r /geoserver/data_dir ${CATALINA_HOME}/data &&
+  cp -r /geoserver/data_dir/security ${CATALINA_HOME}
+fi
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then

@@ -27,6 +27,8 @@ WAR_URL= Default URL to fetch geoserver war or zip file
 STABLE_PLUGIN_URL= URL to fetch geoserver plugins
 ACTIVATE_ALL_STABLE_EXTENTIONS= Specifies whether to build all stable plugins or a single one
 ACTIVATE_ALL_COMMUNITY_EXTENTIONS=Specifies whether to build all community plugins or a single one
+GEOSERVER_UID=Specifies the uid to use for the user used to run GeoServer in the container
+GEOSERVER_GID=Specifies the gid to use for the group used to run GeoServer in the container
 ```
 
 ```shell

@@ -2,6 +2,7 @@
 
 
 source /scripts/functions.sh
+GS_VERSION=$(cat /scripts/geoserver_version.txt)
 
 
 # install Font files in resources/fonts if they exists
@@ -20,7 +21,7 @@ if [[ ! -d ${GEOSERVER_DATA_DIR}/user_projections ]]; then
 fi
 
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
-  echo "Installing default data directory"
+  echo "Activating default data directory"
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
@@ -28,61 +29,83 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
   CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-    mkdir -p ${CLUSTER_CONFIG_DIR}
-    cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-    unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ && \
-    mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ && \
-    touch ${CLUSTER_LOCKFILE} && rm -r /tmp/cluster/
+      mkdir -p ${CLUSTER_CONFIG_DIR}
+      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
+      unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ && \
+      mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ && \
+      touch ${CLUSTER_LOCKFILE} && rm -r /tmp/cluster/
   fi
+  cluster_config
+  broker_config
 
 fi
 
-cluster_config
 
-broker_config
-
-disk_quota_config
+if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
+  disk_quota_config
+fi
 
 
 
 # Install stable plugins
-for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-  echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-  if [[ -z "${STABLE_EXTENSIONS}" ]]; then
-    echo "Do not install any plugins"
-  else
-    echo "Installing ${ext} plugin"
-    install_plugin /plugins ${ext}
-  fi
-done
+if [[ -z "${STABLE_EXTENSIONS}" ]]; then
+  echo "STABLE_EXTENSIONS is unset, so we do not install any stable extensions"
+else
+  for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
+      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+      echo "Installing ${ext} plugin"
+      if [[ ! -f /plugins/${ext}.zip ]]; then
+        approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+        download_extension ${approved_plugins_url} ${ext} /plugins
+        install_plugin /plugins ${ext}
+      else
+        install_plugin /plugins ${ext}
+      fi
 
-# Install community modules plugins
-for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-  echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-  if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
-    echo "Do not install any plugins"
-  else
-    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+  done
+fi
+
+# Function to install community extensions
+function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
-      s3_config
-      install_plugin /community_plugins ${ext}
+        s3_config
+        install_plugin /community_plugins ${ext}
     elif [[ ${ext} == 's3-geotiff-plugin' ]]; then
         mkdir -p ${MONITOR_AUDIT_PATH}
         install_plugin /community_plugins ${ext}
     elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
-      echo "Installing ${ext} plugin"
-      install_plugin /community_plugins ${ext}
+        echo "Installing ${ext} plugin"
+        install_plugin /community_plugins ${ext}
 
     fi
-  fi
-done
+}
+
+# Install community modules plugins
+if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
+  echo "COMMUNITY_EXTENSIONS is unset, so we do not install any community extensions"
+else
+  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+      MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+      if [[ ! -f /community_plugins/${ext}.zip ]]; then
+        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+        download_extension ${community_plugins_url} ${ext} /community_plugins
+        community_config
+      else
+        community_config
+      fi
+  done
+fi
+
 
 if [[ -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
   rm "${GEOSERVER_DATA_DIR}"/controlflow.properties
 fi
 
+# Setup control flow properties
 setup_control_flow
 
+# Setup tomcat apps manager
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&

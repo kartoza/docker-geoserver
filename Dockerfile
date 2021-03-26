@@ -1,5 +1,5 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=jdk11-openjdk-slim-buster
+ARG IMAGE_VERSION=10-jdk11-openjdk-slim-buster
 
 ARG JAVA_HOME=/usr/local/openjdk-11
 
@@ -12,6 +12,8 @@ ARG GS_VERSION=2.18.2
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
 ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=1
+ARG GEOSERVER_UID=1000
+ARG GEOSERVER_GID=10001
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
@@ -30,8 +32,6 @@ RUN set -e \
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
-    STABLE_EXTENSIONS= \
-    COMMUNITY_EXTENSIONS= \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/local/gdal_data \
@@ -120,13 +120,10 @@ ENV \
     GEOSERVER_FILEBROWSER_HIDEFS=false \
     TOMCAT_PASSWORD='tomcat'
 
-
-
-
 EXPOSE  $HTTPS_PORT
-
-RUN groupadd -r geoserverusers -g 10001 && \
-    useradd -m -d /home/geoserveruser/ --gid 10001 -s /bin/bash -G geoserverusers geoserveruser
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt
+RUN groupadd -r geoserverusers -g ${GEOSERVER_GID} && \
+    useradd -m -d /home/geoserveruser/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G geoserverusers geoserveruser
 RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
  ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
  /plugins
