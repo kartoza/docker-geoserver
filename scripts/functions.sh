@@ -12,6 +12,19 @@ function create_dir() {
   fi
 }
 
+function tomcat_user_config() {
+  if [[ ! -f /usr/local/tomcat/conf/tomcat-users.xml ]]; then
+    echo "/usr/local/tomcat/conf/tomcat-users.xml doesn't exists"
+    # If it doesn't exists, copy from /settings directory if exists
+    if [[ -f /settings/tomcat-users.xml ]]; then
+      cp -f /settings/tomcat-users.xml /usr/local/tomcat/conf/tomcat-users.xml
+    else
+      # default value
+      envsubst < /build_data/tomcat-users.xml > /usr/local/tomcat/conf/tomcat-users.xml
+    fi
+  fi
+
+}
 # Helper function to download extensions
 function download_extension() {
   URL=$1

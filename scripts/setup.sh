@@ -85,7 +85,7 @@ if [[ -f /tmp/geoserver/geoserver.war ]]; then
   rm -rf ${CATALINA_HOME}/webapps/geoserver/data &&
   rm -rf /tmp/geoserver
 else
-  mv /tmp/geoserver /geoserver &&
+  cp -r /tmp/geoserver/* /geoserver/ &&
   cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
   cp -r /geoserver/data_dir ${CATALINA_HOME}/data &&
   cp -r /geoserver/data_dir/security ${CATALINA_HOME}

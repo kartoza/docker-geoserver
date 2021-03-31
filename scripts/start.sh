@@ -105,8 +105,8 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
     cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
-    cp /build_data/tomcat-users.xml /usr/local/tomcat/conf &&
-    sed -i "s/TOMCAT_PASS/${TOMCAT_PASSWORD}/g" /usr/local/tomcat/conf/tomcat-users.xml
+    tomcat_user_config
+
 else
     rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
     rm -rf "${CATALINA_HOME}"/webapps/docs &&
