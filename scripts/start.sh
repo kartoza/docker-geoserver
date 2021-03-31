@@ -3,7 +3,7 @@
 
 source /scripts/functions.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
-
+MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
 # install Font files in resources/fonts if they exists
 if ls ${FONTS_DIR}/*.ttf >/dev/null 2>&1; then
@@ -45,7 +45,7 @@ if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   disk_quota_config
 fi
 
-
+create_dir ${MONITOR_AUDIT_PATH}
 
 # Install stable plugins
 if [[ -z "${STABLE_EXTENSIONS}" ]]; then
@@ -53,7 +53,6 @@ if [[ -z "${STABLE_EXTENSIONS}" ]]; then
 else
   for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-      echo "Installing ${ext} plugin"
       if [[ ! -f /plugins/${ext}.zip ]]; then
         approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
         download_extension ${approved_plugins_url} ${ext} /plugins
@@ -70,13 +69,9 @@ function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
         s3_config
         install_plugin /community_plugins ${ext}
-    elif [[ ${ext} == 's3-geotiff-plugin' ]]; then
-        mkdir -p ${MONITOR_AUDIT_PATH}
-        install_plugin /community_plugins ${ext}
     elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
         echo "Installing ${ext} plugin"
         install_plugin /community_plugins ${ext}
-
     fi
 }
 
@@ -86,7 +81,6 @@ if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
 else
   for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-      MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
       if [[ ! -f /community_plugins/${ext}.zip ]]; then
         community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
         download_extension ${community_plugins_url} ${ext} /community_plugins

@@ -63,6 +63,7 @@ ENV \
     RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
     GEOSERVER_CSRF_DISABLED=true \
     FONTS_DIR=/opt/fonts \
+    GEOSERVER_HOME=/geoserver
     ENCODING='UTF8' \
     TIMEZONE='GMT' \
     CHARACTER_ENCODING='UTF-8' \
@@ -82,7 +83,8 @@ ENV \
 
 
 WORKDIR /scripts
-RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} ${GEOWEBCACHE_CACHE_DIR}
+RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
+             ${GEOWEBCACHE_CACHE_DIR} ${GEOSERVER_HOME}
 
 
 ADD resources /tmp/resources
@@ -126,12 +128,12 @@ RUN groupadd -r geoserverusers -g ${GEOSERVER_GID} && \
     useradd -m -d /home/geoserveruser/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G geoserverusers geoserveruser
 RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
  ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
- /plugins
+ /plugins ${GEOSERVER_HOME}
 
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
 USER geoserveruser
 VOLUME ["${GEOSERVER_DATA_DIR}", "${LETSENCRYPT_CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}"]
-WORKDIR ${CATALINA_HOME}
+WORKDIR ${GEOSERVER_HOME}
 
 CMD ["/bin/sh", "/scripts/entrypoint.sh"]
