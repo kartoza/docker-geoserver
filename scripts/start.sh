@@ -5,6 +5,11 @@ source /scripts/functions.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
+# Useful for development - We need a clean state of data directory
+if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
+  rm -rf ${GEOSERVER_DATA_DIR}/*
+fi
+
 # install Font files in resources/fonts if they exists
 if ls ${FONTS_DIR}/*.ttf >/dev/null 2>&1; then
   cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/
@@ -29,7 +34,7 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
   CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-      mkdir -p ${CLUSTER_CONFIG_DIR}
+      create_dir ${CLUSTER_CONFIG_DIR}
       cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
       unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ && \
       mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ && \
@@ -89,11 +94,6 @@ else
         community_config
       fi
   done
-fi
-
-
-if [[ -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
-  rm "${GEOSERVER_DATA_DIR}"/controlflow.properties
 fi
 
 # Setup control flow properties

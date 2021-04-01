@@ -9,7 +9,7 @@ LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
 ARG GS_VERSION=2.19.0
 
-ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-bin.zip
 ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
 ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=1
 ARG GEOSERVER_UID=1000
@@ -80,7 +80,8 @@ ENV \
     EMBEDDED_BROKER=enabled \
     DB_BACKEND= \
     LOGIN_STATUS=on \
-    WEB_INTERFACE=false
+    WEB_INTERFACE=false \
+    RECREATE_DATADIR=false
 
 
 WORKDIR /scripts
