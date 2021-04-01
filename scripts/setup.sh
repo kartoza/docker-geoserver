@@ -7,6 +7,8 @@ resources_dir="/tmp/resources"
 create_dir ${resources_dir}/plugins/gdal
 create_dir /usr/share/fonts/opentype
 create_dir /tomcat_apps
+create_dir /usr/local/gdal_data
+create_dir /usr/local/gdal_native_libs
 
 
 
@@ -108,7 +110,6 @@ ${request} https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.j
 
 # Activate gdal plugin in geoserver
 if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
-  mkdir /usr/local/gdal_data && mkdir /usr/local/gdal_native_libs
   unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data &&
     mv /usr/local/gdal_data/gdal-data/* /usr/local/gdal_data && rm -rf /usr/local/gdal_data/gdal-data &&
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs
