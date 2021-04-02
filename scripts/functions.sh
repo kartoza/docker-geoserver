@@ -115,9 +115,13 @@ function install_plugin() {
   fi
   EXT=$2
 
-  unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin &&
-    cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ &&
-    rm -rf /tmp/gs_plugin
+  unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin
+  if [[ -f /geoserver/start.jar ]]; then
+    cp -r -u -p /tmp/gs_plugin/*.jar ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/
+  else
+    cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
+  fi
+  rm -rf /tmp/gs_plugin
 
 }
 

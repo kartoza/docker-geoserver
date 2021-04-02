@@ -11,8 +11,13 @@ create_dir /usr/local/gdal_data
 create_dir /usr/local/gdal_native_libs
 
 
+if [[ -f /geoserver/start.jar ]] ; then
+  GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
+else
+  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
+fi
 
-pushd /plugins
+
 
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
@@ -28,7 +33,7 @@ else
 fi
 
 # Download community extensions. This needs to be checked on each iterations as they sometimes become unavailable
-pushd /community_plugins
+
 
 if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} -eq 0 ]; then
   plugin=$(head -n 1 /community_plugins/community_plugins.txt)
@@ -43,7 +48,7 @@ else
 fi
 
 #Install some mandatory stable extensions
-pushd ${resources_dir}/plugins
+
 
 array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip
   geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip
@@ -56,7 +61,7 @@ done
 
 
 
-pushd gdal
+pushd ${resources_dir}/plugins/gdal
 
 ${request} http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
 popd
@@ -72,9 +77,6 @@ fi
 
 dpkg -i ${resources_dir}/libjpeg-turbo-official_1.5.3_amd64.deb
 
-
-
-pushd ${CATALINA_HOME}
 
 # Download geoserver
 download_geoserver
@@ -97,16 +99,17 @@ fi
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
   for p in /tmp/resources/plugins/*.zip; do
     unzip $p -d /tmp/gs_plugin &&
-      mv /tmp/gs_plugin/*.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/ &&
+      mv /tmp/gs_plugin/*.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/ &&
       rm -rf /tmp/gs_plugin
   done
 fi
 
 # Temporary fix for the print plugin https://github.com/georchestra/georchestra/pull/2517
-
-rm ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/json-20180813.jar && \
-${request} https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.jar \
--O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/json-20080701.jar
+if [[ -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20180813.jar ]];then
+  rm ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20180813.jar && \
+  ${request} https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.jar \
+  -O ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20080701.jar
+fi
 
 # Activate gdal plugin in geoserver
 if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
@@ -115,27 +118,27 @@ if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs
 fi
 # Install Marlin render
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then
+if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then
   ${request} https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
-    -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar
+    -O ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar
 fi
 
 # Install sqljdbc
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then
+if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then
   ${request} https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
-    -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar
+    -O ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar
 fi
 
 # Install jetty-servlets
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
+if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
   ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
-    -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
+    -O ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
 fi
 
 # Install jetty-util
-if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then
+if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then
   ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
-    -O ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar
+    -O ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/jetty-util.jar
 fi
 
 # Overlay files and directories in resources/overlays if they exist
