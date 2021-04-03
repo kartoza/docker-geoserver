@@ -11,13 +11,9 @@ create_dir /usr/local/gdal_data
 create_dir /usr/local/gdal_native_libs
 
 
-if [[ -f /geoserver/start.jar ]] ; then
-  GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
-else
-  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
-fi
 
 
+pushd /plugins
 
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
@@ -33,7 +29,7 @@ else
 fi
 
 # Download community extensions. This needs to be checked on each iterations as they sometimes become unavailable
-
+pushd /community_plugins
 
 if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} -eq 0 ]; then
   plugin=$(head -n 1 /community_plugins/community_plugins.txt)
@@ -48,7 +44,7 @@ else
 fi
 
 #Install some mandatory stable extensions
-
+pushd ${resources_dir}/plugins
 
 array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-plugin.zip geoserver-$GS_VERSION-printing-plugin.zip
   geoserver-$GS_VERSION-libjpeg-turbo-plugin.zip geoserver-$GS_VERSION-control-flow-plugin.zip
@@ -61,7 +57,7 @@ done
 
 
 
-pushd ${resources_dir}/plugins/gdal
+pushd gdal
 
 ${request} http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
 popd
@@ -77,6 +73,9 @@ fi
 
 dpkg -i ${resources_dir}/libjpeg-turbo-official_1.5.3_amd64.deb
 
+
+
+pushd ${CATALINA_HOME}
 
 # Download geoserver
 download_geoserver
@@ -95,6 +94,14 @@ else
   cp -r /geoserver/data_dir/security ${CATALINA_HOME}
 fi
 
+# Install GeoServer plugins in correct install dir
+ if [[ -f /geoserver/start.jar ]]; then
+   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
+else
+  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
+fi
+
+echo "The install directory is $GEOSERVER_INSTALL_DIR"
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
   for p in /tmp/resources/plugins/*.zip; do
@@ -105,7 +112,8 @@ if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
 fi
 
 # Temporary fix for the print plugin https://github.com/georchestra/georchestra/pull/2517
-if [[ -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20180813.jar ]];then
+
+if [[ -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20180813.jar ]]; then
   rm ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20180813.jar && \
   ${request} https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.jar \
   -O ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20080701.jar
