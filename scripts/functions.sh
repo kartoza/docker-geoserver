@@ -12,6 +12,19 @@ function create_dir() {
   fi
 }
 
+function tomcat_user_config() {
+  if [[ ! -f /usr/local/tomcat/conf/tomcat-users.xml ]]; then
+    echo "/usr/local/tomcat/conf/tomcat-users.xml doesn't exists"
+    # If it doesn't exists, copy from /settings directory if exists
+    if [[ -f /settings/tomcat-users.xml ]]; then
+      cp -f /settings/tomcat-users.xml /usr/local/tomcat/conf/tomcat-users.xml
+    else
+      # default value
+      envsubst < /build_data/tomcat-users.xml > /usr/local/tomcat/conf/tomcat-users.xml
+    fi
+  fi
+
+}
 # Helper function to download extensions
 function download_extension() {
   URL=$1
@@ -102,9 +115,13 @@ function install_plugin() {
   fi
   EXT=$2
 
-  unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin &&
-    cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ &&
-    rm -rf /tmp/gs_plugin
+  unzip ${DATA_PATH}/${EXT}.zip -d /tmp/gs_plugin
+  if [[ -f /geoserver/start.jar ]]; then
+    cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/geoserver/WEB-INF/lib/
+  else
+    cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
+  fi
+  rm -rf /tmp/gs_plugin
 
 }
 
