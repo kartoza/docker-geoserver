@@ -100,19 +100,23 @@ fi
 setup_control_flow
 
 # Setup tomcat apps manager
-if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
-    cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
-    rm -r /tmp/tomcat &&
-    cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
-    tomcat_user_config
-
+if [[ -f /geoserver/start.jar ]] && [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]] ; then
+  echo "We are using jetty so Tomcat manager apps are not used"
 else
-    rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
-    rm -rf "${CATALINA_HOME}"/webapps/docs &&
-    rm -rf "${CATALINA_HOME}"/webapps/examples &&
-    rm -rf "${CATALINA_HOME}"/webapps/host-manager &&
-    rm -rf "${CATALINA_HOME}"/webapps/manager
+  if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+      unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
+      cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
+      rm -r /tmp/tomcat &&
+      cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
+      tomcat_user_config
+
+  else
+      rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
+      rm -rf "${CATALINA_HOME}"/webapps/docs &&
+      rm -rf "${CATALINA_HOME}"/webapps/examples &&
+      rm -rf "${CATALINA_HOME}"/webapps/host-manager &&
+      rm -rf "${CATALINA_HOME}"/webapps/manager
+  fi
 fi
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
