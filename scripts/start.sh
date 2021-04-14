@@ -228,7 +228,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
 
   transform="xsltproc \
-    --output conf/server.xml \
+    --output ${CATALINA_HOME}/conf/server.xml \
     $HTTP_PORT_PARAM \
     $HTTP_PROXY_NAME_PARAM \
     $HTTP_PROXY_PORT_PARAM \
@@ -245,8 +245,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     $JKS_KEY_PASSWORD_PARAM \
     $KEY_ALIAS_PARAM \
     $JKS_STORE_PASSWORD_PARAM \
-    conf/letsencrypt-tomcat.xsl \
-    conf/server.xml"
+    ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl \
+    ${CATALINA_HOME}/conf/server.xml"
 
   eval "$transform"
 
