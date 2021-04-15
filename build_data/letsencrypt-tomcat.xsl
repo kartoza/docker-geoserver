@@ -9,6 +9,7 @@
     <xsl:param name="http.redirectPort"/>
     <xsl:param name="http.connectionTimeout"/>
     <xsl:param name="http.compression"/>
+    <xsl:param name="http.maxHttpHeaderSize"/>
     <xsl:param name="https.port"/>
     <xsl:param name="https.maxThreads"/>
     <xsl:param name="https.clientAuth"/>
@@ -19,6 +20,7 @@
     <xsl:param name="https.keyAlias"/>
     <xsl:param name="https.keyPass"/>
     <xsl:param name="https.compression"/>
+    <xsl:param name="https.maxHttpHeaderSize"/>
 
     <xsl:template match="@*|node()">
         <xsl:copy>
@@ -62,6 +64,11 @@
                     <xsl:value-of select="$http.compression"/>
                 </xsl:attribute>
             </xsl:if>
+            <xsl:if test="$http.maxHttpHeaderSize">
+                <xsl:attribute name="maxHttpHeaderSize">
+                    <xsl:value-of select="$http.maxHttpHeaderSize"/>
+                </xsl:attribute>
+            </xsl:if>
 
             <xsl:apply-templates select="node()"/>
         </xsl:copy>
@@ -96,6 +103,11 @@
             <xsl:if test="$https.compression">
                 <xsl:attribute name="compression">
                     <xsl:value-of select="$https.compression"/>
+                </xsl:attribute>
+            </xsl:if>
+            <xsl:if test="$https.maxHttpHeaderSize">
+                <xsl:attribute name="maxHttpHeaderSize">
+                    <xsl:value-of select="$https.maxHttpHeaderSize"/>
                 </xsl:attribute>
             </xsl:if>
         </Connector>
