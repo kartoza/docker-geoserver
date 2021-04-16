@@ -73,7 +73,7 @@ RUN groupadd -r geoserverusers -g ${GEOSERVER_GID} && \
 
 RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
  ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
- /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR}
+ /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /usr/share/fonts/
 
 RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
 
