@@ -89,7 +89,7 @@ A full list of environment variables are specified in the .env file
 
 ### Activate plugins on runtime
 
-The image is shipped with the following stable plugins:
+The image is shipped with the following stable plugins (these are installed and enabled by default):
 * vectortiles-plugin
 * wps-plugin
 * printing-plugin
@@ -99,7 +99,7 @@ The image is shipped with the following stable plugins:
 * gdal-plugin
 
 If you need to use other plugins you just pass an environment variable on start up which will
-activate the plugin ie
+activate the plugin e.g.:
 ```
 ie VERSION=2.16.2
 docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,db2-plugin kartoza/geoserver:${VERSION} 
