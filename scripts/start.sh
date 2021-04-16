@@ -1,9 +1,17 @@
 #!/bin/bash
 
-
+source /scripts/env-data.sh
 source /scripts/functions.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+
+# Set install directory based on geoserver version
+if [[ -f /geoserver/start.jar ]]; then
+   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
+else
+  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
+fi
+
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -36,9 +44,8 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
       create_dir ${CLUSTER_CONFIG_DIR}
       cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-      unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ && \
-      mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ && \
-      touch ${CLUSTER_LOCKFILE} && rm -r /tmp/cluster/
+      unzip /community_plugins/jms-cluster-plugin.zip -d "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/ && \
+      touch ${CLUSTER_LOCKFILE}
   fi
   cluster_config
   broker_config
@@ -100,23 +107,19 @@ fi
 setup_control_flow
 
 # Setup tomcat apps manager
-if [[ -f /geoserver/start.jar ]] && [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]] ; then
-  echo "We are using jetty so Tomcat manager apps are not used"
-else
-  if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-      unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
-      cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
-      rm -r /tmp/tomcat &&
-      cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
-      tomcat_user_config
+if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+    unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
+    cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
+    rm -r /tmp/tomcat &&
+    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF &&
+    tomcat_user_config
 
-  else
-      rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
-      rm -rf "${CATALINA_HOME}"/webapps/docs &&
-      rm -rf "${CATALINA_HOME}"/webapps/examples &&
-      rm -rf "${CATALINA_HOME}"/webapps/host-manager &&
-      rm -rf "${CATALINA_HOME}"/webapps/manager
-  fi
+else
+    rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
+    rm -rf "${CATALINA_HOME}"/webapps/docs &&
+    rm -rf "${CATALINA_HOME}"/webapps/examples &&
+    rm -rf "${CATALINA_HOME}"/webapps/host-manager &&
+    rm -rf "${CATALINA_HOME}"/webapps/manager
 fi
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -232,7 +235,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
 
   transform="xsltproc \
-    --output conf/server.xml \
+    --output ${CATALINA_HOME}/conf/server.xml \
     $HTTP_PORT_PARAM \
     $HTTP_PROXY_NAME_PARAM \
     $HTTP_PROXY_PORT_PARAM \
@@ -249,8 +252,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     $JKS_KEY_PASSWORD_PARAM \
     $KEY_ALIAS_PARAM \
     $JKS_STORE_PASSWORD_PARAM \
-    conf/letsencrypt-tomcat.xsl \
-    conf/server.xml"
+    ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl \
+    ${CATALINA_HOME}/conf/server.xml"
 
   eval "$transform"
 

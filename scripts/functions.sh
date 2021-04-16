@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source /scripts/env-data.sh
 
 export request="wget --progress=bar:force:noscroll -c --no-check-certificate"
 
@@ -16,10 +17,10 @@ function tomcat_user_config() {
   if [[ ! -f /usr/local/tomcat/conf/tomcat-users.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f /settings/tomcat-users.xml ]]; then
-      cp -f /settings/tomcat-users.xml /usr/local/tomcat/conf/tomcat-users.xml
+      cp -f /settings/tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml
     else
       # default value
-      envsubst < /build_data/tomcat-users.xml > /usr/local/tomcat/conf/tomcat-users.xml
+      envsubst < /build_data/tomcat-users.xml > ${CATALINA_HOME}/conf/tomcat-users.xml
     fi
   fi
 
