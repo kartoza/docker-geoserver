@@ -38,19 +38,6 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
-  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
-  if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-      create_dir ${CLUSTER_CONFIG_DIR}
-      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-      unzip /community_plugins/jms-cluster-plugin.zip -d "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/ && \
-      touch ${CLUSTER_LOCKFILE}
-  fi
-  cluster_config
-  broker_config
-
-fi
 
 
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
@@ -80,9 +67,10 @@ fi
 function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
         s3_config
+        echo "Installing ${ext} "
         install_plugin /community_plugins ${ext}
     elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
-        echo "Installing ${ext} plugin"
+        echo "Installing ${ext} "
         install_plugin /community_plugins ${ext}
     fi
 }
@@ -101,6 +89,28 @@ else
         community_config
       fi
   done
+fi
+
+# Setup clustering
+if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
+  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
+  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+  if [[ ! -f $CLUSTER_LOCKFILE ]]; then
+      create_dir ${CLUSTER_CONFIG_DIR}
+      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
+      ext=jms-cluster-plugin
+      if [[ ! -f /community_plugins/${ext}.zip ]]; then
+        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+        download_extension ${community_plugins_url} ${ext} /community_plugins
+        community_config
+      else
+        community_config
+      fi
+      touch ${CLUSTER_LOCKFILE}
+  fi
+  cluster_config
+  broker_config
+
 fi
 
 # Setup control flow properties
