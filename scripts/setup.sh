@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Download geoserver extensions and other resources
 
+source /scripts/env-data.sh
 source /scripts/functions.sh
 
 resources_dir="/tmp/resources"

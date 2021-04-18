@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-
+source /scripts/env-data.sh
 /scripts/start.sh
 
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
