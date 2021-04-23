@@ -1,9 +1,17 @@
 #!/bin/bash
 
-
+source /scripts/env-data.sh
 source /scripts/functions.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+
+# Set install directory based on geoserver version
+if [[ -f /geoserver/start.jar ]]; then
+   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
+else
+  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
+fi
+
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -30,20 +38,6 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
-  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
-  if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-      create_dir ${CLUSTER_CONFIG_DIR}
-      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-      unzip /community_plugins/jms-cluster-plugin.zip -d /tmp/cluster/ && \
-      mv /tmp/cluster/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/ && \
-      touch ${CLUSTER_LOCKFILE} && rm -r /tmp/cluster/
-  fi
-  cluster_config
-  broker_config
-
-fi
 
 
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
@@ -73,9 +67,10 @@ fi
 function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
         s3_config
+        echo "Installing ${ext} "
         install_plugin /community_plugins ${ext}
     elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
-        echo "Installing ${ext} plugin"
+        echo "Installing ${ext} "
         install_plugin /community_plugins ${ext}
     fi
 }
@@ -96,6 +91,28 @@ else
   done
 fi
 
+# Setup clustering
+if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
+  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
+  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+  if [[ ! -f $CLUSTER_LOCKFILE ]]; then
+      create_dir ${CLUSTER_CONFIG_DIR}
+      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
+      ext=jms-cluster-plugin
+      if [[ ! -f /community_plugins/${ext}.zip ]]; then
+        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+        download_extension ${community_plugins_url} ${ext} /community_plugins
+        community_config
+      else
+        community_config
+      fi
+      touch ${CLUSTER_LOCKFILE}
+  fi
+  cluster_config
+  broker_config
+
+fi
+
 # Setup control flow properties
 setup_control_flow
 
@@ -104,7 +121,7 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
-    cp /build_data/context.xml /usr/local/tomcat/webapps/manager/META-INF &&
+    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF &&
     tomcat_user_config
 
 else
@@ -188,6 +205,10 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     HTTP_COMPRESSION_PARAM="--stringparam http.compression $HTTP_COMPRESSION "
   fi
 
+  if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
+    HTTP_MAX_HEADER_SIZE_PARAM="--stringparam http.maxHttpHeaderSize $HTTP_MAX_HEADER_SIZE "
+  fi
+
   if [ -n "$HTTPS_PORT" ]; then
     HTTPS_PORT_PARAM="--stringparam https.port $HTTPS_PORT "
   fi
@@ -212,6 +233,10 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     HTTPS_COMPRESSION_PARAM="--stringparam https.compression $HTTPS_COMPRESSION "
   fi
 
+  if [ -n "$HTTPS_MAX_HEADER_SIZE" ]; then
+    HTTPS_MAX_HEADER_SIZE_PARAM="--stringparam https.maxHttpHeaderSize $HTTPS_MAX_HEADER_SIZE "
+  fi
+
   if [ -n "$JKS_FILE" ]; then
     JKS_FILE_PARAM="--stringparam https.keystoreFile ${LETSENCRYPT_CERT_DIR}/$JKS_FILE "
   fi
@@ -228,25 +253,27 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
 
   transform="xsltproc \
-    --output conf/server.xml \
+    --output ${CATALINA_HOME}/conf/server.xml \
     $HTTP_PORT_PARAM \
     $HTTP_PROXY_NAME_PARAM \
     $HTTP_PROXY_PORT_PARAM \
     $HTTP_REDIRECT_PORT_PARAM \
     $HTTP_CONNECTION_TIMEOUT_PARAM \
     $HTTP_COMPRESSION_PARAM \
+    $HTTP_MAX_HEADER_SIZE_PARAM \
     $HTTPS_PORT_PARAM \
     $HTTPS_MAX_THREADS_PARAM \
     $HTTPS_CLIENT_AUTH_PARAM \
     $HTTPS_PROXY_NAME_PARAM \
     $HTTPS_PROXY_PORT_PARAM \
     $HTTPS_COMPRESSION_PARAM \
+    $HTTPS_MAX_HEADER_SIZE_PARAM \
     $JKS_FILE_PARAM \
     $JKS_KEY_PASSWORD_PARAM \
     $KEY_ALIAS_PARAM \
     $JKS_STORE_PASSWORD_PARAM \
-    conf/letsencrypt-tomcat.xsl \
-    conf/server.xml"
+    ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl \
+    ${CATALINA_HOME}/conf/server.xml"
 
   eval "$transform"
 

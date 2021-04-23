@@ -11,7 +11,8 @@ The preferred way (but using most bandwidth for the initial image) is to
 get our docker trusted build like this:
 
 ```shell
-docker pull kartoza/geoserver
+VERSION=2.19.0
+docker pull kartoza/geoserver:$VERSION
 ```
 ## Building the image
 
@@ -72,9 +73,6 @@ create the file at `resources/overlays/usr/local/tomcat/bin/setenv.sh`.
 
 You can use this functionality to write a static GeoServer directory to
 `/opt/geoserver/data_dir`, include additional jar files, and more.
-
-If you have an already existing `data_dir` with a security setup from another Geoserver: set `EXISTING_DATA_DIR=true`.
-This will keep the passwords from getting changed by docker. 
 
 Overlay files will overwrite existing destination files, so be careful!
 
@@ -209,12 +207,14 @@ A full list of SSL variables is provided here
 * HTTP_REDIRECT_PORT
 * HTTP_CONNECTION_TIMEOUT
 * HTTP_COMPRESSION
+* HTTP_MAX_HEADER_SIZE
 * HTTPS_PORT
 * HTTPS_MAX_THREADS
 * HTTPS_CLIENT_AUTH
 * HTTPS_PROXY_NAME
 * HTTPS_PROXY_PORT
 * HTTPS_COMPRESSION
+* HTTPS_MAX_HEADER_SIZE
 * JKS_FILE
 * JKS_KEY_PASSWORD
 * KEY_ALIAS
@@ -233,6 +233,9 @@ strong password otherwise the default one is setup.
 ie VERSION=2.16.2
 docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION} 
 ```
+
+**NB** GeoServer can run under tomcat or jetty. If the $WAR_URL you have
+used is for jetty then you should not be using tomcat manager
 
 
 ### Upgrading image to use a specific version
@@ -327,6 +330,25 @@ GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-bro
 
 You can read more about how to set-up clustering in [kartoza clustering](https://github.com/kartoza/docker-geoserver/blob/master/clustering/README.md)
 
+## Mounting Configs
+
+You can mount config file to the path `/settings`. These configs will
+be used in favour of the defaults that are available from the [Build data](https://github.com/kartoza/docker-geoserver/tree/master/build_data)
+directory
+
+The configs that can be mounted are
+* cluster.properties
+* controlflow.properties
+* embedded-broker.properties
+* geowebcache-diskquota-jdbc.xml
+* s3.properties
+* tomcat-users.xml
+
+Example
+```
+ docker run --name "geoserver" -e GEOSERVER_ADMIN_USER=kartoza  -v /data/controlflow.properties:/settings/controlflow.properties -p 8080:8080 -d -t kartoza/geoserver
+
+```
 ## Running the Image 
 
 
