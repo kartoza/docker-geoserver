@@ -205,6 +205,10 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     HTTP_COMPRESSION_PARAM="--stringparam http.compression $HTTP_COMPRESSION "
   fi
 
+  if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
+    HTTP_MAX_HEADER_SIZE_PARAM="--stringparam http.maxHttpHeaderSize $HTTP_MAX_HEADER_SIZE "
+  fi
+
   if [ -n "$HTTPS_PORT" ]; then
     HTTPS_PORT_PARAM="--stringparam https.port $HTTPS_PORT "
   fi
@@ -227,6 +231,10 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
   if [ -n "$HTTPS_COMPRESSION" ]; then
     HTTPS_COMPRESSION_PARAM="--stringparam https.compression $HTTPS_COMPRESSION "
+  fi
+
+  if [ -n "$HTTPS_MAX_HEADER_SIZE" ]; then
+    HTTPS_MAX_HEADER_SIZE_PARAM="--stringparam https.maxHttpHeaderSize $HTTPS_MAX_HEADER_SIZE "
   fi
 
   if [ -n "$JKS_FILE" ]; then
@@ -252,12 +260,14 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     $HTTP_REDIRECT_PORT_PARAM \
     $HTTP_CONNECTION_TIMEOUT_PARAM \
     $HTTP_COMPRESSION_PARAM \
+    $HTTP_MAX_HEADER_SIZE_PARAM \
     $HTTPS_PORT_PARAM \
     $HTTPS_MAX_THREADS_PARAM \
     $HTTPS_CLIENT_AUTH_PARAM \
     $HTTPS_PROXY_NAME_PARAM \
     $HTTPS_PROXY_PORT_PARAM \
     $HTTPS_COMPRESSION_PARAM \
+    $HTTPS_MAX_HEADER_SIZE_PARAM \
     $JKS_FILE_PARAM \
     $JKS_KEY_PASSWORD_PARAM \
     $KEY_ALIAS_PARAM \
