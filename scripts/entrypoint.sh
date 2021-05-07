@@ -2,7 +2,8 @@
 set -e
 
 source /scripts/env-data.sh
-/scripts/start.sh
+
+/bin/bash /scripts/start.sh
 
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"

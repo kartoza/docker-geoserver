@@ -1,7 +1,9 @@
 #!/bin/bash
 
-source /scripts/env-data.sh
+
+
 source /scripts/functions.sh
+source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
@@ -16,6 +18,7 @@ fi
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -rf ${GEOSERVER_DATA_DIR}/*
+
 fi
 
 # install Font files in resources/fonts if they exists
@@ -270,5 +273,6 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 fi
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
+  echo "Updating geoserver password"
   /scripts/update_passwords.sh
 fi
