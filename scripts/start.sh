@@ -15,15 +15,17 @@ if ls ${FONTS_DIR}/*.otf >/dev/null 2>&1; then
   cp -rf ${FONTS_DIR}/*.otf /usr/share/fonts/opentype/
 fi
 
+if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]] ; then
+  echo "Activating default data directory"
+  cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
+fi
+
+
 if [[ ! -d ${GEOSERVER_DATA_DIR}/user_projections ]]; then
   echo "Adding custom projection directory"
   cp -r ${CATALINA_HOME}/data/user_projections ${GEOSERVER_DATA_DIR}
 fi
 
-if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
-  echo "Activating default data directory"
-  cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
-fi
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
@@ -121,7 +123,7 @@ else
     rm -rf "${CATALINA_HOME}"/webapps/manager
 fi
 
-if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
+if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]] && [[ ${GEONODE} =~ [Ff][Aa][Ll][Ss][Ee] ]]  ; then
 
   # convert LetsEncrypt certificates
   # https://community.letsencrypt.org/t/cry-for-help-windows-tomcat-ssl-lets-encrypt/22902/4
@@ -234,7 +236,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
 
   transform="xsltproc \
-    --output conf/server.xml \
+    --output ${CATALINA_HOME}/conf/server.xml \
     $HTTP_PORT_PARAM \
     $HTTP_PROXY_NAME_PARAM \
     $HTTP_PROXY_PORT_PARAM \
@@ -251,8 +253,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     $JKS_KEY_PASSWORD_PARAM \
     $KEY_ALIAS_PARAM \
     $JKS_STORE_PASSWORD_PARAM \
-    conf/letsencrypt-tomcat.xsl \
-    conf/server.xml"
+    ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl \
+    ${CATALINA_HOME}/conf/server.xml"
 
   eval "$transform"
 
