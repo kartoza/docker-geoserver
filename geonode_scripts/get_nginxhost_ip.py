@@ -40,6 +40,6 @@ else:
     pass
 finally:
     try:
-        print nginx_base_url
+        print(nginx_base_url)
     except NameError as ne:
-        print "http://geonode:80"
+        print("http://geonode:80")

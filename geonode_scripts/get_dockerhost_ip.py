@@ -5,6 +5,8 @@ import logging
 import docker
 
 BOOTSTRAP_IMAGE_CHEIP = 'codenvy/che-ip:nightly'
+
+
 # AF: why call before definition? print _docker_host_ip()
 
 def _docker_host_ip():

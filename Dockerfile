@@ -7,20 +7,22 @@ FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
+RUN apt-get -qq update --fix-missing && apt-get -qq --yes upgrade
+
 ARG GS_VERSION=2.18.2
 
 
 ARG WAR_URL=https://build.geo-solutions.it/geonode/geoserver/latest/geoserver-${GS_VERSION}.war
-ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
-ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=1
+ARG ACTIVATE_ALL_STABLE_EXTENTIONS=0
+ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=0
 ARG GEOSERVER_UID=1000
 ARG GEOSERVER_GID=10001
 
 #Install extra fonts to use with sld font markers
-RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
-    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  gdal-bin libgdal-java wget zip curl xsltproc certbot \
-    cabextract  python python-pip python-dev
-RUN pip install pip==9.0.3
+RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \
+    ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  \
+    gdal-bin libgdal-java wget zip unzip curl xsltproc certbot cabextract  python3 python3-pip python3-dev
+RUN pip3 install docker
 
 RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
@@ -154,7 +156,7 @@ RUN chmod +x /geonode_scripts/*.py
 RUN /scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN pip install -r /geonode_scripts/requirements.txt
+
 
 ENV \
     ## Initial Memory that Java can allocate
