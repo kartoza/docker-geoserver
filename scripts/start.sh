@@ -15,10 +15,6 @@ if ls ${FONTS_DIR}/*.otf >/dev/null 2>&1; then
   cp -rf ${FONTS_DIR}/*.otf /usr/share/fonts/opentype/
 fi
 
-if [[ ! -d ${GEOSERVER_DATA_DIR}/user_projections ]]; then
-  echo "Adding custom projection directory"
-  cp -r ${CATALINA_HOME}/data/user_projections ${GEOSERVER_DATA_DIR}
-fi
 
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   echo "Activating default data directory"
@@ -121,7 +117,7 @@ else
     rm -rf "${CATALINA_HOME}"/webapps/manager
 fi
 
-if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
+if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]] && [[ ${GEONODE} =~ [Ff][Aa][Ll][Ss][Ee] ]]  ; then
 
   # convert LetsEncrypt certificates
   # https://community.letsencrypt.org/t/cry-for-help-windows-tomcat-ssl-lets-encrypt/22902/4

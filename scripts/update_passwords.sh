@@ -1,6 +1,13 @@
 #!/bin/bash
 
 source /scripts/functions.sh
+
+if [[ -f /geoserver/start.jar ]]; then
+   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
+else
+  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
+fi
+
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
@@ -13,10 +20,6 @@ if [ ${DEBUG} ]; then
     set -x
 fi;
 
-if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
-  cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
-fi
-
 
 file_env 'GEOSERVER_ADMIN_USER'
 file_env 'GEOSERVER_ADMIN_PASSWORD'
@@ -25,7 +28,7 @@ GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER:-admin}
 GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD:-geoserver}
 USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
 ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
-CLASSPATH=${CLASSPATH:-/usr/local/tomcat/webapps/geoserver/WEB-INF/lib/}
+CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/}
 
 make_hash(){
     NEW_PASSWORD=$1
