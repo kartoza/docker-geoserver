@@ -293,3 +293,7 @@ fi
 if [ -z "${SSL_MODE}" ]; then
     SSL_MODE=disable
 fi
+
+if [ -z ${CSRF_WHITELIST} ]; then
+    CSRF_WHITELIST=
+fi
