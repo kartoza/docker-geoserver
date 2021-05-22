@@ -16,9 +16,14 @@ ARG GEOSERVER_UID=1000
 ARG GEOSERVER_GID=10001
 
 #Install extra fonts to use with sld font markers
-RUN apt-get -y update; apt-get install -y fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
-    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  gdal-bin libgdal-java wget zip curl xsltproc \
-    certbot  cabextract gettext
+RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
+    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  gdal-bin libgdal-java wget zip unzip curl xsltproc \
+    certbot  cabextract gettext lsb-release gnupg2
+
+RUN sh -c "echo \"deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main\" > /etc/apt/sources.list.d/pgdg.list" \
+    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc -O- | apt-key add -
+
+RUN apt-get update;apt-get -y --no-install-recommends install postgresql-client
 
 RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
@@ -38,8 +43,8 @@ ENV \
     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/gdal_native_libs:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
-    LETSENCRYPT_CERT_DIR=/etc/letsencrypt \
-    RANDFILE=${LETSENCRYPT_CERT_DIR}/.rnd \
+    CERT_DIR=/etc/certs \
+    RANDFILE=${CERT_DIR}/.rnd \
     FONTS_DIR=/opt/fonts \
     GEOSERVER_HOME=/geoserver \
     EXTRA_CONFIG_DIR=/settings \
@@ -48,7 +53,7 @@ ENV \
 
 
 WORKDIR /scripts
-RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${LETSENCRYPT_CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
+RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
              ${GEOWEBCACHE_CACHE_DIR} ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR}
 
 
@@ -72,13 +77,13 @@ RUN groupadd -r geoserverusers -g ${GEOSERVER_GID} && \
     useradd -m -d /home/geoserveruser/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G geoserverusers geoserveruser
 
 RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
- ${GEOSERVER_DATA_DIR} /scripts ${LETSENCRYPT_CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
+ ${GEOSERVER_DATA_DIR} /scripts ${CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
  /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /usr/share/fonts/
 
-RUN chmod o+rw ${LETSENCRYPT_CERT_DIR}
+RUN chmod o+rw ${CERT_DIR}
 
 USER geoserveruser
-VOLUME ["${GEOSERVER_DATA_DIR}", "${LETSENCRYPT_CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}"]
+VOLUME ["${GEOSERVER_DATA_DIR}", "${CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}"]
 WORKDIR ${GEOSERVER_HOME}
 
 CMD ["/bin/bash", "/scripts/entrypoint.sh"]

@@ -5,14 +5,9 @@
 source /scripts/functions.sh
 source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
+CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
-# Set install directory based on geoserver version
-if [[ -f /geoserver/start.jar ]]; then
-   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
-else
-  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
-fi
 
 
 # Useful for development - We need a clean state of data directory
@@ -31,11 +26,11 @@ if ls ${FONTS_DIR}/*.otf >/dev/null 2>&1; then
   cp -rf ${FONTS_DIR}/*.otf /usr/share/fonts/opentype/
 fi
 
-if [[ ! -d ${GEOSERVER_DATA_DIR}/user_projections ]]; then
-  echo "Adding custom projection directory"
-  cp -r ${CATALINA_HOME}/data/user_projections ${GEOSERVER_DATA_DIR}
-fi
+# Add custom espg properties file or the default one
+create_dir ${GEOSERVER_DATA_DIR}/user_projections
+epsg_codes
 
+# Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   echo "Activating default data directory"
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
@@ -145,28 +140,28 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
 
-  if [[ -f ${LETSENCRYPT_CERT_DIR}/certificate.pfx ]]; then
+  if [[ -f ${CERT_DIR}/certificate.pfx ]]; then
     # Generate private key
-    openssl pkcs12 -in ${LETSENCRYPT_CERT_DIR}/certificate.pfx -nocerts \
-      -out ${LETSENCRYPT_CERT_DIR}/privkey.pem -nodes -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
+    openssl pkcs12 -in ${CERT_DIR}/certificate.pfx -nocerts \
+      -out ${CERT_DIR}/privkey.pem -nodes -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
     # Generate certificate only
-    openssl pkcs12 -in ${LETSENCRYPT_CERT_DIR}/certificate.pfx -clcerts -nodes -nokeys \
-      -out ${LETSENCRYPT_CERT_DIR}/fullchain.pem -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
+    openssl pkcs12 -in ${CERT_DIR}/certificate.pfx -clcerts -nodes -nokeys \
+      -out ${CERT_DIR}/fullchain.pem -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
   fi
 
   # Check if mounted file contains proper keys otherwise use open ssl
-  if [[ ! -f ${LETSENCRYPT_CERT_DIR}/fullchain.pem ]]; then
-    openssl req -x509 -newkey rsa:4096 -keyout ${LETSENCRYPT_CERT_DIR}/privkey.pem -out \
-      ${LETSENCRYPT_CERT_DIR}/fullchain.pem -days 3650 -nodes -sha256 -subj '/CN=geoserver'
+  if [[ ! -f ${CERT_DIR}/fullchain.pem ]]; then
+    openssl req -x509 -newkey rsa:4096 -keyout ${CERT_DIR}/privkey.pem -out \
+      ${CERT_DIR}/fullchain.pem -days 3650 -nodes -sha256 -subj '/CN=geoserver'
   fi
 
   # convert PEM to PKCS12
 
   openssl pkcs12 -export \
-    -in "$LETSENCRYPT_CERT_DIR"/fullchain.pem \
-    -inkey "$LETSENCRYPT_CERT_DIR"/privkey.pem \
+    -in "$CERT_DIR"/fullchain.pem \
+    -inkey "$CERT_DIR"/privkey.pem \
     -name "$KEY_ALIAS" \
-    -out ${LETSENCRYPT_CERT_DIR}/"$P12_FILE" \
+    -out ${CERT_DIR}/"$P12_FILE" \
     -password pass:"$PKCS12_PASSWORD"
 
   # import PKCS12 into JKS
@@ -176,9 +171,9 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -trustcacerts \
     -alias "$KEY_ALIAS" \
     -destkeypass "$JKS_KEY_PASSWORD" \
-    -destkeystore ${LETSENCRYPT_CERT_DIR}/"$JKS_FILE" \
+    -destkeystore ${CERT_DIR}/"$JKS_FILE" \
     -deststorepass "$JKS_STORE_PASSWORD" \
-    -srckeystore ${LETSENCRYPT_CERT_DIR}/"$P12_FILE" \
+    -srckeystore ${CERT_DIR}/"$P12_FILE" \
     -srcstorepass "$PKCS12_PASSWORD" \
     -srcstoretype PKCS12
 
@@ -233,7 +228,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
 
   if [ -n "$JKS_FILE" ]; then
-    JKS_FILE_PARAM="--stringparam https.keystoreFile ${LETSENCRYPT_CERT_DIR}/$JKS_FILE "
+    JKS_FILE_PARAM="--stringparam https.keystoreFile ${CERT_DIR}/$JKS_FILE "
   fi
   if [ -n "$JKS_KEY_PASSWORD" ]; then
     JKS_KEY_PASSWORD_PARAM="--stringparam https.keystorePass $JKS_KEY_PASSWORD "

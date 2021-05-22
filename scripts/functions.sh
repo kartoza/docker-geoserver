@@ -13,6 +13,19 @@ function create_dir() {
   fi
 }
 
+function epsg_codes() {
+  if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/espg.properties ]]; then
+    # If it doesn't exists, copy from /settings directory if exists
+    if [[ -f /settings/espg.properties ]]; then
+      cp -f /settings/espg.properties ${GEOSERVER_DATA_DIR}/user_projections/
+    else
+      # default values
+      cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections
+    fi
+  fi
+}
+
+
 function tomcat_user_config() {
   if [[ ! -f /usr/local/tomcat/conf/tomcat-users.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists

@@ -92,7 +92,7 @@ else
   cp -r /tmp/geoserver/* /geoserver/ &&
   cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
   cp -r /geoserver/data_dir ${CATALINA_HOME}/data &&
-  cp -r /geoserver/data_dir/security ${CATALINA_HOME}
+  mv ${CATALINA_HOME}/data/security ${CATALINA_HOME}
 fi
 
 # Install GeoServer plugins in correct install dir
@@ -102,7 +102,7 @@ else
   GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
 fi
 
-echo "The install directory is $GEOSERVER_INSTALL_DIR"
+
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
   for p in /tmp/resources/plugins/*.zip; do
