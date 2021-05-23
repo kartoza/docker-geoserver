@@ -217,6 +217,11 @@ if [ -z ${TOMCAT_PASSWORD} ]; then
     TOMCAT_PASSWORD='tomcat'
 fi
 
+if [ -z ${TOMCAT_USER} ]; then
+    TOMCAT_USER='tomcat'
+fi
+
+
 if [ -z ${GEOSERVER_ADMIN_USER} ]; then
     GEOSERVER_ADMIN_USER='admin'
 fi

@@ -188,7 +188,7 @@ docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWOR
 
 ``` 
 ie VERSION=2.16.2
-docker run -it --name geo -v /etc/letsencrpt:/etc/letsencrypt  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}  
+docker run -it --name geo -v /etc/certs:/etc/certs  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}  
 
 ```
 
@@ -321,7 +321,19 @@ in conjunction with Docker secrets, as passwords can be loaded from `/run/secret
 
 For more information see [https://docs.docker.com/engine/swarm/secrets/](https://docs.docker.com/engine/swarm/secrets/).
 
-Currently, `GEOSERVER_ADMIN_USER` and `GEOSERVER_ADMIN_PASSWORD` are supported.
+Currently, the following environment variables 
+```
+ GEOSERVER_ADMIN_USER
+ GEOSERVER_ADMIN_PASSWORD
+ S3_USERNAME
+ S3_PASSWORD
+ TOMCAT_USER
+ TOMCAT_PASS
+ PKCS12_PASSWORD
+ JKS_KEY_PASSWORD
+ JKS_STORE_PASSWORD
+```
+are supported.
 
 ## Clustering using JMS Plugin
 GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-broker. 

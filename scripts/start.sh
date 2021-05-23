@@ -62,6 +62,9 @@ else
 fi
 
 # Function to install community extensions
+export S3_SERVER_URL S3_USERNAME S3_PASSWORD
+file_env 'S3_USERNAME'
+file_env 'S3_PASSWORD'
 function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
         s3_config
@@ -90,6 +93,8 @@ else
 fi
 
 # Setup clustering
+export CLUSTER_CONFIG_DIR INSTANCE_STRING READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
+
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
   CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
@@ -111,10 +116,14 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 fi
 
+export REQUEST_TIMEOUT PARARELL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
 # Setup control flow properties
 setup_control_flow
 
 # Setup tomcat apps manager
+export TOMCAT_PASS TOMCAT_USER
+file_env 'TOMCAT_USER'
+file_env 'TOMCAT_PASS'
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
@@ -142,6 +151,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
   if [[ -f ${CERT_DIR}/certificate.pfx ]]; then
     # Generate private key
+    file_env 'PKCS12_PASSWORD'
     openssl pkcs12 -in ${CERT_DIR}/certificate.pfx -nocerts \
       -out ${CERT_DIR}/privkey.pem -nodes -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
     # Generate certificate only
@@ -165,6 +175,9 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -password pass:"$PKCS12_PASSWORD"
 
   # import PKCS12 into JKS
+
+  file_env 'JKS_KEY_PASSWORD'
+  file_env 'JKS_STORE_PASSWORD'
 
   keytool -importkeystore \
     -noprompt \
