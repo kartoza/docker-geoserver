@@ -30,6 +30,18 @@ if [ "${community_count}" != 0 ]; then
   cp -r $resources_dir/plugins/community_plugin/*.zip /plugins/
 fi
 
+# Check if we have pre downloaded plugin yet
+stable_count=`ls -1 $resources_dir/plugins/stable_plugins/*.zip 2>/dev/null | wc -l`
+if [ $stable_count != 0 ]; then
+  cp -r $resources_dir/plugins/stable_plugins/*.zip /plugins/
+fi
+
+community_count=`ls -1 $resources_dir/plugins/community_plugins/*.zip 2>/dev/null | wc -l`
+if [ $community_count != 0 ]; then
+  cp -r $resources_dir/plugins/community_plugin/*.zip /plugins/
+fi
+
+
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
 if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" -eq 0 ]; then
