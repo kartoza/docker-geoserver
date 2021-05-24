@@ -130,7 +130,8 @@ ENV \
     S3_PASSWORD='' \
     SAMPLE_DATA='TRUE'\
     GEOSERVER_FILEBROWSER_HIDEFS=false \
-    TOMCAT_PASSWORD='tomcat'
+    TOMCAT_PASSWORD='tomcat' \
+    DB_HOST=db
 
 EXPOSE  $HTTPS_PORT
 RUN echo $GS_VERSION > /scripts/geoserver_version.txt
@@ -148,4 +149,4 @@ VOLUME ["${GEOSERVER_DATA_DIR}", "${LETSENCRYPT_CERT_DIR}", "${FOOTPRINTS_DATA_D
 WORKDIR ${GEOSERVER_HOME}
 
 
-CMD [ "dockerize", "-wait","tcp://postgres:5432", "-timeout" , "60s", "/bin/bash" , "/scripts/entrypoint.sh" ]
+CMD [ "/bin/bash" , "/scripts/run.sh" ]
