@@ -598,7 +598,7 @@
         </init-param>
         <init-param>
             <param-name>cors.allowed.headers</param-name>
-            <param-value>If-Modified-Since,Range,Origin</param-value>
+            <param-value>If-Modified-Since,Range,Origin,Authorization</param-value>
         </init-param>
     </filter>
     <filter-mapping>
