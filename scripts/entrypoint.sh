@@ -43,21 +43,23 @@ if [[ ${GEONODE} =~ [Tt][Rr][Uu][Ee] ]];then
   # 3. WAIT FOR POSTGRESQL
   ############################
 
-  echo "-----------------------------------------------------"
-  echo "3. Wait for PostgreSQL to be ready and initialized"
+  if [[ ${SPC_GEONODE} =~ [Tt][Rr][Uu][Ee] ]]; then
+    echo "-----------------------------------------------------"
+    echo "3. Wait for PostgreSQL to be ready and initialized"
 
-  # Wait for PostgreSQL
-  set +e
-  for i in $(seq 60); do
-      sleep 10
-      echo "$DATABASE_URL -v ON_ERROR_STOP=1 -c SELECT client_id FROM oauth2_provider_application"
-      psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT client_id FROM oauth2_provider_application" &>/dev/null && break
-  done
-  if [ $? != 0 ]; then
-      echo "PostgreSQL not ready or not initialized"
-      exit 1
+    # Wait for PostgreSQL
+    set +e
+    for i in $(seq 60); do
+        sleep 10
+        echo "$DATABASE_URL -v ON_ERROR_STOP=1 -c SELECT client_id FROM oauth2_provider_application"
+        psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT client_id FROM oauth2_provider_application" &>/dev/null && break
+    done
+    if [ $? != 0 ]; then
+        echo "PostgreSQL not ready or not initialized"
+        exit 1
+    fi
+    set -e
   fi
-  set -e
 
   ############################
   # 4. OAUTH2 CONFIGURATION
@@ -67,10 +69,15 @@ if [[ ${GEONODE} =~ [Tt][Rr][Uu][Ee] ]];then
   echo "4. (Re)setting OAuth2 Configuration"
 
   # Edit ${GEOSERVER_DATA_DIR}/security/filter/geonode-oauth2/config.xml
-
   # Getting oauth keys and secrets from the database
-  CLIENT_ID=$(psql "$DATABASE_URL" -c "SELECT client_id FROM oauth2_provider_application WHERE name='GeoServer'" -t | tr -d '[:space:]')
-  CLIENT_SECRET=$(psql "$DATABASE_URL" -c "SELECT client_secret FROM oauth2_provider_application WHERE name='GeoServer'" -t | tr -d '[:space:]')
+  if [[ ${SPC_GEONODE} =~ [Tt][Rr][Uu][Ee] ]]; then
+    CLIENT_ID=$(psql "$DATABASE_URL" -c "SELECT client_id FROM oauth2_provider_application WHERE name='GeoServer'" -t | tr -d '[:space:]')
+    CLIENT_SECRET=$(psql "$DATABASE_URL" -c "SELECT client_secret FROM oauth2_provider_application WHERE name='GeoServer'" -t | tr -d '[:space:]')
+  else
+    CLIENT_ID=${OAUTH2_CLIENT_ID}
+    CLIENT_SECRET=${OAUTH2_CLIENT_SECRET}
+  fi
+
   if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ]; then
       echo "Could not get OAuth2 ID and SECRET from database. Make sure Postgres container is started and Django has finished it's migrations."
       exit 1

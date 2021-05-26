@@ -87,7 +87,8 @@ ENV \
     WEB_INTERFACE=false \
     GEONODE='TRUE' \
     GEOSERVER_HOME='/geoserver' \
-    CSRF_WHITELIST=
+    CSRF_WHITELIST= \
+    SPC_GEONODE=FALSE
 
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
