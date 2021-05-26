@@ -598,7 +598,11 @@
         </init-param>
         <init-param>
             <param-name>cors.allowed.headers</param-name>
-            <param-value>If-Modified-Since,Range,Origin</param-value>
+            <param-value>Content-Type,X-Requested-With,accept,Access-Control-Request-Method,Access-Control-Request-Headers,If-Modified-Since,Range,Origin,Authorization</param-value>
+        </init-param>
+        <init-param>
+            <param-name>cors.exposed.headers</param-name>
+            <param-value>Access-Control-Allow-Origin,Access-Control-Allow-Credentials</param-value>
         </init-param>
     </filter>
     <filter-mapping>
