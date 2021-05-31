@@ -108,7 +108,7 @@ else
 fi
 
 # Install GeoServer plugins in correct install dir
- if [[ -f /geoserver/start.jar ]]; then
+ if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
    GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
 else
   GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
@@ -151,15 +151,19 @@ if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]
 fi
 
 # Install jetty-servlets
-if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
-  ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
-    -O ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
+if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+  if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
+    ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
+      -O ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
+  fi
 fi
 
 # Install jetty-util
-if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then
-  ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
-    -O ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/jetty-util.jar
+if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+  if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then
+    ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
+      -O ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar
+  fi
 fi
 
 # Overlay files and directories in resources/overlays if they exist

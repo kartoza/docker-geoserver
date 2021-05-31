@@ -7,7 +7,7 @@ FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 
-ARG GS_VERSION=2.19.0
+ARG GS_VERSION=2.19.1
 
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
@@ -17,7 +17,7 @@ ARG GEOSERVER_GID=10001
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \
-    ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  \
+    ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev  \
     gdal-bin libgdal-java wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client
 
 
@@ -64,8 +64,7 @@ RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugi
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh
 RUN /scripts/setup.sh \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && dpkg --remove --force-depends  build-essential
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 EXPOSE  $HTTPS_PORT
 RUN echo $GS_VERSION > /scripts/geoserver_version.txt

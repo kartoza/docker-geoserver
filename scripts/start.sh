@@ -190,6 +190,13 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -srcstorepass "$PKCS12_PASSWORD" \
     -srcstoretype PKCS12
 
+  SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat.xsl
+
+else
+    cp ${CATALINA_HOME}/conf/ssl-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+    sed -i -e '77,114d' ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+    SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+
 fi
 
 # change server configuration
@@ -265,13 +272,6 @@ if [ -n "$JKS_STORE_PASSWORD" ]; then
   JKS_STORE_PASSWORD_PARAM="--stringparam https.keyPass $JKS_STORE_PASSWORD "
 fi
 
-if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
-    SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat.xsl
-else
-    cp ${CATALINA_HOME}/conf/ssl-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
-    sed -i -e '77,114d' ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
-    SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
-fi
 
 
 transform="xsltproc \
