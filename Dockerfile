@@ -16,14 +16,10 @@ ARG GEOSERVER_UID=1000
 ARG GEOSERVER_GID=10001
 
 #Install extra fonts to use with sld font markers
-RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma ttf-georgewilliams ttf-bitstream-vera \
-    ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  gdal-bin libgdal-java wget zip unzip curl xsltproc \
-    certbot  cabextract gettext lsb-release gnupg2
+RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \
+    ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts build-essential libapr1-dev libssl-dev  \
+    gdal-bin libgdal-java wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client
 
-RUN sh -c "echo \"deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main\" > /etc/apt/sources.list.d/pgdg.list" \
-    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc -O- | apt-key add -
-
-RUN apt-get update;apt-get -y --no-install-recommends install postgresql-client
 
 RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
@@ -62,7 +58,7 @@ ADD build_data /build_data
 RUN mkdir /community_plugins /stable_plugins /plugins
 RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
     cp /build_data/log4j.properties  ${CATALINA_HOME} && cp /build_data/web.xml ${CATALINA_HOME}/conf && \
-    cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf
+    cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
 
 ADD scripts /scripts

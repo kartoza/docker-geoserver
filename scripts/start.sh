@@ -190,104 +190,117 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -srcstorepass "$PKCS12_PASSWORD" \
     -srcstoretype PKCS12
 
-  # change server configuration
+fi
 
-  if [ -n "$HTTP_PORT" ]; then
-    HTTP_PORT_PARAM="--stringparam http.port $HTTP_PORT "
-  fi
+# change server configuration
 
-  if [ -n "$HTTP_PROXY_NAME" ]; then
-    HTTP_PROXY_NAME_PARAM="--stringparam http.proxyName $HTTP_PROXY_NAME "
-  fi
+if [ -n "$HTTP_PORT" ]; then
+  HTTP_PORT_PARAM="--stringparam http.port $HTTP_PORT "
+fi
 
-  if [ -n "$HTTP_PROXY_PORT" ]; then
-    HTTP_PROXY_PORT_PARAM="--stringparam http.proxyPort $HTTP_PROXY_PORT "
-  fi
+if [ -n "$HTTP_PROXY_NAME" ]; then
+  HTTP_PROXY_NAME_PARAM="--stringparam http.proxyName $HTTP_PROXY_NAME "
+fi
 
-  if [ -n "$HTTP_REDIRECT_PORT" ]; then
-    HTTP_REDIRECT_PORT_PARAM="--stringparam http.redirectPort $HTTP_REDIRECT_PORT "
-  fi
+if [ -n "$HTTP_PROXY_PORT" ]; then
+  HTTP_PROXY_PORT_PARAM="--stringparam http.proxyPort $HTTP_PROXY_PORT "
+fi
 
-  if [ -n "$HTTP_CONNECTION_TIMEOUT" ]; then
-    HTTP_CONNECTION_TIMEOUT_PARAM="--stringparam http.connectionTimeout $HTTP_CONNECTION_TIMEOUT "
-  fi
+if [ -n "$HTTP_REDIRECT_PORT" ]; then
+  HTTP_REDIRECT_PORT_PARAM="--stringparam http.redirectPort $HTTP_REDIRECT_PORT "
+fi
 
-  if [ -n "$HTTP_COMPRESSION" ]; then
-    HTTP_COMPRESSION_PARAM="--stringparam http.compression $HTTP_COMPRESSION "
-  fi
+if [ -n "$HTTP_CONNECTION_TIMEOUT" ]; then
+  HTTP_CONNECTION_TIMEOUT_PARAM="--stringparam http.connectionTimeout $HTTP_CONNECTION_TIMEOUT "
+fi
 
-  if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
-    HTTP_MAX_HEADER_SIZE_PARAM="--stringparam http.maxHttpHeaderSize $HTTP_MAX_HEADER_SIZE "
-  fi
+if [ -n "$HTTP_COMPRESSION" ]; then
+  HTTP_COMPRESSION_PARAM="--stringparam http.compression $HTTP_COMPRESSION "
+fi
 
-  if [ -n "$HTTPS_PORT" ]; then
-    HTTPS_PORT_PARAM="--stringparam https.port $HTTPS_PORT "
-  fi
+if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
+  HTTP_MAX_HEADER_SIZE_PARAM="--stringparam http.maxHttpHeaderSize $HTTP_MAX_HEADER_SIZE "
+fi
 
-  if [ -n "$HTTPS_MAX_THREADS" ]; then
-    HTTPS_MAX_THREADS_PARAM="--stringparam https.maxThreads $HTTPS_MAX_THREADS "
-  fi
+if [ -n "$HTTPS_PORT" ]; then
+  HTTPS_PORT_PARAM="--stringparam https.port $HTTPS_PORT "
+fi
 
-  if [ -n "$HTTPS_CLIENT_AUTH" ]; then
-    HTTPS_CLIENT_AUTH_PARAM="--stringparam https.clientAuth $HTTPS_CLIENT_AUTH "
-  fi
+if [ -n "$HTTPS_MAX_THREADS" ]; then
+  HTTPS_MAX_THREADS_PARAM="--stringparam https.maxThreads $HTTPS_MAX_THREADS "
+fi
 
-  if [ -n "$HTTPS_PROXY_NAME" ]; then
-    HTTPS_PROXY_NAME_PARAM="--stringparam https.proxyName $HTTPS_PROXY_NAME "
-  fi
+if [ -n "$HTTPS_CLIENT_AUTH" ]; then
+  HTTPS_CLIENT_AUTH_PARAM="--stringparam https.clientAuth $HTTPS_CLIENT_AUTH "
+fi
 
-  if [ -n "$HTTPS_PROXY_PORT" ]; then
-    HTTPS_PROXY_PORT_PARAM="--stringparam https.proxyPort $HTTPS_PROXY_PORT "
-  fi
+if [ -n "$HTTPS_PROXY_NAME" ]; then
+  HTTPS_PROXY_NAME_PARAM="--stringparam https.proxyName $HTTPS_PROXY_NAME "
+fi
 
-  if [ -n "$HTTPS_COMPRESSION" ]; then
-    HTTPS_COMPRESSION_PARAM="--stringparam https.compression $HTTPS_COMPRESSION "
-  fi
+if [ -n "$HTTPS_PROXY_PORT" ]; then
+  HTTPS_PROXY_PORT_PARAM="--stringparam https.proxyPort $HTTPS_PROXY_PORT "
+fi
 
-  if [ -n "$HTTPS_MAX_HEADER_SIZE" ]; then
-    HTTPS_MAX_HEADER_SIZE_PARAM="--stringparam https.maxHttpHeaderSize $HTTPS_MAX_HEADER_SIZE "
-  fi
+if [ -n "$HTTPS_COMPRESSION" ]; then
+  HTTPS_COMPRESSION_PARAM="--stringparam https.compression $HTTPS_COMPRESSION "
+fi
 
-  if [ -n "$JKS_FILE" ]; then
-    JKS_FILE_PARAM="--stringparam https.keystoreFile ${CERT_DIR}/$JKS_FILE "
-  fi
-  if [ -n "$JKS_KEY_PASSWORD" ]; then
-    JKS_KEY_PASSWORD_PARAM="--stringparam https.keystorePass $JKS_KEY_PASSWORD "
-  fi
+if [ -n "$HTTPS_MAX_HEADER_SIZE" ]; then
+  HTTPS_MAX_HEADER_SIZE_PARAM="--stringparam https.maxHttpHeaderSize $HTTPS_MAX_HEADER_SIZE "
+fi
 
-  if [ -n "$KEY_ALIAS" ]; then
-    KEY_ALIAS_PARAM="--stringparam https.keyAlias $KEY_ALIAS "
-  fi
+if [ -n "$JKS_FILE" ]; then
+  JKS_FILE_PARAM="--stringparam https.keystoreFile ${CERT_DIR}/$JKS_FILE "
+fi
+if [ -n "$JKS_KEY_PASSWORD" ]; then
+  JKS_KEY_PASSWORD_PARAM="--stringparam https.keystorePass $JKS_KEY_PASSWORD "
+fi
 
-  if [ -n "$JKS_STORE_PASSWORD" ]; then
-    JKS_STORE_PASSWORD_PARAM="--stringparam https.keyPass $JKS_STORE_PASSWORD "
-  fi
+if [ -n "$KEY_ALIAS" ]; then
+  KEY_ALIAS_PARAM="--stringparam https.keyAlias $KEY_ALIAS "
+fi
 
-  transform="xsltproc \
-    --output ${CATALINA_HOME}/conf/server.xml \
-    $HTTP_PORT_PARAM \
-    $HTTP_PROXY_NAME_PARAM \
-    $HTTP_PROXY_PORT_PARAM \
-    $HTTP_REDIRECT_PORT_PARAM \
-    $HTTP_CONNECTION_TIMEOUT_PARAM \
-    $HTTP_COMPRESSION_PARAM \
-    $HTTP_MAX_HEADER_SIZE_PARAM \
-    $HTTPS_PORT_PARAM \
-    $HTTPS_MAX_THREADS_PARAM \
-    $HTTPS_CLIENT_AUTH_PARAM \
-    $HTTPS_PROXY_NAME_PARAM \
-    $HTTPS_PROXY_PORT_PARAM \
-    $HTTPS_COMPRESSION_PARAM \
-    $HTTPS_MAX_HEADER_SIZE_PARAM \
-    $JKS_FILE_PARAM \
-    $JKS_KEY_PASSWORD_PARAM \
-    $KEY_ALIAS_PARAM \
-    $JKS_STORE_PASSWORD_PARAM \
-    ${CATALINA_HOME}/conf/letsencrypt-tomcat.xsl \
-    ${CATALINA_HOME}/conf/server.xml"
+if [ -n "$JKS_STORE_PASSWORD" ]; then
+  JKS_STORE_PASSWORD_PARAM="--stringparam https.keyPass $JKS_STORE_PASSWORD "
+fi
 
-  eval "$transform"
+if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
+    SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat.xsl
+else
+    cp ${CATALINA_HOME}/conf/ssl-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+    sed -i -e '77,114d' ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+    SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+fi
 
+
+transform="xsltproc \
+  --output ${CATALINA_HOME}/conf/server.xml \
+  $HTTP_PORT_PARAM \
+  $HTTP_PROXY_NAME_PARAM \
+  $HTTP_PROXY_PORT_PARAM \
+  $HTTP_REDIRECT_PORT_PARAM \
+  $HTTP_CONNECTION_TIMEOUT_PARAM \
+  $HTTP_COMPRESSION_PARAM \
+  $HTTP_MAX_HEADER_SIZE_PARAM \
+  $HTTPS_PORT_PARAM \
+  $HTTPS_MAX_THREADS_PARAM \
+  $HTTPS_CLIENT_AUTH_PARAM \
+  $HTTPS_PROXY_NAME_PARAM \
+  $HTTPS_PROXY_PORT_PARAM \
+  $HTTPS_COMPRESSION_PARAM \
+  $HTTPS_MAX_HEADER_SIZE_PARAM \
+  $JKS_FILE_PARAM \
+  $JKS_KEY_PASSWORD_PARAM \
+  $KEY_ALIAS_PARAM \
+  $JKS_STORE_PASSWORD_PARAM \
+  ${SSL_CONF} \
+  ${CATALINA_HOME}/conf/server.xml"
+
+eval "$transform"
+
+if [[ -f ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl ]];then
+  rm ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 fi
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
