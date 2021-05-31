@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source /scripts/functions.sh
+echo "Starting update process of password"
+
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
@@ -8,11 +9,20 @@ if [ -f "${SETUP_LOCKFILE}" ]; then
 	exit 0
 fi
 
-if [ ${DEBUG} ]; then
-    set -e
-    set -x
-fi;
+# Source the functions from other bash scripts
 
+source /scripts/env-data.sh
+source /scripts/functions.sh
+
+# Setup install directory
+if [[ -f /geoserver/start.jar ]]; then
+   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
+else
+  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
+fi
+
+
+# Copy security configs
 if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
   cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
 fi
@@ -21,11 +31,9 @@ fi
 file_env 'GEOSERVER_ADMIN_USER'
 file_env 'GEOSERVER_ADMIN_PASSWORD'
 
-GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER:-admin}
-GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD:-geoserver}
 USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
 ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
-CLASSPATH=${CLASSPATH:-/usr/local/tomcat/webapps/geoserver/WEB-INF/lib/}
+CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/}
 
 make_hash(){
     NEW_PASSWORD=$1
@@ -36,8 +44,10 @@ PWD_HASH=$(make_hash $GEOSERVER_ADMIN_PASSWORD)
 
 # users.xml setup
 cp $USERS_XML $USERS_XML.orig
+
 # <user enabled="true" name="admin" password="digest1:7/qC5lIvXIcOKcoQcCyQmPK8NCpsvbj6PcS/r3S7zqDEsIuBe731ZwpTtcSe9IiK"/>
 cat $USERS_XML.orig | sed -e "s/ name=\".*\" / name=\"${GEOSERVER_ADMIN_USER}\" /" | sed -e "s/ password=\".*\"/ password=\"${PWD_HASH//\//\\/}\"/" > $USERS_XML
+
 
 # roles.xml setup
 cp $ROLES_XML $ROLES_XML.orig
