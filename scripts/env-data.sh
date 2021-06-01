@@ -226,9 +226,7 @@ if [ -z ${GEOSERVER_ADMIN_USER} ]; then
     GEOSERVER_ADMIN_USER='admin'
 fi
 
-if [ -z ${GEOSERVER_ADMIN_PASSWORD} ]; then
-    GEOSERVER_ADMIN_PASSWORD='geoserver'
-fi
+
 
 if [ -z ${CSRF_WHITELIST} ]; then
     CSRF_WHITELIST=

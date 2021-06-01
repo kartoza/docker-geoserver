@@ -57,7 +57,7 @@ ADD resources /tmp/resources
 ADD build_data /build_data
 RUN mkdir /community_plugins /stable_plugins /plugins
 RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
-    cp /build_data/log4j.properties  ${CATALINA_HOME} && cp /build_data/web.xml ${CATALINA_HOME}/conf && \
+    cp /build_data/log4j.properties  ${CATALINA_HOME}  && \
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
 
