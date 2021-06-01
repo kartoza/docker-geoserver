@@ -1,13 +1,6 @@
 #!/bin/bash
 
-source /scripts/env-data.sh
-source /scripts/functions.sh
-
-if [[ -f /geoserver/start.jar ]]; then
-   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
-else
-  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
-fi
+echo "Starting update process of password"
 
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
@@ -16,11 +9,20 @@ if [ -f "${SETUP_LOCKFILE}" ]; then
 	exit 0
 fi
 
-if [ ${DEBUG} ]; then
-    set -e
-    set -x
-fi;
+# Source the functions from other bash scripts
 
+source /scripts/env-data.sh
+source /scripts/functions.sh
+
+# Setup install directory
+if [[ -f /geoserver/start.jar ]]; then
+   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
+else
+  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
+fi
+
+
+# Copy security configs
 if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
   cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
 fi
@@ -42,8 +44,10 @@ PWD_HASH=$(make_hash $GEOSERVER_ADMIN_PASSWORD)
 
 # users.xml setup
 cp $USERS_XML $USERS_XML.orig
+
 # <user enabled="true" name="admin" password="digest1:7/qC5lIvXIcOKcoQcCyQmPK8NCpsvbj6PcS/r3S7zqDEsIuBe731ZwpTtcSe9IiK"/>
 cat $USERS_XML.orig | sed -e "s/ name=\".*\" / name=\"${GEOSERVER_ADMIN_USER}\" /" | sed -e "s/ password=\".*\"/ password=\"${PWD_HASH//\//\\/}\"/" > $USERS_XML
+
 
 # roles.xml setup
 cp $ROLES_XML $ROLES_XML.orig

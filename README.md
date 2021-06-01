@@ -188,7 +188,7 @@ docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWOR
 
 ``` 
 ie VERSION=2.16.2
-docker run -it --name geo -v /etc/letsencrpt:/etc/letsencrypt  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}  
+docker run -it --name geo -v /etc/certs:/etc/certs  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}  
 
 ```
 
@@ -221,6 +221,31 @@ A full list of SSL variables is provided here
 * JKS_STORE_PASSWORD
 * P12_FILE
 
+### Proxy Base URL
+
+In order for the server to report a full proxy base url you need to pass
+the following env variable i.e
+
+``` 
+HTTP_PROXY_NAME
+HTTP_PROXY_PORT
+```
+
+The tomcat server.xml should have a corresponding declaration -for none SSL connections
+```
+ <Connector port="8080" protocol="HTTP/1.1"
+	connectionTimeout="20000"
+	proxyName=${HTTP_PROXY_NAME}	
+	proxyPort=${HTTP_PROXY_PORT}	
+	redirectPort="8443" />
+```
+
+For SSL based connections the env variables are:
+
+```
+HTTPS_PROXY_NAME
+HTTPS_PROXY_PORT 
+```
 
 ### Removing Tomcat extras 
 
@@ -300,7 +325,7 @@ what each parameter mean can be read from [documentation](http://docs.geoserver.
 ### Changing GeoServer password and username on runtime
 
 The default GeoServer credentials are
-Username = `admin` and the 
+Username = `admin`  
 Password = `geoserver`
 
 You can pass the environment variable `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER` to
@@ -323,7 +348,19 @@ in conjunction with Docker secrets, as passwords can be loaded from `/run/secret
 
 For more information see [https://docs.docker.com/engine/swarm/secrets/](https://docs.docker.com/engine/swarm/secrets/).
 
-Currently, `GEOSERVER_ADMIN_USER` and `GEOSERVER_ADMIN_PASSWORD` are supported.
+Currently, the following environment variables 
+```
+ GEOSERVER_ADMIN_USER
+ GEOSERVER_ADMIN_PASSWORD
+ S3_USERNAME
+ S3_PASSWORD
+ TOMCAT_USER
+ TOMCAT_PASS
+ PKCS12_PASSWORD
+ JKS_KEY_PASSWORD
+ JKS_STORE_PASSWORD
+```
+are supported.
 
 ## Clustering using JMS Plugin
 GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-broker. 
