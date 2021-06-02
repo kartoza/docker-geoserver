@@ -331,6 +331,10 @@ Password = `geoserver`
 You can pass the environment variable `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER` to
 change it on runtime.
 
+If you do not pass the env variable `GEOSERVER_ADMIN_PASSWORD` on startup a random
+strong password will be generated and this can be accessed from the startup logs
+or as a text file within the data directory
+
 ```
 docker run --name "geoserver" -e GEOSERVER_ADMIN_USER=kartoza  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
 ```
@@ -380,6 +384,7 @@ The configs that can be mounted are
 * geowebcache-diskquota-jdbc.xml
 * s3.properties
 * tomcat-users.xml
+* web.xml - for tomcat cors
 
 Example
 ```

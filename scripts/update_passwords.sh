@@ -17,7 +17,7 @@ source /scripts/functions.sh
 
 
 # Setup install directory
-if [[ -f /geoserver/start.jar ]]; then
+if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
    GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
 else
   GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
@@ -61,7 +61,10 @@ cp $ROLES_XML $ROLES_XML.orig
 # <userRoles username="admin">
 cat $ROLES_XML.orig | sed -e "s/ username=\".*\"/ username=\"${GEOSERVER_ADMIN_USER}\"/" > $ROLES_XML
 
-# Put lock file to make sure password is not reinitialized on restart
+# Write GeoServer Admin password only if we are setting a random password
+
 echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
-echo "[Entrypoint] GENERATED GeoServer  PASSWORD: $GEOSERVER_ADMIN_PASSWORD"
+echo -e "[Entrypoint] GENERATED GeoServer  PASSWORD: \e[1;31m $GEOSERVER_ADMIN_PASSWORD"
+
+# Put lock file to make sure password is not reinitialized on restart
 touch ${SETUP_LOCKFILE}
