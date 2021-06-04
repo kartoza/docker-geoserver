@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+figlet -t "Kartoza Docker GeoServer"
+echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
 source /scripts/env-data.sh
 
 /bin/bash /scripts/start.sh

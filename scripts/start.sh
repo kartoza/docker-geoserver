@@ -303,7 +303,8 @@ if [[ -f ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl ]];then
   rm ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 fi
 
+
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-  echo "Updating geoserver password"
   /scripts/update_passwords.sh
 fi
+

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-echo "Starting update process of password"
 
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
