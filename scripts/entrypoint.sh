@@ -1,8 +1,14 @@
 #!/bin/bash
 set -e
 
+SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.bash.lock"
+if [[ ! -f ${SETUP_LOCKFILE} ]]; then
+  echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
+  touch ${SETUP_LOCKFILE}
+fi
+
 figlet -t "Kartoza Docker GeoServer"
-echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
+
 source /scripts/env-data.sh
 
 /bin/bash /scripts/start.sh
