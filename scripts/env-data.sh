@@ -226,8 +226,14 @@ if [ -z ${GEOSERVER_ADMIN_USER} ]; then
     GEOSERVER_ADMIN_USER='admin'
 fi
 
-if [ -z ${GEOSERVER_ADMIN_PASSWORD} ]; then
-    GEOSERVER_ADMIN_PASSWORD='geoserver'
+
+
+if [ -z ${CSRF_WHITELIST} ]; then
+    CSRF_WHITELIST=
+fi
+
+if [ -z ${INITIAL_HEAT_OCCUPANCY_PERCENT} ]; then
+    INITIAL_HEAT_OCCUPANCY_PERCENT=45
 fi
 
 if [ -z ${CSRF_WHITELIST} ]; then

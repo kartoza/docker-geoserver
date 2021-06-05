@@ -4,6 +4,8 @@ source /scripts/env-data.sh
 
 export request="wget --progress=bar:force:noscroll -c --no-check-certificate"
 
+random_pass_string=$(openssl rand -base64 15)
+
 function create_dir() {
   DATA_PATH=$1
 
@@ -13,14 +15,28 @@ function create_dir() {
   fi
 }
 
+
+
 function epsg_codes() {
   if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/espg.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f /settings/espg.properties ]]; then
-      cp -f /settings/espg.properties ${GEOSERVER_DATA_DIR}/user_projections/
+    if [[ -f ${EXTRA_CONF_DIR}/espg.properties ]]; then
+      cp -f ${EXTRA_CONF_DIR}/espg.properties ${GEOSERVER_DATA_DIR}/user_projections/
     else
       # default values
       cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections
+    fi
+  fi
+}
+
+function web_cors() {
+  if [[ ! -f ${CATALINA_HOME}/conf/web.xml ]]; then
+    # If it doesn't exists, copy from /settings directory if exists
+    if [[ -f ${EXTRA_CONF_DIR}/web.xml  ]]; then
+      cp -f ${EXTRA_CONF_DIR}/web.xml  ${CATALINA_HOME}/conf/
+    else
+      # default values
+      cp /build_data/web.xml ${CATALINA_HOME}/conf/
     fi
   fi
 }
@@ -29,8 +45,8 @@ function epsg_codes() {
 function tomcat_user_config() {
   if [[ ! -f /usr/local/tomcat/conf/tomcat-users.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f /settings/tomcat-users.xml ]]; then
-      cp -f /settings/tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml
+    if [[ -f ${EXTRA_CONF_DIR}/tomcat-users.xml ]]; then
+      cp -f ${EXTRA_CONF_DIR}/tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml
     else
       # default value
       envsubst < /build_data/tomcat-users.xml > ${CATALINA_HOME}/conf/tomcat-users.xml
@@ -74,8 +90,8 @@ fi
 function cluster_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f /settings/cluster.properties ]]; then
-      cp -f /settings/cluster.properties ${CLUSTER_CONFIG_DIR}/cluster.properties
+    if [[ -f ${EXTRA_CONF_DIR}/cluster.properties ]]; then
+      cp -f ${EXTRA_CONF_DIR}/cluster.properties ${CLUSTER_CONFIG_DIR}/cluster.properties
     else
       # default values
       envsubst < /build_data/cluster.properties > ${CLUSTER_CONFIG_DIR}/cluster.properties
@@ -88,8 +104,8 @@ function cluster_config() {
 function broker_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f /settings/embedded-broker.properties ]]; then
-      cp -f /settings/embedded-broker.properties ${CLUSTER_CONFIG_DIR}/embedded-broker.properties
+    if [[ -f ${EXTRA_CONF_DIR}/embedded-broker.properties ]]; then
+      cp -f ${EXTRA_CONF_DIR}/embedded-broker.properties ${CLUSTER_CONFIG_DIR}/embedded-broker.properties
     else
       # default values
       envsubst < /build_data/embedded-broker.properties > ${CLUSTER_CONFIG_DIR}/embedded-broker.properties
@@ -101,8 +117,8 @@ function broker_config() {
 function s3_config() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f /settings/s3.properties ]]; then
-      cp -f /settings/s3.properties ${GEOSERVER_DATA_DIR}/s3.properties
+    if [[ -f ${EXTRA_CONF_DIR}/s3.properties ]]; then
+      cp -f ${EXTRA_CONF_DIR}/s3.properties ${GEOSERVER_DATA_DIR}/s3.properties
     else
       # default value
       envsubst < /build_data/s3.properties > ${GEOSERVER_DATA_DIR}/s3.properties
@@ -148,8 +164,8 @@ function disk_quota_config() {
 EOF
   if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f /settings/geowebcache-diskquota-jdbc.xml ]]; then
-      cp -f /settings/geowebcache-diskquota-jdbc.xml ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml
+    if [[ -f ${EXTRA_CONF_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
+      cp -f ${EXTRA_CONF_DIR}/geowebcache-diskquota-jdbc.xml ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml
     else
       # default value
       envsubst < /build_data/geowebcache-diskquota-jdbc.xml > ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml
@@ -161,8 +177,8 @@ EOF
 function setup_control_flow() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f /settings/controlflow.properties ]]; then
-      cp -f /settings/controlflow.properties "${GEOSERVER_DATA_DIR}"/controlflow.properties
+    if [[ -f ${EXTRA_CONF_DIR}/controlflow.properties ]]; then
+      cp -f ${EXTRA_CONF_DIR}/controlflow.properties "${GEOSERVER_DATA_DIR}"/controlflow.properties
     else
       # default value
       envsubst < /build_data/controlflow.properties > "${GEOSERVER_DATA_DIR}"/controlflow.properties

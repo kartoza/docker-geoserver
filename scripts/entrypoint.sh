@@ -1,6 +1,14 @@
 #!/bin/bash
 set -e
 
+SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.bash.lock"
+if [[ ! -f ${SETUP_LOCKFILE} ]]; then
+  echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
+  touch ${SETUP_LOCKFILE}
+fi
+
+figlet -t "Kartoza Docker GeoServer"
+
 source /scripts/env-data.sh
 
 /bin/bash /scripts/start.sh
@@ -12,7 +20,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
        -XX:SoftRefLRUPolicyMSPerMB=36000  -XX:NewRatio=2 \
        -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 \
-       -XX:InitiatingHeapOccupancyPercent=70 -XX:+CMSClassUnloadingEnabled \
+       -XX:InitiatingHeapOccupancyPercent=${INITIAL_HEAT_OCCUPANCY_PERCENT} -XX:+CMSClassUnloadingEnabled \
        -Djts.overlay=ng \
        -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} \

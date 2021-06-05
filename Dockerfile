@@ -18,7 +18,7 @@ ARG GEOSERVER_GID=10001
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \
     ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev  \
-    gdal-bin libgdal-java wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client
+    gdal-bin libgdal-java wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet toilet
 
 
 RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
@@ -57,7 +57,7 @@ ADD resources /tmp/resources
 ADD build_data /build_data
 RUN mkdir /community_plugins /stable_plugins /plugins
 RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
-    cp /build_data/log4j.properties  ${CATALINA_HOME} && cp /build_data/web.xml ${CATALINA_HOME}/conf && \
+    cp /build_data/log4j.properties  ${CATALINA_HOME}  && \
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
 
@@ -76,6 +76,7 @@ RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR
  /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /usr/share/fonts/
 
 RUN chmod o+rw ${CERT_DIR}
+
 
 USER geoserveruser
 VOLUME ["${GEOSERVER_DATA_DIR}", "${CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}"]

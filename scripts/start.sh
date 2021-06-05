@@ -8,7 +8,7 @@ GS_VERSION=$(cat /scripts/geoserver_version.txt)
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
-
+web_cors
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -303,7 +303,8 @@ if [[ -f ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl ]];then
   rm ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 fi
 
+
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-  echo "Updating geoserver password"
   /scripts/update_passwords.sh
 fi
+
