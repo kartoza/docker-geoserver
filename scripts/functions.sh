@@ -15,8 +15,6 @@ function create_dir() {
   fi
 }
 
-
-
 function epsg_codes() {
   if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/espg.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
@@ -40,7 +38,6 @@ function web_cors() {
     fi
   fi
 }
-
 
 function tomcat_user_config() {
   if [[ ! -f /usr/local/tomcat/conf/tomcat-users.xml ]]; then
@@ -204,4 +201,13 @@ function file_env {
 	fi
 	export "$var"="$val"
 	unset "$fileVar"
+}
+
+function advertise() {
+  SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.bash.lock"
+  if [[ ! -f ${SETUP_LOCKFILE} ]]; then
+    echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
+    touch ${SETUP_LOCKFILE}
+  fi
+
 }

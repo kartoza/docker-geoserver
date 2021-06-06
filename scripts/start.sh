@@ -36,8 +36,6 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
-
-
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   disk_quota_config
 fi
@@ -271,8 +269,6 @@ fi
 if [ -n "$JKS_STORE_PASSWORD" ]; then
   JKS_STORE_PASSWORD_PARAM="--stringparam https.keyPass $JKS_STORE_PASSWORD "
 fi
-
-
 
 transform="xsltproc \
   --output ${CATALINA_HOME}/conf/server.xml \

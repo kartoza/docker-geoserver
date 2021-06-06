@@ -1,14 +1,10 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 ARG IMAGE_VERSION=jdk11-openjdk-slim-buster
-
 ARG JAVA_HOME=/usr/local/openjdk-11
-
 FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-
 ARG GS_VERSION=2.19.1
-
 ARG WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
 ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=1
@@ -19,7 +15,6 @@ ARG GEOSERVER_GID=10001
 RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \
     ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev  \
     gdal-bin libgdal-java wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet toilet
-
 
 RUN wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
@@ -46,12 +41,9 @@ ENV \
     EXTRA_CONFIG_DIR=/settings \
     HTTPS_PORT=8443
 
-
-
 WORKDIR /scripts
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
              ${GEOWEBCACHE_CACHE_DIR} ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR}
-
 
 ADD resources /tmp/resources
 ADD build_data /build_data
@@ -59,7 +51,6 @@ RUN mkdir /community_plugins /stable_plugins /plugins
 RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
     cp /build_data/log4j.properties  ${CATALINA_HOME}  && \
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
-
 
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh
@@ -76,7 +67,6 @@ RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR
  /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /usr/share/fonts/
 
 RUN chmod o+rw ${CERT_DIR}
-
 
 USER geoserveruser
 VOLUME ["${GEOSERVER_DATA_DIR}", "${CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}"]
