@@ -35,7 +35,7 @@ ENV \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     CERT_DIR=/etc/certs \
-    RANDFILE=${CERT_DIR}/.rnd \
+    RANDFILE=/etc/certs/.rnd \
     FONTS_DIR=/opt/fonts \
     GEOSERVER_HOME=/geoserver \
     EXTRA_CONFIG_DIR=/settings \

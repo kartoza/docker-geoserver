@@ -204,7 +204,7 @@ function file_env {
 }
 
 function advertise() {
-  SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.bash.lock"
+  SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.bash.lock"
   if [[ ! -f ${SETUP_LOCKFILE} ]]; then
     echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
     touch ${SETUP_LOCKFILE}
