@@ -41,7 +41,7 @@ docker-compose -f docker-compose-build.yml up -d --build
 ### Building with war file from a URL
 
 If you need to build the image with a custom GeoServer war file that will be downloaded from a server, you
-can pass the war file url as a build argument to docker, example:
+can pass the war file url as a build argument:
 
 ```shell
 docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/project/ge/geoserver/GeoServer/2.13.0/geoserver-2.13.0-war.zip --build-arg GS_VERSION=2.13.0
@@ -65,28 +65,12 @@ For some recent builds it is necessary to set the JAVA_PATH as well (e.g. Apache
 docker build --build-arg IMAGE_VERSION=9-jdk11-openjdk-slim --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.17.0 -t kartoza/geoserver:2.17.0 .
 ```
 
-### Building with file system overlays (advanced)
-
-The contents of `resources/overlays` will be copied to the image file system
-during the build. For example, to include a static Tomcat `setenv.sh`,
-create the file at `resources/overlays/usr/local/tomcat/bin/setenv.sh`.
-
-You can use this functionality to write a static GeoServer directory to
-`/opt/geoserver/data_dir`, include additional jar files, and more.
-
-Overlay files will overwrite existing destination files, so be careful!
-
-#### Build with CORS Support
-
-The image ships with CORS support. If you however need to modify the web.xml you
-can mount `web.xml` to `/usr/local/tomcat/conf/web.xml`.
-
 ## Environment Variables
-A full list of environment variables are specified in the .env file
+A full list of environment variables are specified in the `.env` file
 
 ### Default installed  plugins
 
-The image is shipped with the following stable plugins:
+The image ships with the following stable plugins:
 * vectortiles-plugin
 * wps-plugin
 * printing-plugin
@@ -98,7 +82,7 @@ The image is shipped with the following stable plugins:
 * inspire-plugin
 * csw-plugin
 
-**NB** Even though these plugins are part of the STABLE_PLUGINS the list above
+**NB** Even though these plugins are part of the `STABLE_PLUGINS` the list above
 is excluded from [Stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
 
 The image provides the necessary plugin zip files which are used when activating 
@@ -107,7 +91,7 @@ needs extra dependencies which will need to be downloaded by the users. These
 dependencies are not bundled with the image because they have licences which are
 not open for generic consumption by the public i.e [db2](https://docs.geoserver.org/stable/en/user/data/database/db2.html)
 
-Other plugins also need extra environment variable ie community plugin `s3-geotiff-plugin`
+Other plugins also need extra environment variable i.e community plugin `s3-geotiff-plugin`
 
 ####  Activate stable plugins during contain startup
 
@@ -125,9 +109,9 @@ You can pass any comma separated plugins as defined in the text file `stable_plu
 
 **NB** Due to the nature of plugin ecosystem, there are new plugins that are always
 being upgraded from community extensions to stable extensions. If the `stable_plugins.txt`
-hasn't been updated with the latest changes you can still pass the enviroment variable with
+hasn't been updated with the latest changes you can still pass the environment variable with
 the name of the plugin. The plugin will be downloaded and installed. 
-This might slow down the process of starting GeoServer but will ensure all plugins are
+This might slow down the process of starting GeoServer but will ensure all plugins get
 activated
 
 ####  Activate community plugins during contain startup
@@ -143,7 +127,7 @@ docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-p
 
 ```
 
-**NB** Community plugins are always in an influx state and it is not guaranteed that plugins
+**NB** Community plugins are always in an influx state. There is no guarantee that plugins
 will be accessible between each successive build.
 
 ### Using sample data
@@ -184,7 +168,7 @@ ie VERSION=2.16.2
 docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION} 
 ```
 
- If you already have your own perm files (fullchain.pem and privkey.pem) you can mount the directory containing your keys as:
+If you already have your own perm files (fullchain.pem and privkey.pem) you can mount the directory containing your keys as:
 
 ``` 
 ie VERSION=2.16.2
@@ -307,10 +291,10 @@ filter should be set at all. Default is true
 
 ### Control flow properties
 
-The control flow module is used to manage requests in GeoServer. Instructions on
+The control flow module  manages requests in GeoServer. Instructions on
 what each parameter mean can be read from [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html). 
 
-* Control flow properties environment variables
+* Example default values for the environment variables
 
     * `REQUEST_TIMEOUT=60`
     * `PARARELL_REQUEST=100`
@@ -331,9 +315,9 @@ Password = `geoserver`
 You can pass the environment variable `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER` to
 change it on runtime.
 
-If you do not pass the env variable `GEOSERVER_ADMIN_PASSWORD` on startup a random
-strong password will be generated and this can be accessed from the startup logs
-or as a text file within the data directory
+**NB** If you do not pass the env variable `GEOSERVER_ADMIN_PASSWORD` on startup 
+the image will generate a strong password. The password can be accessed from the startup logs
+or as a text file within the Geoserver data directory
 
 ```
 docker run --name "geoserver" -e GEOSERVER_ADMIN_USER=kartoza  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
@@ -386,11 +370,20 @@ The configs that can be mounted are
 * tomcat-users.xml
 * web.xml - for tomcat cors
 
+
+
+
 Example
 ```
  docker run --name "geoserver" -e GEOSERVER_ADMIN_USER=kartoza  -v /data/controlflow.properties:/settings/controlflow.properties -p 8080:8080 -d -t kartoza/geoserver
 
 ```
+
+#### Build with CORS Support
+
+The image ships with CORS support. If you however need to modify the web.xml you
+can mount `web.xml` to `/settings/` directory.
+
 ## Running the Image 
 
 
@@ -409,14 +402,14 @@ following instructions from [docker-pg-backup](https://github.com/kartoza/docker
 If you start the stack using the compose file make sure you login into GeoServer using 
 username:`admin` and password:`myawesomegeoserver`.
 
-**NB:** The username and password are specified in the `.env` file and it is recommended
-to change them into something more secure.
+**NB:** The username and password are specified in the `.env` file. It is recommended
+to change them into something more secure otherwise a strong password is generated.
 
 Please read the ``docker-compose``
 [documentation](https://docs.docker.com/compose/) for details on usage and syntax of ``docker-compose`` - it is not covered here.
 
 
-Once all services are started, test by visiting the GeoServer landing
+Once all the services start, test by visiting the GeoServer landing
 page in your browser: [http://localhost:8600/geoserver](http://localhost:8600/geoserver).
 
 To run in the background rather, press ``ctrl-c`` to stop the

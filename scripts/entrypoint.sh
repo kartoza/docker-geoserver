@@ -1,15 +1,13 @@
 #!/bin/bash
 set -e
 
-SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.bash.lock"
-if [[ ! -f ${SETUP_LOCKFILE} ]]; then
-  echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
-  touch ${SETUP_LOCKFILE}
-fi
 
 figlet -t "Kartoza Docker GeoServer"
 
+source /scripts/functions.sh
 source /scripts/env-data.sh
+
+advertise
 
 /bin/bash /scripts/start.sh
 
@@ -44,7 +42,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
-if ls /geoserver/start.jar >/dev/null 2>&1; then
+if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   exec java $JAVA_OPTS  -jar start.jar
 else
   exec /usr/local/tomcat/bin/catalina.sh run

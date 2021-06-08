@@ -15,16 +15,14 @@ function create_dir() {
   fi
 }
 
-
-
 function epsg_codes() {
-  if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/espg.properties ]]; then
+  if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/espg.properties ]]; then
-      cp -f ${EXTRA_CONF_DIR}/espg.properties ${GEOSERVER_DATA_DIR}/user_projections/
+    if [[ -f ${EXTRA_CONF_DIR}/epsg.properties ]]; then
+      cp -f ${EXTRA_CONF_DIR}/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections/
     else
       # default values
-      cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections
+      cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/epsg.properties
     fi
   fi
 }
@@ -41,9 +39,8 @@ function web_cors() {
   fi
 }
 
-
 function tomcat_user_config() {
-  if [[ ! -f /usr/local/tomcat/conf/tomcat-users.xml ]]; then
+  if [[ ! -f ${CATALINA_HOME}/conf/tomcat-users.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONF_DIR}/tomcat-users.xml ]]; then
       cp -f ${EXTRA_CONF_DIR}/tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml
@@ -204,4 +201,13 @@ function file_env {
 	fi
 	export "$var"="$val"
 	unset "$fileVar"
+}
+
+function advertise() {
+  SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.bash.lock"
+  if [[ ! -f ${SETUP_LOCKFILE} ]]; then
+    echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
+    touch ${SETUP_LOCKFILE}
+  fi
+
 }
