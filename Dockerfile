@@ -10,6 +10,8 @@ ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
 ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=1
 ARG GEOSERVER_UID=1000
 ARG GEOSERVER_GID=10001
+ARG USER=geoserveruser
+ARG GROUP_NAME=geoserverusers
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \
@@ -59,16 +61,16 @@ RUN /scripts/setup.sh \
 
 EXPOSE  $HTTPS_PORT
 RUN echo $GS_VERSION > /scripts/geoserver_version.txt
-RUN groupadd -r geoserverusers -g ${GEOSERVER_GID} && \
-    useradd -m -d /home/geoserveruser/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G geoserverusers geoserveruser
+RUN groupadd -r ${GROUP_NAME} -g ${GEOSERVER_GID} && \
+    useradd -m -d /home/${USER}/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G ${GROUP_NAME} ${USER}
 
-RUN chown -R geoserveruser:geoserverusers ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
- ${GEOSERVER_DATA_DIR} /scripts ${CERT_DIR} ${FONTS_DIR} /tmp/ /home/geoserveruser/ /community_plugins/ \
+RUN chown -R ${USER}:${GROUP_NAME} ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
+ ${GEOSERVER_DATA_DIR} /scripts ${CERT_DIR} ${FONTS_DIR} /tmp/ /home/${USER}/ /community_plugins/ \
  /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /usr/share/fonts/
 
 RUN chmod o+rw ${CERT_DIR}
 
-USER geoserveruser
+USER ${GEOSERVER_UID}
 VOLUME ["${GEOSERVER_DATA_DIR}", "${CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}"]
 WORKDIR ${GEOSERVER_HOME}
 
