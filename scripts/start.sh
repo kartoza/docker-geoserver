@@ -8,6 +8,10 @@ GS_VERSION=$(cat /scripts/geoserver_version.txt)
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
+if [[  -f ${CATALINA_HOME}/conf/web.xml ]]; then
+  rm ${CATALINA_HOME}/conf/web.xml
+fi
+
 web_cors
 
 # Useful for development - We need a clean state of data directory
@@ -28,6 +32,11 @@ fi
 
 # Add custom espg properties file or the default one
 create_dir ${GEOSERVER_DATA_DIR}/user_projections
+
+if [  -f ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties ]; then
+  rm ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties
+fi
+
 epsg_codes
 
 # Activate sample data
@@ -119,14 +128,17 @@ export REQUEST_TIMEOUT PARARELL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 setup_control_flow
 
 # Setup tomcat apps manager
-export TOMCAT_PASS TOMCAT_USER
+export TOMCAT_PASSWORD TOMCAT_USER
 file_env 'TOMCAT_USER'
-file_env 'TOMCAT_PASS'
+file_env 'TOMCAT_PASSWORD'
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
-    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF &&
+    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF
+    if [[  -f ${CATALINA_HOME}/conf/tomcat-users.xml ]]; then
+      rm ${CATALINA_HOME}/conf/tomcat-users.xml
+    fi
     tomcat_user_config
 
 else
