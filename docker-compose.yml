@@ -10,12 +10,13 @@ services:
       volumes:
          - geo-db-data:/var/lib/postgresql
       ports:
-        - "25434:5432"
+        - ${POSTGRES_PORT}:5432
       environment:
         - POSTGRES_DB=${POSTGRES_DB}
         - POSTGRES_USER=${POSTGRES_USER}
         - POSTGRES_PASS=${POSTGRES_PASS}
         - ALLOW_IP_RANGE=${ALLOW_IP_RANGE}
+        - FORCE_SSL=TRUE
       restart: on-failure
       healthcheck:
         test: "exit 0"
@@ -24,8 +25,9 @@ services:
       image: kartoza/geoserver:${GS_VERSION}
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
+        - /tmp/settings/epsg.properties:/opt/geoserver/data_dir/user_projections/epsg.properties
       ports:
-        - "8600:8080"
+        - ${GEOSERVER_PORT}:8080
       restart: on-failure
       environment:
         - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
