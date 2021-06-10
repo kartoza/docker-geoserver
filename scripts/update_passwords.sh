@@ -64,6 +64,7 @@ cat $ROLES_XML.orig | sed -e "s/ username=\".*\"/ username=\"${GEOSERVER_ADMIN_U
 
 echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
 echo -e "[Entrypoint] GENERATED GeoServer  PASSWORD: \e[1;31m $GEOSERVER_ADMIN_PASSWORD"
+
 echo -e "\033[0m GeoServer PASSWORD listed above: "
 
 # Put lock file to make sure password is not reinitialized on restart
