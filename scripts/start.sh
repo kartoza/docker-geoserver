@@ -157,6 +157,11 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
   export PKCS12_PASSWORD
   file_env 'PKCS12_PASSWORD'
+  # Copy PFX file if it exists in the extra config directory
+  if [ -f ${EXTRA_CONFIG_DIR}/certificate.pfx ]; then
+    cp ${EXTRA_CONFIG_DIR}/certificate.pfx  ${CERT_DIR}/certificate.pfx
+  fi
+
   if [[ -f ${CERT_DIR}/certificate.pfx ]]; then
     # Generate private key
     openssl pkcs12 -in ${CERT_DIR}/certificate.pfx -nocerts \

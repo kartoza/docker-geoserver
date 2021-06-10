@@ -1,0 +1,12 @@
+<gwcQuotaConfiguration>
+  <enabled>true</enabled>
+  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
+  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
+  <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
+  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
+  <globalQuota>
+    <value>20</value>
+    <units>GiB</units>
+  </globalQuota>
+ <quotaStore>JDBC</quotaStore>
+</gwcQuotaConfiguration>

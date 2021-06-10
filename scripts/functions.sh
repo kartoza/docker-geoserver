@@ -153,20 +153,7 @@ function install_plugin() {
 # Helper function to setup disk quota configs and database configurations
 
 function disk_quota_config() {
-  cat >${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml <<EOF
-<gwcQuotaConfiguration>
-  <enabled>true</enabled>
-  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
-  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
-  <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
-  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
-  <globalQuota>
-    <value>20</value>
-    <units>GiB</units>
-  </globalQuota>
- <quotaStore>JDBC</quotaStore>
-</gwcQuotaConfiguration>
-EOF
+  cp /build_data/geowebcache-diskquota.xml ${GEOWEBCACHE_CACHE_DIR}/
   if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
@@ -176,7 +163,6 @@ EOF
       envsubst < /build_data/geowebcache-diskquota-jdbc.xml > ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml
     fi
   fi
-
 }
 
 function setup_control_flow() {
@@ -209,13 +195,4 @@ function file_env {
 	fi
 	export "$var"="$val"
 	unset "$fileVar"
-}
-
-function advertise() {
-  SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.bash.lock"
-  if [[ ! -f ${SETUP_LOCKFILE} ]]; then
-    echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
-    touch ${SETUP_LOCKFILE}
-  fi
-
 }
