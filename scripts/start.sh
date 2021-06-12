@@ -8,6 +8,8 @@ GS_VERSION=$(cat /scripts/geoserver_version.txt)
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
+
+remove_files ${CATALINA_HOME}/conf/web.xml
 web_cors
 
 # Useful for development - We need a clean state of data directory
@@ -28,6 +30,9 @@ fi
 
 # Add custom espg properties file or the default one
 create_dir ${GEOSERVER_DATA_DIR}/user_projections
+
+
+remove_files ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties
 epsg_codes
 
 # Activate sample data
@@ -35,8 +40,6 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   echo "Activating default data directory"
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
-
-
 
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   disk_quota_config
@@ -65,8 +68,10 @@ fi
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 file_env 'S3_USERNAME'
 file_env 'S3_PASSWORD'
+
 function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
+        remove_files ${GEOSERVER_DATA_DIR}/s3.properties
         s3_config
         echo "Installing ${ext} "
         install_plugin /community_plugins ${ext}
@@ -121,14 +126,15 @@ export REQUEST_TIMEOUT PARARELL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 setup_control_flow
 
 # Setup tomcat apps manager
-export TOMCAT_PASS TOMCAT_USER
+export TOMCAT_PASSWORD TOMCAT_USER
 file_env 'TOMCAT_USER'
-file_env 'TOMCAT_PASS'
+file_env 'TOMCAT_PASSWORD'
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
     cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF &&
+    remove_files ${CATALINA_HOME}/conf/tomcat-users.xml &&
     tomcat_user_config
 
 else
@@ -149,9 +155,15 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
 
+  export PKCS12_PASSWORD
+  file_env 'PKCS12_PASSWORD'
+  # Copy PFX file if it exists in the extra config directory
+  if [ -f ${EXTRA_CONFIG_DIR}/certificate.pfx ]; then
+    cp ${EXTRA_CONFIG_DIR}/certificate.pfx  ${CERT_DIR}/certificate.pfx
+  fi
+
   if [[ -f ${CERT_DIR}/certificate.pfx ]]; then
     # Generate private key
-    file_env 'PKCS12_PASSWORD'
     openssl pkcs12 -in ${CERT_DIR}/certificate.pfx -nocerts \
       -out ${CERT_DIR}/privkey.pem -nodes -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
     # Generate certificate only
@@ -175,7 +187,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -password pass:"$PKCS12_PASSWORD"
 
   # import PKCS12 into JKS
-
+  export JKS_KEY_PASSWORD JKS_STORE_PASSWORD
   file_env 'JKS_KEY_PASSWORD'
   file_env 'JKS_STORE_PASSWORD'
 
@@ -271,8 +283,6 @@ fi
 if [ -n "$JKS_STORE_PASSWORD" ]; then
   JKS_STORE_PASSWORD_PARAM="--stringparam https.keyPass $JKS_STORE_PASSWORD "
 fi
-
-
 
 transform="xsltproc \
   --output ${CATALINA_HOME}/conf/server.xml \

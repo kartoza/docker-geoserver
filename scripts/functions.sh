@@ -15,16 +15,22 @@ function create_dir() {
   fi
 }
 
+function remove_files() {
+    FILE_PATH=$1
+    if [  -f ${FILE_PATH} ]; then
+        rm ${FILE_PATH}
+    fi
 
+}
 
 function epsg_codes() {
-  if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/espg.properties ]]; then
+  if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/espg.properties ]]; then
-      cp -f ${EXTRA_CONF_DIR}/espg.properties ${GEOSERVER_DATA_DIR}/user_projections/
+    if [[ -f ${EXTRA_CONFIG_DIR}/epsg.properties ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections/
     else
       # default values
-      cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections
+      cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/epsg.properties
     fi
   fi
 }
@@ -32,8 +38,8 @@ function epsg_codes() {
 function web_cors() {
   if [[ ! -f ${CATALINA_HOME}/conf/web.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/web.xml  ]]; then
-      cp -f ${EXTRA_CONF_DIR}/web.xml  ${CATALINA_HOME}/conf/
+    if [[ -f ${EXTRA_CONFIG_DIR}/web.xml  ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/web.xml  ${CATALINA_HOME}/conf/
     else
       # default values
       cp /build_data/web.xml ${CATALINA_HOME}/conf/
@@ -41,12 +47,11 @@ function web_cors() {
   fi
 }
 
-
 function tomcat_user_config() {
-  if [[ ! -f /usr/local/tomcat/conf/tomcat-users.xml ]]; then
+  if [[ ! -f ${CATALINA_HOME}/conf/tomcat-users.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/tomcat-users.xml ]]; then
-      cp -f ${EXTRA_CONF_DIR}/tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml
+    if [[ -f ${EXTRA_CONFIG_DIR}/tomcat-users.xml ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml
     else
       # default value
       envsubst < /build_data/tomcat-users.xml > ${CATALINA_HOME}/conf/tomcat-users.xml
@@ -90,8 +95,8 @@ fi
 function cluster_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/cluster.properties ]]; then
-      cp -f ${EXTRA_CONF_DIR}/cluster.properties ${CLUSTER_CONFIG_DIR}/cluster.properties
+    if [[ -f ${EXTRA_CONFIG_DIR}/cluster.properties ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/cluster.properties ${CLUSTER_CONFIG_DIR}/cluster.properties
     else
       # default values
       envsubst < /build_data/cluster.properties > ${CLUSTER_CONFIG_DIR}/cluster.properties
@@ -104,8 +109,8 @@ function cluster_config() {
 function broker_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/embedded-broker.properties ]]; then
-      cp -f ${EXTRA_CONF_DIR}/embedded-broker.properties ${CLUSTER_CONFIG_DIR}/embedded-broker.properties
+    if [[ -f ${EXTRA_CONFIG_DIR}/embedded-broker.properties ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/embedded-broker.properties ${CLUSTER_CONFIG_DIR}/embedded-broker.properties
     else
       # default values
       envsubst < /build_data/embedded-broker.properties > ${CLUSTER_CONFIG_DIR}/embedded-broker.properties
@@ -117,8 +122,8 @@ function broker_config() {
 function s3_config() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/s3.properties ]]; then
-      cp -f ${EXTRA_CONF_DIR}/s3.properties ${GEOSERVER_DATA_DIR}/s3.properties
+    if [[ -f ${EXTRA_CONFIG_DIR}/s3.properties ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/s3.properties ${GEOSERVER_DATA_DIR}/s3.properties
     else
       # default value
       envsubst < /build_data/s3.properties > ${GEOSERVER_DATA_DIR}/s3.properties
@@ -148,37 +153,23 @@ function install_plugin() {
 # Helper function to setup disk quota configs and database configurations
 
 function disk_quota_config() {
-  cat >${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml <<EOF
-<gwcQuotaConfiguration>
-  <enabled>true</enabled>
-  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
-  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
-  <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
-  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
-  <globalQuota>
-    <value>20</value>
-    <units>GiB</units>
-  </globalQuota>
- <quotaStore>JDBC</quotaStore>
-</gwcQuotaConfiguration>
-EOF
+  cp /build_data/geowebcache-diskquota.xml ${GEOWEBCACHE_CACHE_DIR}/
   if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
-      cp -f ${EXTRA_CONF_DIR}/geowebcache-diskquota-jdbc.xml ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml
+    if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml
     else
       # default value
       envsubst < /build_data/geowebcache-diskquota-jdbc.xml > ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml
     fi
   fi
-
 }
 
 function setup_control_flow() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONF_DIR}/controlflow.properties ]]; then
-      cp -f ${EXTRA_CONF_DIR}/controlflow.properties "${GEOSERVER_DATA_DIR}"/controlflow.properties
+    if [[ -f ${EXTRA_CONFIG_DIR}/controlflow.properties ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/controlflow.properties "${GEOSERVER_DATA_DIR}"/controlflow.properties
     else
       # default value
       envsubst < /build_data/controlflow.properties > "${GEOSERVER_DATA_DIR}"/controlflow.properties

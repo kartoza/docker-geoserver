@@ -11,9 +11,6 @@ create_dir /tomcat_apps
 create_dir /usr/local/gdal_data
 create_dir /usr/local/gdal_native_libs
 
-
-
-
 pushd /plugins
 
 # Check if we have pre downloaded plugin yet
@@ -26,7 +23,6 @@ community_count=`ls -1 $resources_dir/plugins/community_plugins/*.zip 2>/dev/nul
 if [ $community_count != 0 ]; then
   cp -r $resources_dir/plugins/community_plugin/*.zip /plugins/
 fi
-
 
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
@@ -68,8 +64,6 @@ for i in "${array[@]}"; do
   download_extension ${url} ${i%.*} ${resources_dir}/plugins
 done
 
-
-
 pushd gdal
 
 ${request} http://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
@@ -85,8 +79,6 @@ if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then
 fi
 
 dpkg -i ${resources_dir}/libjpeg-turbo-official_1.5.3_amd64.deb
-
-
 
 pushd ${CATALINA_HOME}
 
@@ -113,7 +105,6 @@ fi
 else
   GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
 fi
-
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
@@ -172,7 +163,6 @@ rm -f /tmp/resources/overlays/README.txt &&
     cp -rf /tmp/resources/overlays/* /
   fi
 
-
 # Package tomcat webapps - useful to activate later
 if [ -d $CATALINA_HOME/webapps.dist ]; then
     cp -r $CATALINA_HOME/webapps.dist /tomcat_apps &&
@@ -185,8 +175,6 @@ else
     cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps &&
     zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
 fi
-
-
 
 # Delete resources after installation
 rm -rf /tmp/resources
