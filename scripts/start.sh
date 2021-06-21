@@ -134,6 +134,7 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
     cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF &&
+    sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
     remove_files ${CATALINA_HOME}/conf/tomcat-users.xml &&
     tomcat_user_config
 
@@ -143,6 +144,11 @@ else
     rm -rf "${CATALINA_HOME}"/webapps/examples &&
     rm -rf "${CATALINA_HOME}"/webapps/host-manager &&
     rm -rf "${CATALINA_HOME}"/webapps/manager
+fi
+
+if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
+  mv ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* ${CATALINA_HOME}/lib/ && \
+  envsubst < /build_data/context.xml > ${CATALINA_HOME}/conf/context.xml
 fi
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
