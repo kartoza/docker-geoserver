@@ -25,7 +25,6 @@ services:
       image: kartoza/geoserver:${GS_VERSION}
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
-        - /tmp/settings/epsg.properties:/opt/geoserver/data_dir/user_projections/epsg.properties
       ports:
         - ${GEOSERVER_PORT}:8080
       restart: on-failure
