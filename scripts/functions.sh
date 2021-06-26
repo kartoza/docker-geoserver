@@ -2,7 +2,7 @@
 
 source /scripts/env-data.sh
 
-export request="wget --progress=bar:force:noscroll -c --no-check-certificate"
+export request="wget --progress=bar:force:noscroll -c "
 
 random_pass_string=$(openssl rand -base64 15)
 

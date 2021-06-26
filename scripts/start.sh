@@ -65,9 +65,10 @@ else
 fi
 
 # Function to install community extensions
-export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 file_env 'S3_USERNAME'
 file_env 'S3_PASSWORD'
+export S3_SERVER_URL S3_USERNAME S3_PASSWORD
+
 
 function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
@@ -126,9 +127,10 @@ export REQUEST_TIMEOUT PARARELL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 setup_control_flow
 
 # Setup tomcat apps manager
-export TOMCAT_PASSWORD TOMCAT_USER
 file_env 'TOMCAT_USER'
 file_env 'TOMCAT_PASSWORD'
+export TOMCAT_PASSWORD TOMCAT_USER
+
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
@@ -161,8 +163,9 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
 
-  export PKCS12_PASSWORD
   file_env 'PKCS12_PASSWORD'
+  export PKCS12_PASSWORD
+
   # Copy PFX file if it exists in the extra config directory
   if [ -f ${EXTRA_CONFIG_DIR}/certificate.pfx ]; then
     cp ${EXTRA_CONFIG_DIR}/certificate.pfx  ${CERT_DIR}/certificate.pfx
@@ -193,9 +196,10 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -password pass:"$PKCS12_PASSWORD"
 
   # import PKCS12 into JKS
-  export JKS_KEY_PASSWORD JKS_STORE_PASSWORD
   file_env 'JKS_KEY_PASSWORD'
   file_env 'JKS_STORE_PASSWORD'
+  export JKS_KEY_PASSWORD JKS_STORE_PASSWORD
+
 
   keytool -importkeystore \
     -noprompt \
