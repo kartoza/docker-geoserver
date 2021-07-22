@@ -16,6 +16,24 @@
   limitations under the License.
 -->
 <Context antiResourceLocking="false" privileged="true" >
+  <Resource name="jdbc/postgres"
+      auth="Container"
+      type="javax.sql.DataSource"
+      driverClassName="org.postgresql.Driver"
+      url="jdbc:postgresql://${HOST}:5432/${POSTGRES_DB}"
+      username="${POSTGRES_USER}" password="${POSTGRES_PASS}"
+      maxTotal="8"
+      initialSize="0"
+      minIdle="0"
+      maxIdle="8"
+      maxWaitMillis="-1"
+      timeBetweenEvictionRunsMillis="30000"
+      minEvictableIdleTimeMillis="60000"
+      testWhileIdle="true"
+      validationQuery="SELECT 1"
+      maxAge="600000"
+      rollbackOnReturn="true"
+    />
   <!--<Valve className="org.apache.catalina.valves.RemoteAddrValve"
          allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />-->
   <Manager sessionAttributeValueClassNameFilter="java\.lang\.(?:Boolean|Integer|Long|Number|String)|org\.apache\.catalina\.filters\.CsrfPreventionFilter\$LruCache(?:\$1)?|java\.util\.(?:Linked)?HashMap"/>
