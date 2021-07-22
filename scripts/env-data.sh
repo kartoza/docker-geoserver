@@ -239,3 +239,7 @@ fi
 if [ -z ${CSRF_WHITELIST} ]; then
     CSRF_WHITELIST=
 fi
+
+if [ -z ${POSTGRES_JNDI} ]; then
+    POSTGRES_JNDI=FALSE
+fi
