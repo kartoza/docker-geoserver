@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /scripts/functions.sh
+
 if [ -z ${ENABLE_JSONP} ]; then
     ENABLE_JSONP=true
 fi
@@ -64,6 +66,7 @@ if [ -z ${JKS_FILE} ]; then
   JKS_FILE=letsencrypt.jks
 fi
 
+file_env 'JKS_KEY_PASSWORD'
 if [ -z ${JKS_KEY_PASSWORD} ]; then
   JKS_KEY_PASSWORD='geoserver'
 fi
@@ -72,6 +75,7 @@ if [ -z ${KEY_ALIAS} ]; then
   KEY_ALIAS=letsencrypt
 fi
 
+file_env 'JKS_STORE_PASSWORD'
 if [ -z ${JKS_STORE_PASSWORD} ]; then
     JKS_STORE_PASSWORD='geoserver'
 fi
@@ -80,10 +84,10 @@ if [ -z ${P12_FILE} ]; then
     P12_FILE=letsencrypt.p12
 fi
 
+file_env 'PKCS12_PASSWORD'
 if [ -z ${PKCS12_PASSWORD} ]; then
     PKCS12_PASSWORD='geoserver'
 fi
-
 
 if [ -z ${GEOSERVER_CSRF_DISABLED} ]; then
     GEOSERVER_CSRF_DISABLED=true
@@ -197,10 +201,12 @@ if [ -z ${S3_SERVER_URL} ]; then
     S3_SERVER_URL=''
 fi
 
+file_env 'S3_USERNAME'
 if [ -z ${S3_USERNAME} ]; then
     S3_USERNAME=''
 fi
 
+file_env 'S3_PASSWORD'
 if [ -z ${S3_PASSWORD} ]; then
     S3_PASSWORD=''
 fi
@@ -213,20 +219,25 @@ if [ -z ${GEOSERVER_FILEBROWSER_HIDEFS} ]; then
     GEOSERVER_FILEBROWSER_HIDEFS=false
 fi
 
+file_env 'TOMCAT_PASSWORD'
 if [ -z ${TOMCAT_PASSWORD} ]; then
     TOMCAT_PASSWORD='tomcat'
 fi
 
+file_env 'TOMCAT_USER'
 if [ -z ${TOMCAT_USER} ]; then
     TOMCAT_USER='tomcat'
 fi
 
-
+file_env 'GEOSERVER_ADMIN_USER'
 if [ -z ${GEOSERVER_ADMIN_USER} ]; then
     GEOSERVER_ADMIN_USER='admin'
 fi
 
-
+file_env 'GEOSERVER_ADMIN_PASSWORD'
+# if [ -z ${GEOSERVER_ADMIN_PASSWORD} ]; then
+#     GEOSERVER_ADMIN_PASSWORD='geoserver'
+# fi
 
 if [ -z ${CSRF_WHITELIST} ]; then
     CSRF_WHITELIST=
