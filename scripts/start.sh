@@ -65,8 +65,6 @@ else
 fi
 
 # Function to install community extensions
-file_env 'S3_USERNAME'
-file_env 'S3_PASSWORD'
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 
 
@@ -127,16 +125,16 @@ export REQUEST_TIMEOUT PARARELL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 setup_control_flow
 
 # Setup tomcat apps manager
-file_env 'TOMCAT_USER'
-file_env 'TOMCAT_PASSWORD'
 export TOMCAT_PASSWORD TOMCAT_USER
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
-    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF &&
-    sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
+    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF/
+    if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+      sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
+    fi
     remove_files ${CATALINA_HOME}/conf/tomcat-users.xml &&
     tomcat_user_config
 
@@ -163,7 +161,6 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
 
-  file_env 'PKCS12_PASSWORD'
   export PKCS12_PASSWORD
 
   # Copy PFX file if it exists in the extra config directory
@@ -196,8 +193,6 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -password pass:"$PKCS12_PASSWORD"
 
   # import PKCS12 into JKS
-  file_env 'JKS_KEY_PASSWORD'
-  file_env 'JKS_STORE_PASSWORD'
   export JKS_KEY_PASSWORD JKS_STORE_PASSWORD
 
 

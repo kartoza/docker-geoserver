@@ -29,8 +29,6 @@ if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
 fi
 
 
-file_env 'GEOSERVER_ADMIN_USER'
-file_env 'GEOSERVER_ADMIN_PASSWORD'
 
 
 # Set random password if none provided

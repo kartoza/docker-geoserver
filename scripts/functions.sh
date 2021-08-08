@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-source /scripts/env-data.sh
 
 export request="wget --progress=bar:force:noscroll -c "
 
