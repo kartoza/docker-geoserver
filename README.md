@@ -25,6 +25,7 @@
    * [Clustering using JMS Plugin](#clustering-using-jms-plugin)
    * [Running the Image](#running-the-image)
        * [Run (automated using docker-compose)](#run-automated-using-docker-compose)
+       * [Reverse Proxy using NGINX](#reverse-proxy-using-nginx)
    * [Kubernetes (Helm Charts)](#kubernetes-helm-charts)
    * [Contributing to the image](#contributing-to-the-image)
    * [Support](#support)
@@ -458,6 +459,18 @@ when you remove the containers, **all data will be kept**. Using host based volu
  ensures that your data persists between invocations of the compose file. If you need
  to delete the container data you need to run `docker-compose down -v`.
 
+### Reverse Proxy using NGINX
+
+You can also put nginx in front of geoserver to receive http request and translate it to uwsgi.
+
+A sample `docker-compose-nginx.yml` is provided for running geoserver and nginx
+
+```shell
+docker-compose -f docker-compose-nginx.yml  up -d
+```
+Once the services are running GeoServer will be available from
+
+http://localhost/geoserver/web/
 
 ## Kubernetes (Helm Charts)
 
