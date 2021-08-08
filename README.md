@@ -553,6 +553,18 @@ After these changes, the image can be built as instructed.
 
 To run the just-built local image with your docker-compose file, the platform option in the docker-compose file needs to be specified as ```linux/arm64/v8```. Otherwise, it will try to pull the docker image from the docker hub instead of using the local image. 
 
+### Reverse Proxy using NGINX
+
+You can also put nginx in front of geoserver to receive http request and translate it to uwsgi.
+
+A sample `docker-compose-nginx.yml` is provided for running geoserver and nginx
+
+```shell
+docker-compose -f docker-compose-nginx.yml  up -d
+```
+Once the services are running GeoServer will be available from
+
+http://localhost/geoserver/web/
 
 ## Kubernetes (Helm Charts)
 
