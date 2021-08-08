@@ -1,4 +1,36 @@
-# docker-geoserver
+# Table of Contents
+* [Kartoza docker-geoserver](#kartoza-docker-geoserver)
+   * [Getting the image](#getting-the-image)
+       * [Pulling from Dockerhub](#pulling-from-dockerhub)
+       * [Building the image](#building-the-image)
+       * [Local build using repository checkout](#local-build-using-repository-checkout)
+       * [Building with a specific version of  Tomcat](#building-with-a-specific-version-of--tomcat)
+   * [Environment Variables](#environment-variables)
+       * [Default installed  plugins](#default-installed--plugins)
+           * [Activate stable plugins during contain startup](#activate-stable-plugins-during-contain-startup)
+           * [Activate community plugins during contain startup](#activate-community-plugins-during-contain-startup)
+       * [Using sample data](#using-sample-data)
+       * [Enable disk quota storage in PostgreSQL backend](#enable-disk-quota-storage-in-postgresql-backend)
+       * [Running under SSL](#running-under-ssl)
+       * [Proxy Base URL](#proxy-base-url)
+       * [Removing Tomcat extras](#removing-tomcat-extras)
+       * [Upgrading image to use a specific version](#upgrading-image-to-use-a-specific-version)
+       * [Installing extra fonts](#installing-extra-fonts)
+       * [Other Environment variables supported](#other-environment-variables-supported)
+       * [Control flow properties](#control-flow-properties)
+       * [Changing GeoServer password and username on runtime](#changing-geoserver-password-and-username-on-runtime)
+           * [Docker secrets](#docker-secrets)
+   * [Mounting Configs](#mounting-configs)
+       * [CORS Support](#cors-support)
+   * [Clustering using JMS Plugin](#clustering-using-jms-plugin)
+   * [Running the Image](#running-the-image)
+       * [Run (automated using docker-compose)](#run-automated-using-docker-compose)
+   * [Kubernetes (Helm Charts)](#kubernetes-helm-charts)
+   * [Contributing to the image](#contributing-to-the-image)
+   * [Support](#support)
+   * [Credits](#credits)
+
+# Kartoza docker-geoserver
 
 A simple docker container that runs GeoServer influenced by this docker
 recipe: https://github.com/eliotjordan/docker-geoserver/blob/master/Dockerfile
@@ -6,6 +38,10 @@ recipe: https://github.com/eliotjordan/docker-geoserver/blob/master/Dockerfile
 ## Getting the image
 
 There are various ways to get the image onto your system:
+	* Pulling from Dokerhub
+	* Local build using docker-compose
+
+### Pulling from Dockerhub
 
 The preferred way (but using most bandwidth for the initial image) is to
 get our docker trusted build like this:
@@ -14,40 +50,37 @@ get our docker trusted build like this:
 VERSION=2.19.0
 docker pull kartoza/geoserver:$VERSION
 ```
-## Building the image
+### Building the image
 
 
-### To build yourself with a local checkout using the docker-compose.build.yaml:
+### Local build using repository checkout
 
-Edit the `.env` to change the build arguments:
+To build yourself with a local checkout using the docker-compose.build.yaml:
 
-```
-IMAGE_VERSION=tomcat image tag
-JAVA_HOME= java home path corresponding to the tomcat version
-WAR_URL= Default URL to fetch geoserver war or zip file
-STABLE_PLUGIN_URL= URL to fetch geoserver plugins
-ACTIVATE_ALL_STABLE_EXTENTIONS= Specifies whether to build all stable plugins or a single one
-ACTIVATE_ALL_COMMUNITY_EXTENTIONS=Specifies whether to build all community plugins or a single one
-GEOSERVER_UID=Specifies the uid to use for the user used to run GeoServer in the container
-GEOSERVER_GID=Specifies the gid to use for the group used to run GeoServer in the container
-```
+1. Clone the github repository:
 
-```shell
-git clone git://github.com/kartoza/docker-geoserver
-cd docker-geoserver
-docker-compose -f docker-compose-build.yml up -d --build
-```
+	```shell
+	git clone git://github.com/kartoza/docker-geoserver
+	```
+2. Edit the `.env` to change the build arguments:
 
-### Building with war file from a URL
+	```
+	IMAGE_VERSION=tomcat image tag
+	JAVA_HOME= java home path corresponding to the tomcat version
+	WAR_URL= Default URL to fetch geoserver war or zip file
+	STABLE_PLUGIN_URL= URL to fetch geoserver plugins
+	ACTIVATE_ALL_STABLE_EXTENTIONS= Specifies whether to build all stable plugins or a single one
+	ACTIVATE_ALL_COMMUNITY_EXTENTIONS=Specifies whether to build all community plugins or a single one
+	GEOSERVER_UID=Specifies the uid to use for the user used to run GeoServer in the container
+	GEOSERVER_GID=Specifies the gid to use for the group used to run GeoServer in the container
+	```
 
-If you need to build the image with a custom GeoServer war file that will be downloaded from a server, you
-can pass the war file url as a build argument:
+3. Build the container and spin up the services
+	```shell
+	cd docker-geoserver
+	docker-compose -f docker-compose-build.yml up -d --build
+	```
 
-```shell
-docker build --build-arg WAR_URL=http://download2.nust.na/pub4/sourceforge/g/project/ge/geoserver/GeoServer/2.13.0/geoserver-2.13.0-war.zip --build-arg GS_VERSION=2.13.0
-```
-
-**Note: war file version should match the version number provided by `GS_VERSION` argument otherwise we will have a mismatch of plugins and GeoServer installed.**
 
 ### Building with a specific version of  Tomcat
 
@@ -350,10 +383,6 @@ Currently, the following environment variables
 ```
 are supported.
 
-## Clustering using JMS Plugin
-GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-broker. 
-
-You can read more about how to set-up clustering in [kartoza clustering](https://github.com/kartoza/docker-geoserver/blob/master/clustering/README.md)
 
 ## Mounting Configs
 
@@ -379,10 +408,15 @@ Example
 
 ```
 
-#### Build with CORS Support
+### CORS Support
 
 The image ships with CORS support. If you however need to modify the web.xml you
 can mount `web.xml` to `/settings/` directory.
+
+## Clustering using JMS Plugin
+GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-broker. 
+
+You can read more about how to set-up clustering in [kartoza clustering](https://github.com/kartoza/docker-geoserver/blob/master/clustering/README.md)
 
 ## Running the Image 
 
@@ -429,12 +463,12 @@ when you remove the containers, **all data will be kept**. Using host based volu
 
 You can run the image in Kubernetes following the [recipe](https://github.com/kartoza/charts/tree/develop/charts/geoserver)
 
-### Contributing to the image
+## Contributing to the image
 We welcome users who want to contribute in enriching this service. We follow
 the git principles and all pull requests should be against the develop branch so that
 we can test them and when we are happy we push to the master branch.
 
-### Support
+## Support
 
 If you require more substantial assistance from [kartoza](https://kartoza.com)  (because our work and interaction on docker-geoserver is pro bono),
 please consider taking out a [Support Level Agreeement](https://kartoza.com/en/shop/product/support) 

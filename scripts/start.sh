@@ -131,8 +131,10 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
     rm -r /tmp/tomcat &&
-    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF &&
-    sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
+    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF/
+    if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+      sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
+    fi
     remove_files ${CATALINA_HOME}/conf/tomcat-users.xml &&
     tomcat_user_config
 
