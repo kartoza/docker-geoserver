@@ -4,7 +4,7 @@ ARG JAVA_HOME=/usr/local/openjdk-11
 FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.19.1
+ARG GS_VERSION=2.19.2
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG ACTIVATE_ALL_STABLE_EXTENTIONS=1
 ARG ACTIVATE_ALL_COMMUNITY_EXTENTIONS=1
@@ -12,6 +12,7 @@ ARG GEOSERVER_UID=1000
 ARG GEOSERVER_GID=10001
 ARG USER=geoserveruser
 ARG GROUP_NAME=geoserverusers
+ARG HTTPS_PORT=8443
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \
@@ -37,8 +38,8 @@ ENV \
     RANDFILE=/etc/certs/.rnd \
     FONTS_DIR=/opt/fonts \
     GEOSERVER_HOME=/geoserver \
-    EXTRA_CONFIG_DIR=/settings \
-    HTTPS_PORT=8443
+    EXTRA_CONFIG_DIR=/settings
+
 
 WORKDIR /scripts
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
