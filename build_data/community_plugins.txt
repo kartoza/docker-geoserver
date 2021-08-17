@@ -29,6 +29,7 @@ kmlppio-plugin
 mbtiles-plugin
 mbtiles-store-plugin
 metadata-plugin
+mongodb-schemaless-plugin
 ncwms-plugin
 netcdf-ghrsst-plugin
 notification-plugin
