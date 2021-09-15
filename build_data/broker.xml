@@ -17,7 +17,7 @@
     </networkConnectors>
 
     <transportConnectors>
-      <transportConnector name="openwire" uri="${activemq.transportConnectors.server.uri}"
+      <transportConnector name="openwire" uri="${activemq.transportConnectors.server.uri}" />
     </transportConnectors>
   </broker>
 </beans>
