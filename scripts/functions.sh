@@ -151,8 +151,20 @@ function install_plugin() {
 
 # Helper function to setup disk quota configs and database configurations
 
-function disk_quota_config() {
-  cp /build_data/geowebcache-diskquota.xml ${GEOWEBCACHE_CACHE_DIR}/
+function default_disk_quota_config() {
+  if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml ]]; then
+    # If it doesn't exists, copy from /settings directory if exists
+    if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota.xml ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota.xml ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml
+    else
+      # default value
+      envsubst < /build_data/geowebcache-diskquota.xml > ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml
+    fi
+  fi
+}
+
+function jdbc_disk_quota_config() {
+
   if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml ]]; then

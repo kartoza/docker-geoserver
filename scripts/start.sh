@@ -9,13 +9,11 @@ CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
 
-remove_files ${CATALINA_HOME}/conf/web.xml
 web_cors
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -rf ${GEOSERVER_DATA_DIR}/*
-
 fi
 
 # install Font files in resources/fonts if they exists
@@ -31,8 +29,6 @@ fi
 # Add custom espg properties file or the default one
 create_dir ${GEOSERVER_DATA_DIR}/user_projections
 
-
-remove_files ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties
 epsg_codes
 
 # Activate sample data
@@ -41,8 +37,15 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
+export DISK_QUOTA_SIZE
+
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
-  disk_quota_config
+  export DISK_QUOTA_BACKEND=JDBC
+  jdbc_disk_quota_config
+else
+  export DISK_QUOTA_BACKEND=H2
+  default_disk_quota_config
+
 fi
 
 create_dir ${MONITOR_AUDIT_PATH}
@@ -67,10 +70,8 @@ fi
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 
-
 function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
-        remove_files ${GEOSERVER_DATA_DIR}/s3.properties
         s3_config
         echo "Installing ${ext} "
         install_plugin /community_plugins ${ext}
@@ -102,17 +103,17 @@ export CLUSTER_CONFIG_DIR INSTANCE_STRING READONLY CLUSTER_DURABILITY BROKER_URL
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
   CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+  ext=jms-cluster-plugin
+  if [[ ! -f /community_plugins/${ext}.zip ]]; then
+    community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+    download_extension ${community_plugins_url} ${ext} /community_plugins
+    install_plugin /community_plugins ${ext}
+  else
+    install_plugin /community_plugins ${ext}
+  fi
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
       create_dir ${CLUSTER_CONFIG_DIR}
       cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-      ext=jms-cluster-plugin
-      if [[ ! -f /community_plugins/${ext}.zip ]]; then
-        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-        download_extension ${community_plugins_url} ${ext} /community_plugins
-        community_config
-      else
-        community_config
-      fi
       touch ${CLUSTER_LOCKFILE}
   fi
   cluster_config
@@ -127,17 +128,22 @@ setup_control_flow
 # Setup tomcat apps manager
 export TOMCAT_PASSWORD TOMCAT_USER
 
+
+if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
+  mv ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* ${CATALINA_HOME}/lib/ && \
+  envsubst < /build_data/context.xml > ${CATALINA_HOME}/conf/context.xml
+fi
+
+
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
-    rm -r /tmp/tomcat &&
-    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF/
-    if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+    rm -r /tmp/tomcat
+    if [[ ! -f ${CATALINA_HOME}/webapps/manager/META-INF/context.xml ]]; then
+      cp /build_data/context.xml {CATALINA_HOME}/webapps/manager/META-INF/
       sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
     fi
-    remove_files ${CATALINA_HOME}/conf/tomcat-users.xml &&
     tomcat_user_config
-
 else
     rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
     rm -rf "${CATALINA_HOME}"/webapps/docs &&
@@ -146,10 +152,6 @@ else
     rm -rf "${CATALINA_HOME}"/webapps/manager
 fi
 
-if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
-  mv ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* ${CATALINA_HOME}/lib/ && \
-  envsubst < /build_data/context.xml > ${CATALINA_HOME}/conf/context.xml
-fi
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 

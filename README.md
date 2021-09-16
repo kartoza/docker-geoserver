@@ -399,6 +399,7 @@ The configs that can be mounted are
 * s3.properties
 * tomcat-users.xml
 * web.xml - for tomcat cors
+* epsg.properties - for custom GeoServer EPSG values
 
 
 

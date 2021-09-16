@@ -14,6 +14,10 @@ if [ -z ${OPTIMIZE_LINE_WIDTH} ]; then
   OPTIMIZE_LINE_WIDTH=false
 fi
 
+if [ -z ${DISK_QUOTA_SIZE} ]; then
+  DISK_QUOTA_SIZE=20
+fi
+
 if [ -z ${SSL} ]; then
   SSL=false
 fi
