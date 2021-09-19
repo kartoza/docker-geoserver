@@ -5,8 +5,12 @@
 source /scripts/functions.sh
 source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
-CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
-MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+generate_random_string 14
+export CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RAND}"
+export MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RAND}"
+export CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+generate_random_string 20
+export INSTANCE_STRING=${RAND}
 
 
 web_cors
@@ -98,11 +102,9 @@ else
 fi
 
 # Setup clustering
-export CLUSTER_CONFIG_DIR INSTANCE_STRING READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
+export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
-  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
   ext=jms-cluster-plugin
   if [[ ! -f /community_plugins/${ext}.zip ]]; then
     community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
@@ -113,7 +115,7 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
       create_dir ${CLUSTER_CONFIG_DIR}
-      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
+      broker_xml_config
       touch ${CLUSTER_LOCKFILE}
   fi
   cluster_config

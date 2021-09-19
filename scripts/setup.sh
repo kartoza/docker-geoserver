@@ -31,11 +31,11 @@ fi
 
 if [ -z "${ACTIVATE_ALL_STABLE_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_STABLE_EXTENTIONS} -eq 0 ]; then
   plugin=$(head -n 1 /plugins/stable_plugins.txt)
-  approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+  approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
   download_extension ${approved_plugins_url} ${plugin} /plugins
 else
   for plugin in $(cat /plugins/stable_plugins.txt); do
-    approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+    approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
     download_extension ${approved_plugins_url} ${plugin} /plugins
   done
 fi
@@ -63,7 +63,7 @@ array=(geoserver-$GS_VERSION-vectortiles-plugin.zip geoserver-$GS_VERSION-wps-pl
   geoserver-$GS_VERSION-pyramid-plugin.zip geoserver-$GS_VERSION-gdal-plugin.zip
   geoserver-$GS_VERSION-monitor-plugin.zip geoserver-$GS_VERSION-inspire-plugin.zip geoserver-$GS_VERSION-csw-plugin.zip )
 for i in "${array[@]}"; do
-  url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
+  url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
   download_extension ${url} ${i%.*} ${resources_dir}/plugins
 done
 

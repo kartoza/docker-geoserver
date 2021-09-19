@@ -153,12 +153,16 @@ if [ -z ${LOGIN_STATUS} ]; then
     LOGIN_STATUS=on
 fi
 
-if [ -z ${WEB_INTERFACE} ]; then
-    WEB_INTERFACE=false
+if [ -z ${DISABLE_WEB_INTERFACE} ]; then
+    DISABLE_WEB_INTERFACE=false
 fi
 
 if [ -z ${RECREATE_DATADIR} ]; then
     RECREATE_DATADIR=false
+fi
+
+if [ -z ${RESET_ADMIN_CREDENTIALS} ]; then
+  RESET_ADMIN_CREDENTIALS=false
 fi
 
 if [ -z ${INITIAL_MEMORY} ]; then

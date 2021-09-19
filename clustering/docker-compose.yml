@@ -1,19 +1,18 @@
-version: '2.1'
+version: '3.9'
 
-
+volumes:
+   geoserver-cluster-data:
 
 services:
    master:
-      image: kartoza/geoserver:2.19.0
+      image: kartoza/geoserver:2.19.2
       volumes:
-         - ./geoserver_data:/opt/geoserver/data_dir
+         - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
         - "8081:8080"
       environment:
         - BROKER_URL=tcp://0.0.0.0:61661
         - READONLY=disabled
-        - RANDOMSTRING=87ee2a9b6802b6da_master
-        - INSTANCE_STRING=d8a167a4e61b5415ec263e3a44e8f5928d288b74ea8386766cac3b357ae45b08
         - CLUSTER_DURABILITY=false
         - CLUSTERING=True
         - TOGGLE_MASTER=true
@@ -25,16 +24,14 @@ services:
         timeout: 10s
         retries: 3
    node:
-      image: kartoza/geoserver:2.19.0
+      image: kartoza/geoserver:2.19.2
       volumes:
-         - ./geoserver_data:/opt/geoserver/data_dir
+         - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
         - "8082:8080"
       environment:
         - BROKER_URL=tcp://master:61661
         - READONLY=disabled
-        - RANDOMSTRING=6330c4593551ad96_node
-        - INSTANCE_STRING=176bdc380074abfab796df03bd1bc21e79b6a92be31890201c9e4eaadffc49ab
         - CLUSTER_DURABILITY=false
         - CLUSTERING=True
         - TOGGLE_MASTER=true

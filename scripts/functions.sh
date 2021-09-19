@@ -3,7 +3,15 @@
 
 export request="wget --progress=bar:force:noscroll -c "
 
-random_pass_string=$(openssl rand -base64 15)
+function generate_random_string() {
+  STRING_LENGTH=$1
+  random_pass_string=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c ${STRING_LENGTH})
+  if [[ ! -f /scripts/.pass_${STRING_LENGTH}.txt ]]; then
+    echo ${random_pass_string} > /scripts/.pass_${STRING_LENGTH}.txt
+  fi
+  export RAND=$(cat /scripts/.pass_${STRING_LENGTH}.txt)
+}
+
 
 function create_dir() {
   DATA_PATH=$1
@@ -29,7 +37,7 @@ function epsg_codes() {
       cp -f ${EXTRA_CONFIG_DIR}/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections/
     else
       # default values
-      cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/epsg.properties
+      cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties
     fi
   fi
 }
@@ -113,6 +121,18 @@ function broker_config() {
     else
       # default values
       envsubst < /build_data/embedded-broker.properties > ${CLUSTER_CONFIG_DIR}/embedded-broker.properties
+    fi
+  fi
+}
+
+function broker_xml_config() {
+  if [[ ! -f ${CLUSTER_CONFIG_DIR}/broker.xml ]]; then
+    # If it doesn't exists, copy from /settings directory if exists
+    if [[ -f ${EXTRA_CONFIG_DIR}/broker.xml ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/broker.xml ${CLUSTER_CONFIG_DIR}/broker.xml
+    else
+      # default values
+      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}/broker.xml
     fi
   fi
 }
