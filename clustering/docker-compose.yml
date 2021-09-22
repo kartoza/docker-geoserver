@@ -2,8 +2,22 @@ version: '3.9'
 
 volumes:
    geoserver-cluster-data:
+   geo-db-data:
 
 services:
+   db:
+      image: kartoza/postgis:13-3.1
+      volumes:
+        - geo-db-data:/var/lib/postgresql
+      environment:
+        - POSTGRES_DB=gis
+        - POSTGRES_USER=docker
+        - POSTGRES_PASS=docker
+        - ALLOW_IP_RANGE=0.0.0.0/0
+        - FORCE_SSL=TRUE
+      restart: on-failure
+      healthcheck:
+        test: "pg_isready -d gis"
    master:
       image: kartoza/geoserver:2.19.2
       volumes:
@@ -17,7 +31,17 @@ services:
         - CLUSTERING=True
         - TOGGLE_MASTER=true
         - TOGGLE_SLAVE=true
+        - DB_BACKEND=POSTGRES
+        - HOST=db
+        - POSTGRES_PORT=5432
+        - POSTGRES_DB=gis
+        - POSTGRES_USER=docker
+        - POSTGRES_PASS=docker
+        - SSL_MODE=allow
       restart: on-failure
+      depends_on:
+        db:
+          condition: service_healthy
       healthcheck:
         test: curl --fail -s http://localhost:8080/ || exit 1
         interval: 1m30s
@@ -40,6 +64,8 @@ services:
       restart: on-failure
       depends_on:
         master:
+          condition: service_healthy
+        db:
           condition: service_healthy
       healthcheck:
         test: curl --fail -s http://localhost:8080/ || exit 1

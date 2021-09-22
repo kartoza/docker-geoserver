@@ -184,5 +184,5 @@ rm -rf /tmp/resources
 
 # Delete resources which will be setup on first run
 
-remove_files ${CATALINA_HOME}/conf/tomcat-users.xml
-remove_files ${CATALINA_HOME}/conf/web.xml
+delete_file ${CATALINA_HOME}/conf/tomcat-users.xml
+delete_file ${CATALINA_HOME}/conf/web.xml

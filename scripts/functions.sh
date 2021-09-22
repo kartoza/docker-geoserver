@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-export request="wget --progress=bar:force:noscroll -c "
+export request="wget --progress=bar:force:noscroll -c --tries=2 "
 
 function generate_random_string() {
   STRING_LENGTH=$1
@@ -22,7 +22,7 @@ function create_dir() {
   fi
 }
 
-function remove_files() {
+function delete_file() {
     FILE_PATH=$1
     if [  -f ${FILE_PATH} ]; then
         rm ${FILE_PATH}
@@ -30,9 +30,11 @@ function remove_files() {
 
 }
 
-function epsg_codes() {
+# Function to add custom crs in geoserver data directory
+# https://docs.geoserver.org/latest/en/user/configuration/crshandling/customcrs.html
+function setup_custom_crs() {
   if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties ]]; then
-    # If it doesn't exists, copy from /settings directory if exists
+    # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/epsg.properties ]]; then
       cp -f ${EXTRA_CONFIG_DIR}/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections/
     else
@@ -42,6 +44,8 @@ function epsg_codes() {
   fi
 }
 
+# Function to enable cors support thought tomcat
+# https://documentation.bonitasoft.com/bonita/2021.1/enable-cors-in-tomcat-bundle
 function web_cors() {
   if [[ ! -f ${CATALINA_HOME}/conf/web.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
@@ -54,6 +58,8 @@ function web_cors() {
   fi
 }
 
+# Function to add users when tomcat manager is configured
+# https://tomcat.apache.org/tomcat-8.0-doc/manager-howto.html
 function tomcat_user_config() {
   if [[ ! -f ${CATALINA_HOME}/conf/tomcat-users.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
@@ -99,6 +105,7 @@ fi
 }
 
 # Helper function to setup cluster config for the clustering plugin
+# https://docs.geoserver.org/stable/en/user/community/jms-cluster/index.html
 function cluster_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
@@ -112,6 +119,7 @@ function cluster_config() {
 }
 
 # Helper function to setup broker config. Used with clustering configs
+# https://docs.geoserver.org/stable/en/user/community/jms-cluster/index.html
 
 function broker_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
@@ -138,6 +146,7 @@ function broker_xml_config() {
 }
 
 # Helper function to configure s3 bucket
+# https://docs.geoserver.org/latest/en/user/community/s3-geotiff/index.html
 function s3_config() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
@@ -196,6 +205,7 @@ function jdbc_disk_quota_config() {
   fi
 }
 
+# Function to setup control flow https://docs.geoserver.org/stable/en/user/extensions/controlflow/index.html
 function setup_control_flow() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
@@ -227,3 +237,4 @@ function file_env {
 	export "$var"="$val"
 	unset "$fileVar"
 }
+

@@ -125,13 +125,6 @@ if [ -z ${READONLY} ]; then
     READONLY=disabled
 fi
 
-if [ -z ${RANDOMSTRING} ]; then
-    RANDOMSTRING=23bd87cfa327d47e
-fi
-
-if [ -z ${INSTANCE_STRING} ]; then
-    INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
-fi
 
 if [ -z ${TOGGLE_MASTER} ]; then
     TOGGLE_MASTER=true
@@ -261,4 +254,8 @@ fi
 
 if [ -z ${POSTGRES_JNDI} ]; then
     POSTGRES_JNDI=FALSE
+fi
+
+if [ -z ${SSL_MODE} ]; then
+    SSL_MODE=disable
 fi

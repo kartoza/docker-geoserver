@@ -33,7 +33,7 @@ fi
 # Add custom espg properties file or the default one
 create_dir ${GEOSERVER_DATA_DIR}/user_projections
 
-epsg_codes
+setup_custom_crs
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -41,10 +41,27 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
-export DISK_QUOTA_SIZE
 
+
+function disk_quota_postgres_ssl_setup() {
+  if [[ ${SSL_MODE} == 'verify-ca' || ${SSL_MODE} == 'verify-full' ]]; then
+        if [[ -z ${SSL_CERT_FILE} || -z ${SSL_KEY_FILE} || -z ${SSL_CA_FILE} ]]; then
+                exit 0
+        else
+          export PARAMS="sslmode=${SSL_MODE}&sslcert=${SSL_CERT_FILE}&sslkey=${SSL_KEY_FILE}&sslrootcert=${SSL_CA_FILE}"
+        fi
+  elif [[ ${SSL_MODE} == 'disable' || ${SSL_MODE} == 'allow' || ${SSL_MODE} == 'prefer' || ${SSL_MODE} == 'require' ]]; then
+       export PARAMS="sslmode=${SSL_MODE}"
+  fi
+
+}
+
+export DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
+  disk_quota_postgres_ssl_setup
   export DISK_QUOTA_BACKEND=JDBC
+  export SSL_PARAMETERS=${PARAMS}
+  default_disk_quota_config
   jdbc_disk_quota_config
 else
   export DISK_QUOTA_BACKEND=H2

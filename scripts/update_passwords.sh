@@ -33,6 +33,9 @@ fi
 
 # Set random password if none provided
 if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
+      if [[ "${RESET_ADMIN_CREDENTIALS}" =~ [Tt][Rr][Uu][Ee] ]];then
+        delete_file /scripts/.pass_15.txt
+      fi
       generate_random_string 15
       GEOSERVER_ADMIN_PASSWORD=${RAND}
       echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
