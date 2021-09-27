@@ -333,7 +333,14 @@ transform="xsltproc \
   ${SSL_CONF} \
   ${CATALINA_HOME}/conf/server.xml"
 
-eval "$transform"
+
+if [[ -f ${EXTRA_CONFIG_DIR}/server.xml ]]; then
+  cp -f ${EXTRA_CONFIG_DIR}/server.xml ${CATALINA_HOME}/conf/
+else
+  # default value
+  eval "$transform"
+fi
+
 
 if [[ -f ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl ]];then
   rm ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl

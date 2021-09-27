@@ -188,6 +188,35 @@ docker run -d -p 8600:8080 --name geoserver --link db:db -e DB_BACKEND=POSTGRES 
 
 ```
 
+Some additional environment variables to use when activating the disk quota are:
+
+* DISK_QUOTA_SIZE - Specifies the size of the disk quota you need to use. Defaults to 20Gb
+
+If you are using the `kartoza/docker-postgis` image as a database backend you can additionally
+configure communication between the containers to use [SSL](https://github.com/kartoza/docker-postgis#postgres-ssl-setup)
+
+#### Using SSL and Default PostgreSQL ssl certificates
+
+When the environment variable `FORCE_SSL=TRUE` is set for the database container you
+will need to set `SSL_MODE=allow` in the GeoServer container.
+
+#### Using SSL certificates signed by a certificate authority
+
+When the environment variable `FORCE_SSL=TRUE` is set for the database container you
+will need to set `SSL_MODE` to either `verify-full` or `verify-ca`
+for the GeoServer container. You will also need to mount the ssl certificates
+you have done in the DB.
+
+In the GeoServer container the certificates need to be mounted to the folder
+specified by the certificate directory ${CERT_DIR}
+
+```
+SSL_CERT_FILE=/etc/certs/fullchain.pem
+SSL_KEY_FILE=/etc/certs/privkey.pem
+SSL_CA_FILE=/etc/certs/root.crt
+```
+
+
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
 Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for providing the solution to
@@ -349,6 +378,10 @@ Password = `geoserver`
 You can pass the environment variable `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER` to
 change it on runtime.
 
+If you forget your admin username/password or just need to reset it again you will need to 
+pass the environment variable `RESET_ADMIN_CREDENTIALS=TRUE`
+The default behavior is to reinitialize this once.
+
 **NB** If you do not pass the env variable `GEOSERVER_ADMIN_PASSWORD` on startup 
 the image will generate a strong password. The password can be accessed from the startup logs
 or as a text file within the Geoserver data directory
@@ -400,8 +433,7 @@ The configs that can be mounted are
 * tomcat-users.xml
 * web.xml - for tomcat cors
 * epsg.properties - for custom GeoServer EPSG values
-
-
+* server.xml - for tomcat configurations
 
 
 Example
