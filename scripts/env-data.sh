@@ -178,8 +178,8 @@ if [ -z ${REQUEST_TIMEOUT} ]; then
     REQUEST_TIMEOUT=60
 fi
 
-if [ -z ${PARARELL_REQUEST} ]; then
-    PARARELL_REQUEST=100
+if [ -z ${PARALLEL_REQUEST} ]; then
+    PARALLEL_REQUEST=100
 fi
 
 if [ -z ${GETMAP} ]; then
