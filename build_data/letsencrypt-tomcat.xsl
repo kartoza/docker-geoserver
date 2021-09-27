@@ -9,6 +9,7 @@
     <xsl:param name="http.redirectPort"/>
     <xsl:param name="http.connectionTimeout"/>
     <xsl:param name="http.compression"/>
+    <xsl:param name="http.scheme"/>
     <xsl:param name="http.maxHttpHeaderSize"/>
     <xsl:param name="https.port"/>
     <xsl:param name="https.maxThreads"/>
@@ -62,6 +63,11 @@
             <xsl:if test="$http.compression">
                 <xsl:attribute name="compression">
                     <xsl:value-of select="$http.compression"/>
+                </xsl:attribute>
+            </xsl:if>
+            <xsl:if test="$http.scheme">
+                <xsl:attribute name="scheme">
+                    <xsl:value-of select="$http.scheme"/>
                 </xsl:attribute>
             </xsl:if>
             <xsl:if test="$http.maxHttpHeaderSize">
