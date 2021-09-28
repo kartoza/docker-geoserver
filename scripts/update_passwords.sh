@@ -4,7 +4,15 @@
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
-if [ -f "${SETUP_LOCKFILE}" ]; then
+# Reset Admin credentials
+if [[ "${RESET_ADMIN_CREDENTIALS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+  if [[ -f "${SETUP_LOCKFILE}" ]];then
+        rm ${SETUP_LOCKFILE}
+  fi
+fi
+
+
+if [[ -f "${SETUP_LOCKFILE}"  ]]; then
 	exit 0
 fi
 
@@ -33,7 +41,11 @@ fi
 
 # Set random password if none provided
 if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
-      GEOSERVER_ADMIN_PASSWORD=${random_pass_string}
+      if [[ "${RESET_ADMIN_CREDENTIALS}" =~ [Tt][Rr][Uu][Ee] ]];then
+        delete_file /scripts/.pass_15.txt
+      fi
+      generate_random_string 15
+      GEOSERVER_ADMIN_PASSWORD=${RAND}
       echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
 fi
 
@@ -64,10 +76,7 @@ cat $ROLES_XML.orig | sed -e "s/ username=\".*\"/ username=\"${GEOSERVER_ADMIN_U
 # Write GeoServer Admin password only if we are setting a random password
 if [[ -f ${GEOSERVER_DATA_DIR}/security/pass.txt ]];then
 echo -e "[Entrypoint] GENERATED GeoServer  PASSWORD: \e[1;31m $GEOSERVER_ADMIN_PASSWORD"
-echo -e "\033[0m GeoServer PASSWORD listed above: "
-
-echo -e "\033[0m GeoServer PASSWORD listed above: "
-
+echo -e "\033[0m "
 fi
 
 # Put lock file to make sure password is not reinitialized on restart
