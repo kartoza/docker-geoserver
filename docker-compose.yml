@@ -27,6 +27,7 @@ services:
         - geoserver-data:/opt/geoserver/data_dir
       ports:
         - ${GEOSERVER_PORT}:8080
+        - "8443:8443"
       restart: on-failure
       environment:
         - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
@@ -35,6 +36,8 @@ services:
         - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
         - INITIAL_MEMORY=${INITIAL_MEMORY}
         - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+        - HTTP_SCHEME=http
+        - RESET_ADMIN_CREDENTIALS=true
       depends_on:
         db:
           condition: service_healthy
