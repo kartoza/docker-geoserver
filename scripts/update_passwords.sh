@@ -4,7 +4,15 @@
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
-if [[ -f "${SETUP_LOCKFILE}" || "${RESET_ADMIN_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+# Reset Admin credentials
+if [[ "${RESET_ADMIN_CREDENTIALS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+  if [[ -f "${SETUP_LOCKFILE}" ]];then
+        rm ${SETUP_LOCKFILE}
+  fi
+fi
+
+
+if [[ -f "${SETUP_LOCKFILE}"  ]]; then
 	exit 0
 fi
 
