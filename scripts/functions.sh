@@ -219,6 +219,19 @@ function setup_control_flow() {
 
 }
 
+function setup_logging() {
+  if [[ ! -f "${CATALINA_HOME}"/log4j.properties ]]; then
+    # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
+    if [[ -f ${EXTRA_CONFIG_DIR}/log4j.properties ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/log4j.properties "${CATALINA_HOME}"/log4j.properties
+    else
+      # default value
+      envsubst < /build_data/log4j.properties > "${CATALINA_HOME}"/log4j.properties
+    fi
+  fi
+
+}
+
 # Function to read env variables from secrets
 function file_env {
 	local var="$1"

@@ -365,3 +365,4 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
   /scripts/update_passwords.sh
 fi
 
+setup_logging

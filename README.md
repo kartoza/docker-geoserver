@@ -237,6 +237,9 @@ If you are using the [kartoza/postgis image](https://github.com/kartoza/docker-p
 with the env variable `FORCE_SSL=TRUE` you will also need to set the environment 
 variable `SSL_MODE` to correspond to value mentioned in [kartoza/postgis ssl](https://github.com/kartoza/docker-postgis#postgres-ssl-setup)
 
+When defining the parameters for the store in GeoServer you will need to set
+`jndiReferenceName=java:comp/env/jdbc/postgres`
+
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
 Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for providing the solution to
