@@ -11,6 +11,9 @@
            * [Activate community plugins during contain startup](#activate-community-plugins-during-contain-startup)
        * [Using sample data](#using-sample-data)
        * [Enable disk quota storage in PostgreSQL backend](#enable-disk-quota-storage-in-postgresql-backend)
+           * [Using SSL and Default PostgreSQL ssl certificates](#using-ssl-and-default-postgresql-ssl-certificates)
+           * [Using SSL certificates signed by a certificate authority](#using-ssl-certificates-signed-by-a-certificate-authority)
+       * [Activating JDBC PostgreSQL connector](#activating-jdbc-postgresql-connector)
        * [Running under SSL](#running-under-ssl)
        * [Proxy Base URL](#proxy-base-url)
        * [Removing Tomcat extras](#removing-tomcat-extras)
@@ -30,6 +33,7 @@
    * [Contributing to the image](#contributing-to-the-image)
    * [Support](#support)
    * [Credits](#credits)
+
 
 # Kartoza docker-geoserver
 
@@ -216,6 +220,22 @@ SSL_KEY_FILE=/etc/certs/privkey.pem
 SSL_CA_FILE=/etc/certs/root.crt
 ```
 
+### Activating JDBC PostgreSQL connector
+When defining vector stores you can use the JNDI pooling. To set this up you will need 
+to activate the following environment variable `POSTGRES_JNDI=TRUE`. By default, the environment 
+variable is set to `FALSE`
+In addition you will need to define parameters to connect to an existing PostgreSQL database
+
+``` 
+POSTGRES_JNDI=TRUE
+HOST=${POSTGRES_HOSTNAME}
+POSTGRES_DB=${POSTGRES_DB}
+POSTGRES_USER=${POSTGRES_USER}
+POSTGRES_PASS=${POSTGRES_PASS}
+```
+If you are using the [kartoza/postgis image](https://github.com/kartoza/docker-postgis)
+with the env variable `FORCE_SSL=TRUE` you will also need to set the environment 
+variable `SSL_MODE` to correspond to value mentioned in [kartoza/postgis ssl](https://github.com/kartoza/docker-postgis#postgres-ssl-setup)
 
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
