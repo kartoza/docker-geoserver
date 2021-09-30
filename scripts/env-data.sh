@@ -14,6 +14,10 @@ if [ -z ${OPTIMIZE_LINE_WIDTH} ]; then
   OPTIMIZE_LINE_WIDTH=false
 fi
 
+if [ -z ${DISK_QUOTA_SIZE} ]; then
+  DISK_QUOTA_SIZE=20
+fi
+
 if [ -z ${SSL} ]; then
   SSL=false
 fi
@@ -32,6 +36,10 @@ fi
 
 if [ -z ${HTTP_PROXY_PORT} ]; then
   HTTP_PROXY_PORT=
+fi
+
+if [ -z ${HTTP_SCHEME} ]; then
+  HTTP_SCHEME=http
 fi
 
 if [ -z ${HTTP_REDIRECT_PORT} ]; then
@@ -121,13 +129,6 @@ if [ -z ${READONLY} ]; then
     READONLY=disabled
 fi
 
-if [ -z ${RANDOMSTRING} ]; then
-    RANDOMSTRING=23bd87cfa327d47e
-fi
-
-if [ -z ${INSTANCE_STRING} ]; then
-    INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
-fi
 
 if [ -z ${TOGGLE_MASTER} ]; then
     TOGGLE_MASTER=true
@@ -149,12 +150,16 @@ if [ -z ${LOGIN_STATUS} ]; then
     LOGIN_STATUS=on
 fi
 
-if [ -z ${WEB_INTERFACE} ]; then
-    WEB_INTERFACE=false
+if [ -z ${DISABLE_WEB_INTERFACE} ]; then
+    DISABLE_WEB_INTERFACE=false
 fi
 
 if [ -z ${RECREATE_DATADIR} ]; then
     RECREATE_DATADIR=false
+fi
+
+if [ -z ${RESET_ADMIN_CREDENTIALS} ]; then
+  RESET_ADMIN_CREDENTIALS=false
 fi
 
 if [ -z ${INITIAL_MEMORY} ]; then
@@ -219,6 +224,15 @@ if [ -z ${GEOSERVER_FILEBROWSER_HIDEFS} ]; then
     GEOSERVER_FILEBROWSER_HIDEFS=false
 fi
 
+if [ -z ${PROXY_BASE_URL_PARAMETRIZATION} ]; then
+    PROXY_BASE_URL_PARAMETRIZATION=false
+fi
+
+if [ -z ${GEOSERVER_LOG_LEVEL} ]; then
+    GEOSERVER_LOG_LEVEL=DEFAULT_LOGGING
+fi
+
+
 file_env 'TOMCAT_PASSWORD'
 if [ -z ${TOMCAT_PASSWORD} ]; then
     TOMCAT_PASSWORD='tomcat'
@@ -253,4 +267,8 @@ fi
 
 if [ -z ${POSTGRES_JNDI} ]; then
     POSTGRES_JNDI=FALSE
+fi
+
+if [ -z ${SSL_MODE} ]; then
+    SSL_MODE=disable
 fi

@@ -51,7 +51,6 @@ RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_D
 ADD resources /tmp/resources
 ADD build_data /build_data
 RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
-    cp /build_data/log4j.properties  ${CATALINA_HOME}  && \
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
 ADD scripts /scripts
