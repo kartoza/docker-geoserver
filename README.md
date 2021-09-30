@@ -11,6 +11,9 @@
            * [Activate community plugins during contain startup](#activate-community-plugins-during-contain-startup)
        * [Using sample data](#using-sample-data)
        * [Enable disk quota storage in PostgreSQL backend](#enable-disk-quota-storage-in-postgresql-backend)
+           * [Using SSL and Default PostgreSQL ssl certificates](#using-ssl-and-default-postgresql-ssl-certificates)
+           * [Using SSL certificates signed by a certificate authority](#using-ssl-certificates-signed-by-a-certificate-authority)
+       * [Activating JDBC PostgreSQL connector](#activating-jdbc-postgresql-connector)
        * [Running under SSL](#running-under-ssl)
        * [Proxy Base URL](#proxy-base-url)
        * [Removing Tomcat extras](#removing-tomcat-extras)
@@ -30,6 +33,7 @@
    * [Contributing to the image](#contributing-to-the-image)
    * [Support](#support)
    * [Credits](#credits)
+
 
 # Kartoza docker-geoserver
 
@@ -188,6 +192,54 @@ docker run -d -p 8600:8080 --name geoserver --link db:db -e DB_BACKEND=POSTGRES 
 
 ```
 
+Some additional environment variables to use when activating the disk quota are:
+
+* DISK_QUOTA_SIZE - Specifies the size of the disk quota you need to use. Defaults to 20Gb
+
+If you are using the `kartoza/docker-postgis` image as a database backend you can additionally
+configure communication between the containers to use [SSL](https://github.com/kartoza/docker-postgis#postgres-ssl-setup)
+
+#### Using SSL and Default PostgreSQL ssl certificates
+
+When the environment variable `FORCE_SSL=TRUE` is set for the database container you
+will need to set `SSL_MODE=allow` in the GeoServer container.
+
+#### Using SSL certificates signed by a certificate authority
+
+When the environment variable `FORCE_SSL=TRUE` is set for the database container you
+will need to set `SSL_MODE` to either `verify-full` or `verify-ca`
+for the GeoServer container. You will also need to mount the ssl certificates
+you have done in the DB.
+
+In the GeoServer container the certificates need to be mounted to the folder
+specified by the certificate directory ${CERT_DIR}
+
+```
+SSL_CERT_FILE=/etc/certs/fullchain.pem
+SSL_KEY_FILE=/etc/certs/privkey.pem
+SSL_CA_FILE=/etc/certs/root.crt
+```
+
+### Activating JDBC PostgreSQL connector
+When defining vector stores you can use the JNDI pooling. To set this up you will need 
+to activate the following environment variable `POSTGRES_JNDI=TRUE`. By default, the environment 
+variable is set to `FALSE`
+In addition you will need to define parameters to connect to an existing PostgreSQL database
+
+``` 
+POSTGRES_JNDI=TRUE
+HOST=${POSTGRES_HOSTNAME}
+POSTGRES_DB=${POSTGRES_DB}
+POSTGRES_USER=${POSTGRES_USER}
+POSTGRES_PASS=${POSTGRES_PASS}
+```
+If you are using the [kartoza/postgis image](https://github.com/kartoza/docker-postgis)
+with the env variable `FORCE_SSL=TRUE` you will also need to set the environment 
+variable `SSL_MODE` to correspond to value mentioned in [kartoza/postgis ssl](https://github.com/kartoza/docker-postgis#postgres-ssl-setup)
+
+When defining the parameters for the store in GeoServer you will need to set
+`jndiReferenceName=java:comp/env/jdbc/postgres`
+
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
 Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for providing the solution to
@@ -225,6 +277,7 @@ A full list of SSL variables is provided here
 * HTTP_REDIRECT_PORT
 * HTTP_CONNECTION_TIMEOUT
 * HTTP_COMPRESSION
+* HTTP_SCHEME
 * HTTP_MAX_HEADER_SIZE
 * HTTPS_PORT
 * HTTPS_MAX_THREADS
@@ -349,6 +402,10 @@ Password = `geoserver`
 You can pass the environment variable `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER` to
 change it on runtime.
 
+If you forget your admin username/password or just need to reset it again you will need to 
+pass the environment variable `RESET_ADMIN_CREDENTIALS=TRUE`
+The default behavior is to reinitialize this once.
+
 **NB** If you do not pass the env variable `GEOSERVER_ADMIN_PASSWORD` on startup 
 the image will generate a strong password. The password can be accessed from the startup logs
 or as a text file within the Geoserver data directory
@@ -399,8 +456,8 @@ The configs that can be mounted are
 * s3.properties
 * tomcat-users.xml
 * web.xml - for tomcat cors
-
-
+* epsg.properties - for custom GeoServer EPSG values
+* server.xml - for tomcat configurations
 
 
 Example

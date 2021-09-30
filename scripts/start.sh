@@ -5,17 +5,19 @@
 source /scripts/functions.sh
 source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
-CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
-MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+generate_random_string 14
+export CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RAND}"
+export MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RAND}"
+export CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+generate_random_string 20
+export INSTANCE_STRING=${RAND}
 
 
-remove_files ${CATALINA_HOME}/conf/web.xml
 web_cors
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -rf ${GEOSERVER_DATA_DIR}/*
-
 fi
 
 # install Font files in resources/fonts if they exists
@@ -31,9 +33,11 @@ fi
 # Add custom espg properties file or the default one
 create_dir ${GEOSERVER_DATA_DIR}/user_projections
 
+setup_custom_crs
 
-remove_files ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties
-epsg_codes
+create_dir ${GEOSERVER_DATA_DIR}/logs
+export GEOSERVER_LOG_LEVEL
+geoserver_logging
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -41,8 +45,32 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
 fi
 
+
+
+function postgres_ssl_setup() {
+  if [[ ${SSL_MODE} == 'verify-ca' || ${SSL_MODE} == 'verify-full' ]]; then
+        if [[ -z ${SSL_CERT_FILE} || -z ${SSL_KEY_FILE} || -z ${SSL_CA_FILE} ]]; then
+                exit 0
+        else
+          export PARAMS="sslmode=${SSL_MODE}&sslcert=${SSL_CERT_FILE}&sslkey=${SSL_KEY_FILE}&sslrootcert=${SSL_CA_FILE}"
+        fi
+  elif [[ ${SSL_MODE} == 'disable' || ${SSL_MODE} == 'allow' || ${SSL_MODE} == 'prefer' || ${SSL_MODE} == 'require' ]]; then
+       export PARAMS="sslmode=${SSL_MODE}"
+  fi
+
+}
+
+export DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
-  disk_quota_config
+  postgres_ssl_setup
+  export DISK_QUOTA_BACKEND=JDBC
+  export SSL_PARAMETERS=${PARAMS}
+  default_disk_quota_config
+  jdbc_disk_quota_config
+else
+  export DISK_QUOTA_BACKEND=H2
+  default_disk_quota_config
+
 fi
 
 create_dir ${MONITOR_AUDIT_PATH}
@@ -67,10 +95,8 @@ fi
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 
-
 function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
-        remove_files ${GEOSERVER_DATA_DIR}/s3.properties
         s3_config
         echo "Installing ${ext} "
         install_plugin /community_plugins ${ext}
@@ -97,22 +123,20 @@ else
 fi
 
 # Setup clustering
-export CLUSTER_CONFIG_DIR INSTANCE_STRING READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
+export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
-  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+  ext=jms-cluster-plugin
+  if [[ ! -f /community_plugins/${ext}.zip ]]; then
+    community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+    download_extension ${community_plugins_url} ${ext} /community_plugins
+    install_plugin /community_plugins ${ext}
+  else
+    install_plugin /community_plugins ${ext}
+  fi
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
       create_dir ${CLUSTER_CONFIG_DIR}
-      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-      ext=jms-cluster-plugin
-      if [[ ! -f /community_plugins/${ext}.zip ]]; then
-        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-        download_extension ${community_plugins_url} ${ext} /community_plugins
-        community_config
-      else
-        community_config
-      fi
+      broker_xml_config
       touch ${CLUSTER_LOCKFILE}
   fi
   cluster_config
@@ -127,17 +151,31 @@ setup_control_flow
 # Setup tomcat apps manager
 export TOMCAT_PASSWORD TOMCAT_USER
 
+
+
+if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
+  postgres_ssl_setup
+  export SSL_PARAMETERS=${PARAMS}
+  POSTGRES_JAR_COUNT=`ls -1 ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l`
+  if [ $POSTGRES_JAR_COUNT != 0 ]; then
+    rm ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-*
+  fi
+  cp ${CATALINA_HOME}/postgres_config/postgresql-* ${CATALINA_HOME}/lib/ &&
+  envsubst < /build_data/context.xml > ${CATALINA_HOME}/conf/context.xml
+else
+  cp ${CATALINA_HOME}/postgres_config/postgresql-* ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/
+fi
+
+
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
     cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
-    rm -r /tmp/tomcat &&
-    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF/
-    if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+    rm -r /tmp/tomcat
+    if [[ ! -f ${CATALINA_HOME}/webapps/manager/META-INF/context.xml ]]; then
+      cp /build_data/context.xml {CATALINA_HOME}/webapps/manager/META-INF/
       sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
     fi
-    remove_files ${CATALINA_HOME}/conf/tomcat-users.xml &&
     tomcat_user_config
-
 else
     rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
     rm -rf "${CATALINA_HOME}"/webapps/docs &&
@@ -146,10 +184,6 @@ else
     rm -rf "${CATALINA_HOME}"/webapps/manager
 fi
 
-if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
-  mv ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* ${CATALINA_HOME}/lib/ && \
-  envsubst < /build_data/context.xml > ${CATALINA_HOME}/conf/context.xml
-fi
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
@@ -211,7 +245,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 else
     cp ${CATALINA_HOME}/conf/ssl-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
-    sed -i -e '77,114d' ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+    sed -i -e '83,120d' ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
     SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
 fi
@@ -240,6 +274,10 @@ fi
 
 if [ -n "$HTTP_COMPRESSION" ]; then
   HTTP_COMPRESSION_PARAM="--stringparam http.compression $HTTP_COMPRESSION "
+fi
+
+if [ -n "$HTTP_SCHEME" ]; then
+  HTTP_SCHEME_PARAM="--stringparam http.scheme $HTTP_SCHEME "
 fi
 
 if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
@@ -297,6 +335,7 @@ transform="xsltproc \
   $HTTP_REDIRECT_PORT_PARAM \
   $HTTP_CONNECTION_TIMEOUT_PARAM \
   $HTTP_COMPRESSION_PARAM \
+  $HTTP_SCHEME_PARAM \
   $HTTP_MAX_HEADER_SIZE_PARAM \
   $HTTPS_PORT_PARAM \
   $HTTPS_MAX_THREADS_PARAM \
@@ -312,7 +351,14 @@ transform="xsltproc \
   ${SSL_CONF} \
   ${CATALINA_HOME}/conf/server.xml"
 
-eval "$transform"
+
+if [[ -f ${EXTRA_CONFIG_DIR}/server.xml ]]; then
+  cp -f ${EXTRA_CONFIG_DIR}/server.xml ${CATALINA_HOME}/conf/
+else
+  # default value
+  eval "$transform"
+fi
+
 
 if [[ -f ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl ]];then
   rm ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
@@ -323,3 +369,4 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
   /scripts/update_passwords.sh
 fi
 
+setup_logging
