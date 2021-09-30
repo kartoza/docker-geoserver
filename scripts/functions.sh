@@ -232,6 +232,21 @@ function setup_logging() {
 
 }
 
+function geoserver_logging() {
+  echo "
+<logging>
+  <level>${GEOSERVER_LOG_LEVEL}.properties</level>
+  <location>logs/geoserver.log</location>
+  <stdOutLogging>true</stdOutLogging>
+</logging>
+" > /tmp/logging.xml
+  envsubst < /tmp/logging.xml > ${GEOSERVER_DATA_DIR}/logging.xml
+  if [[ ! -f ${GEOSERVER_DATA_DIR}/logs/geoserver.log ]];then
+    touch ${GEOSERVER_DATA_DIR}/logs/geoserver.log
+  fi
+  rm /tmp/logging.xml
+}
+
 # Function to read env variables from secrets
 function file_env {
 	local var="$1"

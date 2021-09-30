@@ -35,6 +35,10 @@ create_dir ${GEOSERVER_DATA_DIR}/user_projections
 
 setup_custom_crs
 
+create_dir ${GEOSERVER_DATA_DIR}/logs
+export GEOSERVER_LOG_LEVEL
+geoserver_logging
+
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   echo "Activating default data directory"
