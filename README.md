@@ -124,7 +124,7 @@ The image ships with the following stable plugins:
 * csw-plugin
 
 **Note:** The plugins listed above are omitted from [Stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
-even though they are considered [stable plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.19.2/extensions/
+even though they are considered [stable plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.19.2/extensions/)
 The image activates them on startup.
 
 The image provides the necessary plugin zip files which are used when activating the
@@ -531,7 +531,7 @@ we can test them and when we are happy we push them to the master branch.
 
 ## Support
 
-If you require more substantial assistance from [kartoza](https://kartoza.com)  (because our work and interaction on docker-GeoServer is pro bono),
+If you require more substantial assistance from [kartoza](https://kartoza.com)  (because our work and interaction on docker-geoserver is pro bono),
 please consider taking out a [Support Level Agreeement](https://kartoza.com/en/shop/product/support) 
 ## Credits
 
