@@ -426,6 +426,7 @@ be used in favour of the defaults that are available from the [Build data](https
 directory
 
 The configs that can be mounted are
+* broker.xml
 * cluster.properties
 * controlflow.properties
 * embedded-broker.properties
