@@ -452,6 +452,7 @@ The configs that can be mounted are
 * web.xml - for tomcat cors
 * epsg.properties - for custom GeoServer EPSG values
 * server.xml - for tomcat configurations
+* broker.xml
 
 
 Example
