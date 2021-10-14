@@ -219,6 +219,34 @@ function setup_control_flow() {
 
 }
 
+function setup_logging() {
+  if [[ ! -f "${CATALINA_HOME}"/log4j.properties ]]; then
+    # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
+    if [[ -f ${EXTRA_CONFIG_DIR}/log4j.properties ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/log4j.properties "${CATALINA_HOME}"/log4j.properties
+    else
+      # default value
+      envsubst < /build_data/log4j.properties > "${CATALINA_HOME}"/log4j.properties
+    fi
+  fi
+
+}
+
+function geoserver_logging() {
+  echo "
+<logging>
+  <level>${GEOSERVER_LOG_LEVEL}.properties</level>
+  <location>logs/geoserver.log</location>
+  <stdOutLogging>true</stdOutLogging>
+</logging>
+" > /tmp/logging.xml
+  envsubst < /tmp/logging.xml > ${GEOSERVER_DATA_DIR}/logging.xml
+  if [[ ! -f ${GEOSERVER_DATA_DIR}/logs/geoserver.log ]];then
+    touch ${GEOSERVER_DATA_DIR}/logs/geoserver.log
+  fi
+  rm /tmp/logging.xml
+}
+
 # Function to read env variables from secrets
 function file_env {
 	local var="$1"

@@ -23,6 +23,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Djts.overlay=ng \
        -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} \
+       -DALLOW_ENV_PARAMETRIZATION=${PROXY_BASE_URL_PARAMETRIZATION} \
        -Djavax.servlet.request.encoding=${CHARACTER_ENCODING} \
        -Djavax.servlet.response.encoding=${CHARACTER_ENCODING} \
        -DCLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR} \

@@ -10,6 +10,7 @@ create_dir /usr/share/fonts/opentype
 create_dir /tomcat_apps
 create_dir /usr/local/gdal_data
 create_dir /usr/local/gdal_native_libs
+create_dir ${CATALINA_HOME}/postgres_config
 
 ${request} http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
@@ -94,11 +95,12 @@ if [[ -f /tmp/geoserver/geoserver.war ]]; then
   cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} &&
   mv ${CATALINA_HOME}/data/security ${CATALINA_HOME} &&
   rm -rf ${CATALINA_HOME}/webapps/geoserver/data &&
+  mv ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* ${CATALINA_HOME}/postgres_config/ &&
   rm -rf /tmp/geoserver
 else
-  cp -r /tmp/geoserver/* /geoserver/ &&
-  cp -r /geoserver/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
-  cp -r /geoserver/data_dir ${CATALINA_HOME}/data &&
+  cp -r /tmp/geoserver/* ${GEOSERVER_HOME}/ &&
+  cp -r ${GEOSERVER_HOME}/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
+  cp -r ${GEOSERVER_HOME}/data_dir ${CATALINA_HOME}/data &&
   mv ${CATALINA_HOME}/data/security ${CATALINA_HOME}
 fi
 

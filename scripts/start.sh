@@ -35,6 +35,10 @@ create_dir ${GEOSERVER_DATA_DIR}/user_projections
 
 setup_custom_crs
 
+create_dir ${GEOSERVER_DATA_DIR}/logs
+export GEOSERVER_LOG_LEVEL
+geoserver_logging
+
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   echo "Activating default data directory"
@@ -43,7 +47,7 @@ fi
 
 
 
-function disk_quota_postgres_ssl_setup() {
+function postgres_ssl_setup() {
   if [[ ${SSL_MODE} == 'verify-ca' || ${SSL_MODE} == 'verify-full' ]]; then
         if [[ -z ${SSL_CERT_FILE} || -z ${SSL_KEY_FILE} || -z ${SSL_CA_FILE} ]]; then
                 exit 0
@@ -58,7 +62,7 @@ function disk_quota_postgres_ssl_setup() {
 
 export DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
-  disk_quota_postgres_ssl_setup
+  postgres_ssl_setup
   export DISK_QUOTA_BACKEND=JDBC
   export SSL_PARAMETERS=${PARAMS}
   default_disk_quota_config
@@ -148,9 +152,18 @@ setup_control_flow
 export TOMCAT_PASSWORD TOMCAT_USER
 
 
+
 if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
-  mv ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* ${CATALINA_HOME}/lib/ && \
+  postgres_ssl_setup
+  export SSL_PARAMETERS=${PARAMS}
+  POSTGRES_JAR_COUNT=`ls -1 ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l`
+  if [ $POSTGRES_JAR_COUNT != 0 ]; then
+    rm ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-*
+  fi
+  cp ${CATALINA_HOME}/postgres_config/postgresql-* ${CATALINA_HOME}/lib/ &&
   envsubst < /build_data/context.xml > ${CATALINA_HOME}/conf/context.xml
+else
+  cp ${CATALINA_HOME}/postgres_config/postgresql-* ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/
 fi
 
 
@@ -356,3 +369,4 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
   /scripts/update_passwords.sh
 fi
 
+setup_logging
