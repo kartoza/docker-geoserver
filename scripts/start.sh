@@ -92,6 +92,17 @@ else
   done
 fi
 
+if [[ ${ACTIVATE_ALL_STABLE_EXTENTIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+  pushd /plugins/
+  for val in `ls *.zip`; do
+      ext=${val%.*}
+      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+      install_plugin /plugins ${ext}
+  done
+  pushd ${GEOSERVER_HOME}
+fi
+
+
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 
@@ -120,6 +131,17 @@ else
         community_config
       fi
   done
+fi
+
+
+if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+   pushd /community_plugins/
+    for val in `ls *.zip`; do
+        ext=${val%.*}
+        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+        community_config
+    done
+    pushd ${GEOSERVER_HOME}
 fi
 
 # Setup clustering
@@ -174,6 +196,12 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     if [[ ! -f ${CATALINA_HOME}/webapps/manager/META-INF/context.xml ]]; then
       cp /build_data/context.xml {CATALINA_HOME}/webapps/manager/META-INF/
       sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
+    fi
+    if [[ -z ${TOMCAT_PASSWORD} ]]; then
+        generate_random_string 18
+        export TOMCAT_PASSWORD=${RAND}
+        echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD"
+        echo -e "\033[0m "
     fi
     tomcat_user_config
 else
