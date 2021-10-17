@@ -233,10 +233,16 @@ if [ -z ${GEOSERVER_LOG_LEVEL} ]; then
 fi
 
 
-file_env 'TOMCAT_PASSWORD'
-if [ -z ${TOMCAT_PASSWORD} ]; then
-    TOMCAT_PASSWORD='tomcat'
+if [ -z ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} ]; then
+    ACTIVATE_ALL_COMMUNITY_EXTENTIONS=FALSE
 fi
+
+if [ -z ${ACTIVATE_ALL_STABLE_EXTENTIONS} ]; then
+    ACTIVATE_ALL_STABLE_EXTENTIONS=FALSE
+fi
+
+file_env 'TOMCAT_PASSWORD'
+
 
 file_env 'TOMCAT_USER'
 if [ -z ${TOMCAT_USER} ]; then

@@ -30,7 +30,7 @@ fi
 
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
-if [ -z "${ACTIVATE_ALL_STABLE_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_STABLE_EXTENTIONS} -eq 0 ]; then
+if [ -z "${DOWNLOAD_ALL_STABLE_EXTENTIONS}" ] || [ ${DOWNLOAD_ALL_STABLE_EXTENTIONS} -eq 0 ]; then
   plugin=$(head -n 1 /plugins/stable_plugins.txt)
   approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
   download_extension ${approved_plugins_url} ${plugin} /plugins
@@ -44,7 +44,7 @@ fi
 # Download community extensions. This needs to be checked on each iterations as they sometimes become unavailable
 pushd /community_plugins
 
-if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} -eq 0 ]; then
+if [ -z "${DOWNLOAD_ALL_COMMUNITY_EXTENTIONS}" ] || [ ${DOWNLOAD_ALL_COMMUNITY_EXTENTIONS} -eq 0 ]; then
   plugin=$(head -n 1 /community_plugins/community_plugins.txt)
   community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
   download_extension ${community_plugins_url} ${plugin} /community_plugins
