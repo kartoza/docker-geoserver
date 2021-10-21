@@ -4,7 +4,7 @@ ARG JAVA_HOME=/usr/local/openjdk-11
 FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.19.2
+ARG GS_VERSION=2.20.0
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG DOWNLOAD_ALL_STABLE_EXTENTIONS=1
 ARG DOWNLOAD_ALL_COMMUNITY_EXTENTIONS=1
