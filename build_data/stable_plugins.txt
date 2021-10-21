@@ -11,11 +11,12 @@ geofence-plugin
 geofence-server-plugin
 grib-plugin
 gwc-s3-plugin
+h2-plugin
 imagemap-plugin
 importer-plugin
 jp2k-plugin
 mapml-plugin
-mbstyle-plugin
+style-plugin
 mongodb-plugin
 mysql-plugin
 netcdf-out-plugin
@@ -32,7 +33,7 @@ wcs2_0-eo-plugin
 web-resource-plugin
 wmts-multi-dimensional-plugin
 wps-cluster-hazelcast-plugin
-wps-download-plugin
 wps-jdbc-plugin
+wps-plugin
 xslt-plugin
 ysld-plugin
