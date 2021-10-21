@@ -16,7 +16,7 @@ imagemap-plugin
 importer-plugin
 jp2k-plugin
 mapml-plugin
-style-plugin
+mbstyle-plugin
 mongodb-plugin
 mysql-plugin
 netcdf-out-plugin
