@@ -190,11 +190,11 @@ fi
 
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
-    cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
-    rm -r /tmp/tomcat
-    if [[ ! -f ${CATALINA_HOME}/webapps/manager/META-INF/context.xml ]]; then
-      cp /build_data/context.xml {CATALINA_HOME}/webapps/manager/META-INF/
+    unzip -qq /tomcat_apps.zip -d /tmp/ &&
+    cp -r  /tmp/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
+    rm -r /tmp/tomcat_apps
+    if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+      cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF/
       sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
     fi
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
