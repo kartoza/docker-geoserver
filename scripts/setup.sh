@@ -170,7 +170,7 @@ rm -f /tmp/resources/overlays/README.txt &&
 
 # Package tomcat webapps - useful to activate later
 if [ -d $CATALINA_HOME/webapps.dist ]; then
-    cp -r $CATALINA_HOME/webapps.dist /tomcat_apps &&
+    mv $CATALINA_HOME/webapps.dist /tomcat_apps &&
     zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
 else
     cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps &&
