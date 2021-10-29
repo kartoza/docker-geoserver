@@ -389,19 +389,13 @@ what each parameter mean can be read from [documentation](http://docs.geoserver.
 
 **Note:** You should customise these variables based on the resources available with your GeoServer
 
-### Changing GeoServer password and username on runtime
+### Changing GeoServer password and username
 
-The default GeoServer credentials are
-
-Username = `admin`  
-Password = `geoserver`
-
-You can pass the environment variables 
+You can pass the environment variables to change it on runtime.
 ```
 GEOSERVER_ADMIN_PASSWORD
 GEOSERVER_ADMIN_USER
 ```
-to change it on runtime.
 
 If you forget your admin username/password or just need to reset it again you will need to 
 pass the environment variable `RESET_ADMIN_CREDENTIALS=TRUE`
