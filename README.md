@@ -67,7 +67,7 @@ To build yourself with a local checkout using the docker-compose.build.yaml:
    ```shell
    git clone git://github.com/kartoza/docker-geoserver
    ```
-2. Edit the `.env` to change the build arguments:
+2. Edit the [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) to change the build arguments:
 
    ```
    IMAGE_VERSION=[dockerhub tomcat](https://hub.docker.com/_/tomcat/)
@@ -107,7 +107,7 @@ docker build --build-arg IMAGE_VERSION=9-jdk11-openjdk-slim --build-arg JAVA_HOM
 are supported.
 
 ## Environment Variables
-A full list of environment variables are specified in the `.env` file
+A full list of environment variables are specified in the [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) file
 
 ### Default installed  plugins
 
