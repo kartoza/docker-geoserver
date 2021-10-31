@@ -205,11 +205,11 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     fi
     tomcat_user_config
 else
-    rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
-    rm -rf "${CATALINA_HOME}"/webapps/docs &&
-    rm -rf "${CATALINA_HOME}"/webapps/examples &&
-    rm -rf "${CATALINA_HOME}"/webapps/host-manager &&
-    rm -rf "${CATALINA_HOME}"/webapps/manager
+    delete_folder "${CATALINA_HOME}"/webapps/ROOT &&
+    delete_folder "${CATALINA_HOME}"/webapps/docs &&
+    delete_folder "${CATALINA_HOME}"/webapps/examples &&
+    delete_folder "${CATALINA_HOME}"/webapps/host-manager &&
+    delete_folder "${CATALINA_HOME}"/webapps/manager
 fi
 
 

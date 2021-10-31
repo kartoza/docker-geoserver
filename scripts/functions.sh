@@ -30,6 +30,15 @@ function delete_file() {
 
 }
 
+function delete_folder() {
+    FOLDER_PATH=$1
+    if [  -d ${FOLDER_PATH} ]; then
+        rm -r ${FOLDER_PATH}
+    fi
+
+}
+
+
 # Function to add custom crs in geoserver data directory
 # https://docs.geoserver.org/latest/en/user/configuration/crshandling/customcrs.html
 function setup_custom_crs() {
