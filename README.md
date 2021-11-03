@@ -67,7 +67,7 @@ To build yourself with a local checkout using the docker-compose.build.yaml:
    ```shell
    git clone git://github.com/kartoza/docker-geoserver
    ```
-2. Edit the `.env` to change the build arguments:
+2. Edit the [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) to change the build arguments:
 
    ```
    IMAGE_VERSION=[dockerhub tomcat](https://hub.docker.com/_/tomcat/)
@@ -107,7 +107,7 @@ docker build --build-arg IMAGE_VERSION=9-jdk11-openjdk-slim --build-arg JAVA_HOM
 are supported.
 
 ## Environment Variables
-A full list of environment variables are specified in the `.env` file
+A full list of environment variables are specified in the [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) file
 
 ### Default installed  plugins
 
@@ -389,19 +389,13 @@ what each parameter mean can be read from [documentation](http://docs.geoserver.
 
 **Note:** You should customise these variables based on the resources available with your GeoServer
 
-### Changing GeoServer password and username on runtime
+### Changing GeoServer password and username
 
-The default GeoServer credentials are
-
-Username = `admin`  
-Password = `geoserver`
-
-You can pass the environment variables 
+You can pass the environment variables to change it on runtime.
 ```
 GEOSERVER_ADMIN_PASSWORD
 GEOSERVER_ADMIN_USER
 ```
-to change it on runtime.
 
 If you forget your admin username/password or just need to reset it again you will need to 
 pass the environment variable `RESET_ADMIN_CREDENTIALS=TRUE`
