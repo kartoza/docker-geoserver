@@ -6,10 +6,10 @@ export request="wget --progress=bar:force:noscroll -c --tries=2 "
 function generate_random_string() {
   STRING_LENGTH=$1
   random_pass_string=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c ${STRING_LENGTH})
-  if [[ ! -f /scripts/.pass_${STRING_LENGTH}.txt ]]; then
-    echo ${random_pass_string} > /scripts/.pass_${STRING_LENGTH}.txt
+  if [[ ! -f ${EXTRA_CONFIG_DIR}/.pass_${STRING_LENGTH}.txt ]]; then
+    echo ${random_pass_string} > ${EXTRA_CONFIG_DIR}/.pass_${STRING_LENGTH}.txt
   fi
-  export RAND=$(cat /scripts/.pass_${STRING_LENGTH}.txt)
+  export RAND=$(cat ${EXTRA_CONFIG_DIR}/.pass_${STRING_LENGTH}.txt)
 }
 
 
@@ -249,7 +249,9 @@ function geoserver_logging() {
   <stdOutLogging>true</stdOutLogging>
 </logging>
 " > /tmp/logging.xml
-  envsubst < /tmp/logging.xml > ${GEOSERVER_DATA_DIR}/logging.xml
+  if [[ ! -f ${GEOSERVER_DATA_DIR}/logging.xml ]];then
+    envsubst < /tmp/logging.xml > ${GEOSERVER_DATA_DIR}/logging.xml
+  fi
   if [[ ! -f ${GEOSERVER_DATA_DIR}/logs/geoserver.log ]];then
     touch ${GEOSERVER_DATA_DIR}/logs/geoserver.log
   fi
@@ -275,3 +277,24 @@ function file_env {
 	unset "$fileVar"
 }
 
+function set_vars() {
+  generate_random_string 14
+  if [[ -z ${RANDOMSTRING} ]];then
+    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RAND}"
+    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RAND}"
+    CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+  else
+
+    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOMSTRING}"
+    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOMSTRING}"
+    CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+  fi
+
+  generate_random_string 20
+  if [[ -z ${INSTANCE_STRING} ]];then
+    INSTANCE_STRING=${RAND}
+  else
+    INSTANCE_STRING=${INSTANCE_STRING}
+  fi
+
+}
