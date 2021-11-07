@@ -260,7 +260,7 @@ function geoserver_logging() {
 function file_env {
 	local var="$1"
 	local fileVar="${var}_FILE"
-	local def="${2:-}"
+	local def="${1:-}"
 	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
 		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
 		exit 1
