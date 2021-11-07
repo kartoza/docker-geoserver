@@ -8,6 +8,7 @@ source /scripts/functions.sh
 source /scripts/env-data.sh
 
 /bin/bash /scripts/start.sh
+/bin/bash /scripts/update_passwords.sh
 
 
 RANDOMSTRING=$(cat /scripts/.pass_14.txt)
