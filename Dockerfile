@@ -46,7 +46,7 @@ RUN groupadd -r ${GROUP_NAME} -g ${GEOSERVER_GID} && \
     useradd -m -d /home/${USER}/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G ${GROUP_NAME} ${USER}
 RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
              ${GEOWEBCACHE_CACHE_DIR} ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /community_plugins /stable_plugins \
-           /plugins
+           /plugins /geo_data
 
 ADD resources /tmp/resources
 ADD build_data /build_data
@@ -59,7 +59,7 @@ RUN chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*;chown -R ${USER}:${GROUP_NAME} \
     ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR} ${GEOSERVER_DATA_DIR} /scripts ${CERT_DIR} ${FONTS_DIR} \
     /tmp/ /home/${USER}/ /community_plugins/ /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} \
-    /usr/share/fonts/;chmod o+rw ${CERT_DIR}
+    /usr/share/fonts/ /geo_data;chmod o+rw ${CERT_DIR}
 
 EXPOSE  $HTTPS_PORT
 

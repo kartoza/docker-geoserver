@@ -5,12 +5,7 @@
 source /scripts/functions.sh
 source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
-generate_random_string 14
-export CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RAND}"
-export MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RAND}"
-export CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
-generate_random_string 20
-export INSTANCE_STRING=${RAND}
+
 
 
 web_cors
@@ -73,7 +68,7 @@ else
 
 fi
 
-create_dir ${MONITOR_AUDIT_PATH}
+
 
 # Install stable plugins
 if [[ -z "${STABLE_EXTENSIONS}" ]]; then
@@ -145,7 +140,10 @@ if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} =~ [Tt][Rr][Uu][Ee] ]];then
 fi
 
 # Setup clustering
+set_vars
 export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
+export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
+create_dir ${MONITOR_AUDIT_PATH}
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   ext=jms-cluster-plugin
