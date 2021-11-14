@@ -9,8 +9,11 @@ source /scripts/env-data.sh
 
 /bin/bash /scripts/start.sh
 
-
-RANDOMSTRING=$(cat /scripts/.pass_14.txt)
+if [[ -z ${RANDOMSTRING} ]];then
+  RANDOMSTRING=$(cat ${EXTRA_CONFIG_DIR}/.pass_14.txt)
+else
+  RANDOMSTRING=${RANDOMSTRING}
+fi
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
 
