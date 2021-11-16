@@ -12,48 +12,35 @@ web_cors
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
-  rm -rf ${GEOSERVER_DATA_DIR}/*
+  rm -rf "${GEOSERVER_DATA_DIR}"/*
 fi
 
 # install Font files in resources/fonts if they exists
-if ls ${FONTS_DIR}/*.ttf >/dev/null 2>&1; then
-  cp -rf ${FONTS_DIR}/*.ttf /usr/share/fonts/truetype/
+if ls "${FONTS_DIR}"/*.ttf >/dev/null 2>&1; then
+  cp -rf "${FONTS_DIR}"/*.ttf /usr/share/fonts/truetype/
 fi
 
 # Install opentype fonts
-if ls ${FONTS_DIR}/*.otf >/dev/null 2>&1; then
-  cp -rf ${FONTS_DIR}/*.otf /usr/share/fonts/opentype/
+if ls "${FONTS_DIR}"/*.otf >/dev/null 2>&1; then
+  cp -rf "${FONTS_DIR}"/*.otf /usr/share/fonts/opentype/
 fi
 
 # Add custom espg properties file or the default one
-create_dir ${GEOSERVER_DATA_DIR}/user_projections
+create_dir "${GEOSERVER_DATA_DIR}"/user_projections
 
 setup_custom_crs
 
-create_dir ${GEOSERVER_DATA_DIR}/logs
+create_dir "${GEOSERVER_DATA_DIR}"/logs
 export GEOSERVER_LOG_LEVEL
 geoserver_logging
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   echo "Activating default data directory"
-  cp -r ${CATALINA_HOME}/data/* ${GEOSERVER_DATA_DIR}
+  cp -r "${CATALINA_HOME}"/data/* "${GEOSERVER_DATA_DIR}"
 fi
 
 
-
-function postgres_ssl_setup() {
-  if [[ ${SSL_MODE} == 'verify-ca' || ${SSL_MODE} == 'verify-full' ]]; then
-        if [[ -z ${SSL_CERT_FILE} || -z ${SSL_KEY_FILE} || -z ${SSL_CA_FILE} ]]; then
-                exit 0
-        else
-          export PARAMS="sslmode=${SSL_MODE}&sslcert=${SSL_CERT_FILE}&sslkey=${SSL_KEY_FILE}&sslrootcert=${SSL_CA_FILE}"
-        fi
-  elif [[ ${SSL_MODE} == 'disable' || ${SSL_MODE} == 'allow' || ${SSL_MODE} == 'prefer' || ${SSL_MODE} == 'require' ]]; then
-       export PARAMS="sslmode=${SSL_MODE}"
-  fi
-
-}
 
 export DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
@@ -89,12 +76,12 @@ fi
 
 if [[ ${ACTIVATE_ALL_STABLE_EXTENTIONS} =~ [Tt][Rr][Uu][Ee] ]];then
   pushd /plugins/
-  for val in `ls *.zip`; do
+  for val in *.zip; do
       ext=${val%.*}
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
       install_plugin /plugins ${ext}
   done
-  pushd ${GEOSERVER_HOME}
+  pushd "${GEOSERVER_HOME}"
 fi
 
 
@@ -131,33 +118,37 @@ fi
 
 if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} =~ [Tt][Rr][Uu][Ee] ]];then
    pushd /community_plugins/
-    for val in `ls *.zip`; do
+    for val in *.zip; do
         ext=${val%.*}
         echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
         community_config
     done
-    pushd ${GEOSERVER_HOME}
+    pushd "${GEOSERVER_HOME}"
 fi
 
 # Setup clustering
 set_vars
 export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
 export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
-create_dir ${MONITOR_AUDIT_PATH}
+create_dir "${MONITOR_AUDIT_PATH}"
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   ext=jms-cluster-plugin
   if [[ ! -f /community_plugins/${ext}.zip ]]; then
     community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-    download_extension ${community_plugins_url} ${ext} /community_plugins
+    download_extension "${community_plugins_url}" ${ext} /community_plugins
     install_plugin /community_plugins ${ext}
   else
     install_plugin /community_plugins ${ext}
   fi
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-      create_dir ${CLUSTER_CONFIG_DIR}
+      create_dir "${CLUSTER_CONFIG_DIR}"
+      if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
+        postgres_ssl_setup
+        export SSL_PARAMETERS=${PARAMS}
+      fi
       broker_xml_config
-      touch ${CLUSTER_LOCKFILE}
+      touch "${CLUSTER_LOCKFILE}"
   fi
   cluster_config
   broker_config
@@ -176,9 +167,9 @@ export TOMCAT_PASSWORD TOMCAT_USER
 if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   postgres_ssl_setup
   export SSL_PARAMETERS=${PARAMS}
-  POSTGRES_JAR_COUNT=`ls -1 ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l`
-  if [ $POSTGRES_JAR_COUNT != 0 ]; then
-    rm ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-*
+  POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
+  if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
+    rm "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-*
   fi
   cp ${CATALINA_HOME}/postgres_config/postgresql-* ${CATALINA_HOME}/lib/ &&
   envsubst < /build_data/context.xml > ${CATALINA_HOME}/conf/context.xml
