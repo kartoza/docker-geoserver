@@ -116,7 +116,7 @@ else
 fi
 
 
-if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
    pushd /community_plugins/ || exit
     for val in *.zip; do
         ext=${val%.*}
