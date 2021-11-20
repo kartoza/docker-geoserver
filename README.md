@@ -74,8 +74,8 @@ To build yourself with a local checkout using the docker-compose.build.yaml:
    JAVA_HOME= java home path corresponding to the tomcat version
    WAR_URL= Default URL to fetch GeoServer war or zip file
    STABLE_PLUGIN_URL= URL to fetch GeoServer plugins
-   DOWNLOAD_ALL_STABLE_EXTENTIONS= Specifies whether to download all stable plugins or a single one
-   DOWNLOAD_ALL_COMMUNITY_EXTENTIONS=Specifies whether to download all community plugins or a single one
+   DOWNLOAD_ALL_STABLE_EXTENSIONS= Specifies whether to download all stable plugins or a single one
+   DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=Specifies whether to download all community plugins or a single one
    GEOSERVER_UID=Specifies the uid to use for the user used to run GeoServer in the container
    GEOSERVER_GID=Specifies the gid to use for the group used to run GeoServer in the container
    ```
@@ -365,10 +365,10 @@ filter should be set at all. Default is true
   * You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html). These arguments operate on the `-Xms` and `-Xmx` options of the Java Virtual Machine
   * `INITIAL_MEMORY=<size>` : Initial Memory that Java can allocate, default `2G`
   * `MAXIMUM_MEMORY=<size>` : Maximum Memory that Java can allocate, default `4G`
-  * `ACTIVATE_ALL_COMMUNITY_EXTENTIONS` : Activates all downloaded community plugins 
-  * `ACTIVATE_ALL_STABLE_EXTENTIONS` : Activates all stable plugins previously downloaded
+  * `ACTIVATE_ALL_COMMUNITY_EXTENSIONS` : Activates all downloaded community plugins 
+  * `ACTIVATE_ALL_STABLE_EXTENSIONS` : Activates all stable plugins previously downloaded
   
-**Note:** Before using `ACTIVATE_ALL_STABLE_EXTENTIONS` and `ACTIVATE_ALL_COMMUNITY_EXTENTIONS`
+**Note:** Before using `ACTIVATE_ALL_STABLE_EXTENSIONS` and `ACTIVATE_ALL_COMMUNITY_EXTENSIONS`
 ensure that all prerequisites for those plugins are matched otherwise the container will not start
 and errors will result
 
