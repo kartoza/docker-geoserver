@@ -301,6 +301,10 @@ if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
   HTTP_MAX_HEADER_SIZE_PARAM="--stringparam http.maxHttpHeaderSize $HTTP_MAX_HEADER_SIZE "
 fi
 
+if [ -n "$HTTPS_SCHEME" ] ; then
+    HTTPS_SCHEME_PARAM="--stringparam https.scheme $HTTPS_SCHEME "
+fi
+
 if [ -n "$HTTPS_PORT" ]; then
   HTTPS_PORT_PARAM="--stringparam https.port $HTTPS_PORT "
 fi
@@ -354,6 +358,7 @@ transform="xsltproc \
   $HTTP_COMPRESSION_PARAM \
   $HTTP_SCHEME_PARAM \
   $HTTP_MAX_HEADER_SIZE_PARAM \
+  $HTTPS_SCHEME_PARAM \
   $HTTPS_PORT_PARAM \
   $HTTPS_MAX_THREADS_PARAM \
   $HTTPS_CLIENT_AUTH_PARAM \
