@@ -61,6 +61,7 @@ RUN chmod +x /scripts/*.sh;/scripts/setup.sh \
     /tmp/ /home/${USER}/ /community_plugins/ /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} \
     /usr/share/fonts/ /geo_data;chmod o+rw ${CERT_DIR}
 
+
 EXPOSE  $HTTPS_PORT
 
 
