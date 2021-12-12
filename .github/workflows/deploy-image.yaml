@@ -1,0 +1,89 @@
+name: deploy-image
+on:
+  workflow_dispatch:
+#    inputs:
+#      distro:
+#        description: Base image distro
+#        required: true
+#        default: debian
+#      imageVersion:
+#        description: Base distro image version/release
+#        required: true
+#        default: bullseye
+#      imageVariant:
+#        description: Base image variant
+#        required: true
+#        default: slim
+  workflow_run:
+    workflows:
+      - build-latest
+    branches:
+      - develop
+    types:
+      - completed
+jobs:
+  deploy-image:
+    runs-on: ubuntu-latest
+    env:
+      latest-ref: refs/heads/develop
+    strategy:
+      matrix:
+        geoserverMajorVersion:
+          - 2
+        geoserverMinorVersion:
+          - 20
+        geoserverPatchVersion:
+          - 0
+        include:
+          - imageVersion: 9.0-jdk11-openjdk-slim-buster
+            javaHome: /usr/local/openjdk-11
+            downloadAllStableExtensions: 1
+            downloadAllCommunityExtensions: 1
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      
+      - name: Get Current Date
+        id: current_date
+        shell: python
+        run: |
+          import datetime
+          now = datetime.datetime.utcnow()
+          print(f'::set-output name=formatted::{now:%Y.%m.%d}')
+
+      - name: Build prod image
+        id: docker_build_prod
+        uses: docker/build-push-action@v2
+        env:
+          GS_VERSION: "${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}"
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}--v${{ steps.current_date.outputs.formatted }}
+          build-args: |
+            IMAGE_VERSION=${{ matrix.imageVersion }}
+            JAVA_HOME=${{ matrix.javaHome }}
+            GS_VERSION=${GS_VERSION}
+            WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
+            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
+          cache-from: |
+            type=gha,scope=test
+            type=gha,scope=prod
+            type=gha,scope=base
+          cache-to: type=gha,scope=prod
