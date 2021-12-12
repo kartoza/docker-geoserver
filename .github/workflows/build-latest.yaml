@@ -64,11 +64,12 @@ jobs:
             WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
-          cache-from: |
-           type=gha,scope=test
-           type=gha,scope=prod
-           type=gha,scope=base
-          cache-to: type=gha,scope=test
+# We have some issues with cache size causing the build to fail
+#          cache-from: |
+#           type=gha,scope=test
+#           type=gha,scope=prod
+#           type=gha,scope=base
+#          cache-to: type=gha,scope=test
 
 # We may have this in the future
 #      - name: Run scenario test ${{ matrix.scenario }}
@@ -137,8 +138,9 @@ jobs:
             WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
-          cache-from: |
-           type=gha,scope=test
-           type=gha,scope=prod
-           type=gha,scope=base
-          cache-to: type=gha,scope=test
+# We have some issues with cache size causing the build to fail
+#          cache-from: |
+#           type=gha,scope=test
+#           type=gha,scope=prod
+#           type=gha,scope=base
+#          cache-to: type=gha,scope=test
