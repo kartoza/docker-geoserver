@@ -262,7 +262,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 else
     cp "${CATALINA_HOME}"/conf/ssl-tomcat.xsl "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
-    sed -i -e '83,120d' "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
+    sed -i -e '83,126d' "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
     SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
 fi
@@ -299,6 +299,10 @@ fi
 
 if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
   HTTP_MAX_HEADER_SIZE_PARAM="--stringparam http.maxHttpHeaderSize $HTTP_MAX_HEADER_SIZE "
+fi
+
+if [ -n "$HTTPS_SCHEME" ] ; then
+    HTTPS_SCHEME_PARAM="--stringparam https.scheme $HTTPS_SCHEME "
 fi
 
 if [ -n "$HTTPS_PORT" ]; then
@@ -354,6 +358,7 @@ transform="xsltproc \
   $HTTP_COMPRESSION_PARAM \
   $HTTP_SCHEME_PARAM \
   $HTTP_MAX_HEADER_SIZE_PARAM \
+  $HTTPS_SCHEME_PARAM \
   $HTTPS_PORT_PARAM \
   $HTTPS_MAX_THREADS_PARAM \
   $HTTPS_CLIENT_AUTH_PARAM \
