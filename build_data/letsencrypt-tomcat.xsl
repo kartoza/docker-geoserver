@@ -88,7 +88,7 @@
         </xsl:copy>
         
         <Connector port="{$https.port}" protocol="org.apache.coyote.http11.Http11NioProtocol"
-                   maxThreads="{$https.maxThreads}" SSLEnabled="true" scheme="https" secure="true"
+                   maxThreads="{$https.maxThreads}" SSLEnabled="true"  secure="true"
                    keystoreFile="{$https.keystoreFile}" keystorePass="{$https.keystorePass}"
                    keyAlias="{$https.keyAlias}" keyPass="{$https.keyPass}"
                    sslProtocol="TLS">

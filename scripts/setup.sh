@@ -168,6 +168,13 @@ rm -f /tmp/resources/overlays/README.txt &&
     cp -rf /tmp/resources/overlays/* /
   fi
 
+# Temporary fix for logj4 until next release of geoserver http://geoserver.org/announcements/2021/12/13/logj4-rce-statement.html
+if [[  -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]]; then
+    rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar && \
+    ${request} https://repo.osgeo.org/repository/geotools-releases/log4j/log4j/1.2.17.norce/log4j-1.2.17.norce.jar \
+     -O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.norce.jar
+fi
+
 # Package tomcat webapps - useful to activate later
 if [ -d "$CATALINA_HOME"/webapps.dist ]; then
     mv "$CATALINA_HOME"/webapps.dist /tomcat_apps &&

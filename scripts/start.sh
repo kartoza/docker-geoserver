@@ -262,7 +262,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 else
     cp "${CATALINA_HOME}"/conf/ssl-tomcat.xsl "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
-    sed -i -e '83,120d' "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
+    sed -i -e '83,126d' "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
     SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
 fi
