@@ -49,8 +49,6 @@ jobs:
       - name: Build image for testing
         id: docker_build_testing_image
         uses: docker/build-push-action@v2
-        env:
-          GS_VERSION: "${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}"
         with:
           context: .
           file: Dockerfile
@@ -60,7 +58,7 @@ jobs:
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion }}
             JAVA_HOME=${{ matrix.javaHome }}
-            GS_VERSION=${GS_VERSION}
+            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
             WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
@@ -123,18 +121,16 @@ jobs:
       - name: Build image for testing
         id: docker_build_testing_image
         uses: docker/build-push-action@v2
-        env:
-          GS_VERSION: "${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}"
         with:
           context: .
           file: Dockerfile
           push: true
           tags: |
-            ${{ steps.docker_meta.outputs.tags }}-${GS_VERSION}
+            ${{ steps.docker_meta.outputs.tags }}-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion }}
             JAVA_HOME=${{ matrix.javaHome }}
-            GS_VERSION=${GS_VERSION}
+            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
             WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
