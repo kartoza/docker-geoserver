@@ -42,6 +42,10 @@ if [ -z "${HTTP_SCHEME}" ]; then
   HTTP_SCHEME=http
 fi
 
+if [ -z "${HTTPS_SCHEME}" ]; then
+  HTTPS_SCHEME=https
+fi
+
 if [ -z "${HTTP_REDIRECT_PORT}" ]; then
   HTTP_REDIRECT_PORT=
 fi
