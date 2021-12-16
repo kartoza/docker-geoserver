@@ -33,7 +33,7 @@ jobs:
         geoserverMinorVersion:
           - 20
         geoserverPatchVersion:
-          - 0
+          - 2
         include:
           - imageVersion: 9.0-jdk11-openjdk-slim-buster
             javaHome: /usr/local/openjdk-11
