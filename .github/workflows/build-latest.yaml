@@ -32,7 +32,7 @@ jobs:
         geoserverMinorVersion:
           - 20
         geoserverPatchVersion:
-          - 0
+          - 2
         # We should also have scenario tests matrix here
         # But we have to develop the use case tests first
         include:
@@ -89,7 +89,7 @@ jobs:
         geoserverMinorVersion:
           - 20
         geoserverPatchVersion:
-          - 0
+          - 2
         # We should also have scenario tests matrix here
         # But we have to develop the use case tests first
         include:
