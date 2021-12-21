@@ -40,6 +40,11 @@ jobs:
             javaHome: /usr/local/openjdk-11
             downloadAllStableExtensions: 1
             downloadAllCommunityExtensions: 1
+            # empty because it often changes, so it's better
+            # to use the default one described in the Dockerfile
+            # to make it consistent. However we keep this in GH Action
+            # to make it easy to pass overrides in the future.
+            stablePluginBaseURL: ""
     steps:
       - uses: actions/checkout@v2
       - name: Set up QEMU
@@ -62,6 +67,7 @@ jobs:
             WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
+            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
 # We have some issues with cache size causing the build to fail
 #          cache-from: |
 #           type=gha,scope=test
@@ -97,6 +103,11 @@ jobs:
             javaHome: /usr/local/openjdk-11
             downloadAllStableExtensions: 1
             downloadAllCommunityExtensions: 1
+            # empty because it often changes, so it's better
+            # to use the default one described in the Dockerfile
+            # to make it consistent. However we keep this in GH Action
+            # to make it easy to pass overrides in the future.
+            stablePluginBaseURL: ""
     steps:
       - uses: actions/checkout@v2
       - name: Set up QEMU
@@ -134,6 +145,7 @@ jobs:
             WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
+            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
 # We have some issues with cache size causing the build to fail
 #          cache-from: |
 #           type=gha,scope=test
