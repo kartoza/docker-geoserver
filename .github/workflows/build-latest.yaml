@@ -27,24 +27,34 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        geoserverVersion:
+          - 2
         geoserverMajorVersion:
           - 2
-        geoserverMinorVersion:
-          - 20
-        geoserverPatchVersion:
-          - 2
-        # We should also have scenario tests matrix here
-        # But we have to develop the use case tests first
-        include:
-          - imageVersion: 9.0-jdk11-openjdk-slim-buster
+        imageVersion:
+          - image: 9.0-jdk11-openjdk-slim-buster
             javaHome: /usr/local/openjdk-11
-            downloadAllStableExtensions: 1
-            downloadAllCommunityExtensions: 1
-            # empty because it often changes, so it's better
-            # to use the default one described in the Dockerfile
-            # to make it consistent. However we keep this in GH Action
-            # to make it easy to pass overrides in the future.
-            stablePluginBaseURL: ""
+        geoserverMinorVersion:
+          - minor: 16
+            patch: 5
+          - minor: 17
+            patch: 5
+          - minor: 18
+            patch: 5
+          - minor: 19
+            patch: 4
+          - minor: 20
+            patch: 2
+        downloadAllStableExtensions:
+          - 1
+        downloadAllCommunityExtensions:
+          - 1
+        stablePluginBaseURL:
+          # empty because it often changes, so it's better
+          # to use the default one described in the Dockerfile
+          # to make it consistent. However we keep this in GH Action
+          # to make it easy to pass overrides in the future.
+          - ""
     steps:
       - uses: actions/checkout@v2
       - name: Set up QEMU
@@ -61,9 +71,9 @@ jobs:
           load: true
           tags: kartoza/geoserver:manual-build
           build-args: |
-            IMAGE_VERSION=${{ matrix.imageVersion }}
-            JAVA_HOME=${{ matrix.javaHome }}
-            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
+            IMAGE_VERSION=${{ matrix.imageVersion.image }}
+            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
@@ -90,24 +100,34 @@ jobs:
     needs: [ run-scenario-tests ]
     strategy:
       matrix:
+        geoserverVersion:
+          - 2
         geoserverMajorVersion:
           - 2
-        geoserverMinorVersion:
-          - 20
-        geoserverPatchVersion:
-          - 2
-        # We should also have scenario tests matrix here
-        # But we have to develop the use case tests first
-        include:
-          - imageVersion: 9.0-jdk11-openjdk-slim-buster
+        imageVersion:
+          - image: 9.0-jdk11-openjdk-slim-buster
             javaHome: /usr/local/openjdk-11
-            downloadAllStableExtensions: 1
-            downloadAllCommunityExtensions: 1
-            # empty because it often changes, so it's better
-            # to use the default one described in the Dockerfile
-            # to make it consistent. However we keep this in GH Action
-            # to make it easy to pass overrides in the future.
-            stablePluginBaseURL: ""
+        geoserverMinorVersion:
+          - minor: 16
+            patch: 5
+          - minor: 17
+            patch: 5
+          - minor: 18
+            patch: 5
+          - minor: 19
+            patch: 4
+          - minor: 20
+            patch: 2
+        downloadAllStableExtensions:
+          - 1
+        downloadAllCommunityExtensions:
+          - 1
+        stablePluginBaseURL:
+          # empty because it often changes, so it's better
+          # to use the default one described in the Dockerfile
+          # to make it consistent. However we keep this in GH Action
+          # to make it easy to pass overrides in the future.
+          - ""
     steps:
       - uses: actions/checkout@v2
       - name: Set up QEMU
@@ -139,9 +159,9 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
           build-args: |
-            IMAGE_VERSION=${{ matrix.imageVersion }}
-            JAVA_HOME=${{ matrix.javaHome }}
-            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
+            IMAGE_VERSION=${{ matrix.imageVersion.image }}
+            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
