@@ -1,0 +1,13 @@
+<gwcJdbcConfiguration>
+  <dialect>PostgreSQL</dialect>
+  <connectionPool>
+    <driver>org.postgresql.Driver</driver>
+    <url>jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?${SSL_PARAMETERS}</url>
+    <username>${POSTGRES_USER}</username>
+    <password>${POSTGRES_PASS}</password>
+    <minConnections>1</minConnections>
+    <maxConnections>100</maxConnections>
+    <connectionTimeout>10000</connectionTimeout>
+    <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
+  </connectionPool>
+</gwcJdbcConfiguration>
