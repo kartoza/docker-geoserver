@@ -12,8 +12,9 @@ create_dir /usr/local/gdal_data
 create_dir /usr/local/gdal_native_libs
 create_dir "${CATALINA_HOME}"/postgres_config
 
-${request} http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
-    dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
+
+${request} http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
+    dpkg -i ttf-mscorefonts-installer_3.8_all.deb && rm ttf-mscorefonts-installer_3.8_all.deb
 
 pushd /plugins || exit
 
@@ -32,11 +33,11 @@ fi
 
 if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" -eq 0 ]; then
   plugin=$(head -n 1 /plugins/stable_plugins.txt)
-  approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+  approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
   download_extension "${approved_plugins_url}" "${plugin}" /plugins
 else
   for plugin in $(cat /plugins/stable_plugins.txt); do
-    approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+    approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
     download_extension "${approved_plugins_url}" "${plugin}" /plugins
   done
 fi
@@ -64,25 +65,25 @@ array=(geoserver-${GS_VERSION}-vectortiles-plugin.zip geoserver-${GS_VERSION}-wp
   geoserver-${GS_VERSION}-pyramid-plugin.zip geoserver-${GS_VERSION}-gdal-plugin.zip
   geoserver-${GS_VERSION}-monitor-plugin.zip geoserver-${GS_VERSION}-inspire-plugin.zip geoserver-${GS_VERSION}-csw-plugin.zip )
 for i in "${array[@]}"; do
-  url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
+  url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
   download_extension "${url}" "${i%.*}" ${resources_dir}/plugins
 done
 
 pushd gdal || exit
 
-${request} https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
+${request} https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/gdal-data.zip
 popd || exit
 ${request} https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
 
 popd || exit
 
 # Install libjpeg-turbo
-if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then
-  ${request} https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb \
+if [[ ! -f /tmp/resources/libjpeg-turbo-official_2.1.2_amd64.deb ]]; then
+  ${request} https://liquidtelecom.dl.sourceforge.net/project/libjpeg-turbo/2.1.2/libjpeg-turbo-official_2.1.2_amd64.deb \
     -P ${resources_dir}
 fi
 
-dpkg -i ${resources_dir}/libjpeg-turbo-official_1.5.3_amd64.deb
+dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.2_amd64.deb
 
 pushd "${CATALINA_HOME}" || exit
 
