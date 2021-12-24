@@ -3,6 +3,19 @@
 
 export request="wget --progress=bar:force:noscroll -c --tries=2 "
 
+function validate_url(){
+  EXTRA_PARAMS=''
+  if [ -n "$2" ]; then
+    EXTRA_PARAMS=$2
+  fi
+  if [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
+    ${request} $1 $2
+  else
+    echo "URL $1 does not exists"
+  fi
+}
+
+
 function generate_random_string() {
   STRING_LENGTH=$1
   random_pass_string=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c "${STRING_LENGTH}")
