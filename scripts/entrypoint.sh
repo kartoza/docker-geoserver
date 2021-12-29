@@ -41,7 +41,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Dsun.java2d.renderer.useThreadLocal=false \
        -Dsun.java2d.renderer.pixelsize=8192 -server -XX:NewSize=300m \
        -Dlog4j.configuration=${CATALINA_HOME}/log4j.properties \
-       --patch-module java.desktop=${CATALINA_HOME}/marlin-0.9.4.2-Unsafe-OpenJDK9.jar  \
+       --patch-module java.desktop=${CATALINA_HOME}/marlin-render.jar  \
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
        -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
        -DGEOSERVER_CONSOLE_DISABLED=${DISABLE_WEB_INTERFACE} \

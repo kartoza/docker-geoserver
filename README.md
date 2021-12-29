@@ -31,6 +31,7 @@
        * [Reverse Proxy using NGINX](#reverse-proxy-using-nginx)
    * [Kubernetes (Helm Charts)](#kubernetes-helm-charts)
    * [Contributing to the image](#contributing-to-the-image)
+       * [Upgrading GeoServer Versions](#upgrading-geoserver-versions) 
    * [Support](#support)
    * [Credits](#credits)
 
@@ -398,9 +399,10 @@ GEOSERVER_ADMIN_PASSWORD
 GEOSERVER_ADMIN_USER
 ```
 
-If you forget your admin username/password or just need to reset it again you will need to 
-pass the environment variable `RESET_ADMIN_CREDENTIALS=TRUE`
-The default behaviour is to reinitialize this once.
+The username and password are reinitialized each time the container starts. If you do not pass the env variables
+`GEOSERVER_ADMIN_PASSWORD` but you need to reset the password you will need to  pass the environment variable
+`RESET_ADMIN_CREDENTIALS=TRUE`
+The default behaviour is to reinitialize the random password once when the container starts.
 
 **Note:** If you do not pass the env variable `GEOSERVER_ADMIN_PASSWORD` on startup the image will generate a strong password.
 The password can be accessed from the startup logs or as a text file within the Geoserver data directory
@@ -526,10 +528,21 @@ http://localhost/geoserver/web/
 
 You can run the image in Kubernetes following the [recipe](https://github.com/kartoza/charts/tree/develop/charts/geoserver)
 
+
 ## Contributing to the image
 We welcome users who want to contribute  enriching this service. We follow
 the git principles and all pull requests should be against the develop branch so that
 we can test them and when we are happy we push them to the master branch.
+
+### Upgrading GeoServer Versions
+GeoServer releases and bug fixes are done frequently. We provide a helper script `upgrade_geoserver_version.sh`
+which can be run to update the respective files which mention GeoServer version. To run this you need to run
+
+```bash
+/bin/bash upgrade_geoserver_version.sh ${GS_VERSION} ${GS_NEW_VERSION}
+```
+**Note:** The script will also push this changes to the current repo, and it is up to the individual running the script
+to push the changes to his specific branch of choice and then complete the pull request
 
 ## Support
 

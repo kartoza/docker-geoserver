@@ -124,28 +124,24 @@ fi
 
 # Temporary fix for the print plugin https://github.com/georchestra/georchestra/pull/2517
 
-if [[ -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20180813.jar ]]; then
-  rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/json-20180813.jar && \
-  validate_url https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.jar \
-  '-O "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/json-20080701.jar'
-fi
-
 # Activate gdal plugin in geoserver
 if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
   unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data &&
     mv /usr/local/gdal_data/gdal-data/* /usr/local/gdal_data && rm -rf /usr/local/gdal_data/gdal-data &&
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs
 fi
-# Install Marlin render
-if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then
-  validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
-    '-O "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar'
-fi
-
-# Install sqljdbc
-if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then
-  validate_url https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
-    '-O "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/sqljdbc.jar'
+# Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
+JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+if [[ ${JAVA_VERSION} > 10 ]];then
+    if [[  -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
+      mv ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-* ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-render.jar
+    fi
+else
+    if [[ -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
+      rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-* \
+      validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
+        '-O "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-render.jar'
+    fi
 fi
 
 # Install jetty-servlets
