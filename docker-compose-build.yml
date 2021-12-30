@@ -16,6 +16,7 @@ services:
           WAR_URL: ${WAR_URL}
           DOWNLOAD_ALL_STABLE_EXTENSIONS: ${DOWNLOAD_ALL_STABLE_EXTENSIONS}
           DOWNLOAD_ALL_COMMUNITY_EXTENSIONS: ${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}
+          STABLE_PLUGIN_BASE_URL: ${STABLE_PLUGIN_BASE_URL}
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
       ports:
