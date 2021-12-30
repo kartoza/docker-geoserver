@@ -79,9 +79,9 @@ validate_url https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1
 popd || exit
 
 # Install libjpeg-turbo
-if [[ ! -f /tmp/resources/libjpeg-turbo-official_2.1.2_amd64.deb ]]; then
+if [[ ! -f ${resources_dir}/libjpeg-turbo-official_2.1.2_amd64.deb ]]; then
   validate_url https://liquidtelecom.dl.sourceforge.net/project/libjpeg-turbo/2.1.2/libjpeg-turbo-official_2.1.2_amd64.deb \
-    -P ${resources_dir}
+    '-P /tmp/resources/'
 fi
 
 dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.2_amd64.deb

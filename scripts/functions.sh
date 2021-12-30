@@ -11,7 +11,8 @@ function validate_url(){
   if [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
     ${request} $1 $2
   else
-    echo "URL $1 does not exists"
+    echo -e "URL : \e[1;31m $1 does not exists"
+    echo -e "\033[0m "
   fi
 }
 
@@ -102,7 +103,8 @@ function download_extension() {
   if curl --output /dev/null --silent --head --fail "${URL}"; then
     ${request} "${URL}" -O "${OUTPUT_PATH}"/"${PLUGIN}".zip
   else
-    echo "Plugin URL does not exist: ${URL}"
+    echo -e "Plugin URL does not exist:: \e[1;31m ${URL}"
+    echo -e "\033[0m "
   fi
 
 }
