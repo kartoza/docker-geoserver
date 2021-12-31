@@ -319,3 +319,10 @@ function postgres_ssl_setup() {
   fi
 
 }
+
+function make_hash(){
+    NEW_PASSWORD=$1
+    GEO_INSTALL_PATH=$2
+    ALGO_TYPE=$3
+    (echo "digest1:" && java -classpath $(find $GEO_INSTALL_PATH -regex ".*jasypt-[0-9]\.[0-9]\.[0-9].*jar") org.jasypt.intf.cli.JasyptStringDigestCLI digest.sh algorithm=$ALGO_TYPE saltSizeBytes=16 iterations=100000 input="$NEW_PASSWORD" verbose=0) | tr -d '\n'
+}
