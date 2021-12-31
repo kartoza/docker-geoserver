@@ -4,9 +4,6 @@
 # or username on runtime.
 # Reset Admin credentials
 if [[ "${RESET_ADMIN_CREDENTIALS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-  if [[ -f "${SETUP_LOCKFILE}" ]];then
-        rm ${SETUP_LOCKFILE}
-  fi
   cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
 fi
 
