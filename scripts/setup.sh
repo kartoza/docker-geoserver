@@ -139,16 +139,16 @@ if [[ ${JAVA_VERSION} > 10 ]];then
 else
     if [[ -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
       rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-* \
-      validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
-        '-O "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-render.jar'
+      validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar && \
+      mv marlin-0.9.4.2-Unsafe-OpenJDK9.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-render.jar
     fi
 fi
 
 # Install jetty-servlets
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
-    validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/10.0.7/jetty-servlets-10.0.7.jar \
-      '-O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar'
+    validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/10.0.7/jetty-servlets-10.0.7.jar && \
+    mv  jetty-servlets-10.0.7.jar "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
   fi
 fi
 
@@ -167,10 +167,10 @@ rm -f /tmp/resources/overlays/README.txt &&
   fi
 
 # Temporary fix for logj4 until next release of geoserver http://geoserver.org/announcements/2021/12/13/logj4-rce-statement.html
-if [[  -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]]; then
+if [[  -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]]; then
     rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar && \
-    validate_url https://repo.osgeo.org/repository/geotools-releases/log4j/log4j/1.2.17.norce/log4j-1.2.17.norce.jar \
-     '-O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.norce.jar'
+    validate_url https://repo.osgeo.org/repository/geotools-releases/log4j/log4j/1.2.17.norce/log4j-1.2.17.norce.jar && \
+    mv log4j-1.2.17.norce.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/
 fi
 
 # Package tomcat webapps - useful to activate later
