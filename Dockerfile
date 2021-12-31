@@ -15,10 +15,13 @@ ARG USER=geoserveruser
 ARG GROUP_NAME=geoserverusers
 ARG HTTPS_PORT=8443
 
+
 #Install extra fonts to use with sld font markers
+# Install gdal version 3 - Remove this when the base image changes
+RUN echo "deb http://deb.debian.org/debian/ bullseye main contrib non-free" | tee /etc/apt/sources.list.d/debian.list
 RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \
     ttf-georgewilliams ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev  \
-    gdal-bin libgdal-java wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet
+    gdal-bin libgdal-java wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client-13 figlet
 
 RUN set -e \
     export DEBIAN_FRONTEND=noninteractive \
@@ -31,7 +34,7 @@ ENV \
     JAVA_HOME=${JAVA_HOME} \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
-    GDAL_DATA=/usr/local/gdal_data \
+    GDAL_DATA=/usr/share/gdal \
     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/gdal_native_libs:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \

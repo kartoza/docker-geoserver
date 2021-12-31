@@ -176,6 +176,10 @@ if [[  -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]]; t
      -O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.norce.jar
 fi
 
+# Setup gdal 3 usage
+rm ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/gdal-2.2.0.jar
+cp /usr/share/java/gdal.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/gdal.jar
+
 # Package tomcat webapps - useful to activate later
 if [ -d "$CATALINA_HOME"/webapps.dist ]; then
     mv "$CATALINA_HOME"/webapps.dist /tomcat_apps &&
