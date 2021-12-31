@@ -69,10 +69,7 @@ for i in "${array[@]}"; do
   download_extension "${url}" "${i%.*}" ${resources_dir}/plugins
 done
 
-pushd gdal || exit
 
-${request} https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/gdal-data.zip
-popd || exit
 ${request} https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
 
 popd || exit
@@ -131,8 +128,6 @@ fi
 
 # Activate gdal plugin in geoserver
 if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
-  unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data &&
-    mv /usr/local/gdal_data/gdal-data/* /usr/local/gdal_data && rm -rf /usr/local/gdal_data/gdal-data &&
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs
 fi
 # Install Marlin render
