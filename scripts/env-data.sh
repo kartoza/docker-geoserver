@@ -110,6 +110,18 @@ if [ -z "${TIMEZONE}" ]; then
     TIMEZONE='GMT'
 fi
 
+if [ -z "${LANGUAGE}" ]; then
+    LANGUAGE='en'
+fi
+
+if [ -z "${REGION}" ]; then
+    REGION='US'
+fi
+
+if [ -z "${COUNTRY}" ]; then
+    COUNTRY='US'
+fi
+
 if [ -z "${CHARACTER_ENCODING}" ]; then
     CHARACTER_ENCODING='UTF-8'
 fi
