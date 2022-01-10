@@ -26,6 +26,9 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Djts.overlay=ng \
        -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} \
+       -Duser.language=${LANGUAGE} \
+       -Duser.region=${REGION} \
+       -Duser.country=${COUNTRY} \
        -DENABLE_JSONP=${ENABLE_JSONP} \
        -DMAX_FILTER_RULES=${MAX_FILTER_RULES} \
        -DOPTIMIZE_LINE_WIDTH=${OPTIMIZE_LINE_WIDTH} \
@@ -37,6 +40,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -DGEOSERVER_FILEBROWSER_HIDEFS=${GEOSERVER_FILEBROWSER_HIDEFS} \
        -DGEOSERVER_AUDIT_PATH=${MONITOR_AUDIT_PATH} \
        -Dorg.geotools.shapefile.datetime=true \
+       -Dorg.geotools.localDateTimeHandling=true \
        -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
        -Dsun.java2d.renderer.useThreadLocal=false \
        -Dsun.java2d.renderer.pixelsize=8192 -server -XX:NewSize=300m \
