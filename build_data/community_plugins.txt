@@ -17,9 +17,9 @@ gpx-plugin
 gsr-plugin
 gwc-azure-blobstore-plugin
 gwc-distributed-plugin
+gwc-mbtiles-plugin
 gwc-sqlite-plugin
 hz-cluster-plugin
-imagemosaic-jdbc-plugin
 importer-jdbc-plugin
 jdbc-metrics-plugin
 jdbcconfig-plugin

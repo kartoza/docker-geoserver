@@ -37,9 +37,6 @@ if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
   cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
 fi
 
-
-
-
 # Set random password if none provided
 if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
       if [[ "${RESET_ADMIN_CREDENTIALS}" =~ [Tt][Rr][Uu][Ee] ]];then
