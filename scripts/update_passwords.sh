@@ -33,7 +33,9 @@ fi
 
 
 # Copy security configs
-cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
+if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
+  cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
+fi
 
 # Set random password if none provided
 if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
