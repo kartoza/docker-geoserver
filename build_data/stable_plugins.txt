@@ -32,6 +32,7 @@ teradata-plugin
 wcs2_0-eo-plugin
 web-resource-plugin
 wmts-multi-dimensional-plugin
+wps-plugin
 wps-cluster-hazelcast-plugin
 wps-download-plugin
 wps-jdbc-plugin
