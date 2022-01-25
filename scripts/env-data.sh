@@ -26,6 +26,10 @@ if [ -z "${TOMCAT_EXTRAS}" ]; then
   TOMCAT_EXTRAS=true
 fi
 
+if [ -z "${ROOT_WEBAPP_REDIRECT}" ]; then
+  ROOT_WEBAPP_REDIRECT=false
+fi
+
 if [ -z "${HTTP_PORT}" ]; then
   HTTP_PORT=8080
 fi
