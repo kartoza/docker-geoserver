@@ -327,6 +327,8 @@ ie VERSION=2.20.1
 docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION} 
 ```
 
+**Note:** If `TOMCAT_EXTRAS` is set to false, requests to the root webapp ("/") will return HTTP status code 404. To issue a redirect to the GeoServer webapp ("/geoserver/web") set `ROOT_WEBAPP_REDIRECT=true`
+
 ### Upgrading image to use a specific version
 During initialization, the image will run a script that updates the passwords. This 
 is recommended to change passwords the first time that GeoServer runs. If you are migrating
