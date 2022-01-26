@@ -167,7 +167,7 @@ rm -f /tmp/resources/overlays/README.txt &&
   fi
 
 # Temporary fix for logj4 until next release of geoserver http://geoserver.org/announcements/2021/12/13/logj4-rce-statement.html
-if [[  -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]]; then
+if [[  -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]] && [[ "${GS_VERSION}" -lt 2.20.2 ]]; then
     rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar && \
     validate_url https://repo.osgeo.org/repository/geotools-releases/log4j/log4j/1.2.17.norce/log4j-1.2.17.norce.jar && \
     mv log4j-1.2.17.norce.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/
