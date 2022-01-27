@@ -50,7 +50,8 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
        -DGEOSERVER_CONSOLE_DISABLED=${DISABLE_WEB_INTERFACE} \
        -DGEOSERVER_CSRF_WHITELIST=${CSRF_WHITELIST} \
-       -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} "
+       -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} \
+       ${ADDITIONAL_JAVA_STARTUP_OPTIONS} "
 
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
