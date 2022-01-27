@@ -199,6 +199,11 @@ else
     delete_folder "${CATALINA_HOME}"/webapps/examples &&
     delete_folder "${CATALINA_HOME}"/webapps/host-manager &&
     delete_folder "${CATALINA_HOME}"/webapps/manager
+
+    if [[ "${ROOT_WEBAPP_REDIRECT}" =~ [Tt][Rr][Uu][Ee] ]]; then
+        mkdir "${CATALINA_HOME}"/webapps/ROOT
+        cp /build_data/index.jsp "${CATALINA_HOME}"/webapps/ROOT/index.jsp
+    fi
 fi
 
 
