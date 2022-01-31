@@ -28,8 +28,6 @@ jobs:
       latest-ref: refs/heads/develop
     strategy:
       matrix:
-        geoserverVersion:
-          - 2
         geoserverMajorVersion:
           - 2
         imageVersion:
