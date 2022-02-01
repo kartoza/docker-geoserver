@@ -9,14 +9,8 @@ source /scripts/env-data.sh
 
 /bin/bash /scripts/start.sh
 
-if [[ -z ${RANDOMSTRING} ]];then
-  RANDOM_STRING=$(cat "${EXTRA_CONFIG_DIR}"/.pass_14.txt)
-else
-  RANDOM_STRING=${RANDOMSTRING}
-fi
-CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOM_STRING}"
-MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"
-
+log CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR}"
+log MONITOR_AUDIT_PATH="${MONITOR_AUDIT_PATH}"
 
 export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \

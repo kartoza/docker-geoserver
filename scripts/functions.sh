@@ -303,25 +303,22 @@ function file_env {
 }
 
 function set_vars() {
-  generate_random_string 14
-  if [[ -z ${RANDOMSTRING} ]];then
-    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RAND}"
-    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RAND}"
-    CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
-  else
+  generate_random_string 20 # Temporary not sure that that is need any more...
 
-    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOMSTRING}"
-    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOMSTRING}"
-    CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
-  fi
-
-  generate_random_string 20
+  
   if [[ -z ${INSTANCE_STRING} ]];then
-    INSTANCE_STRING=${RAND}
-  else
-    INSTANCE_STRING=${INSTANCE_STRING}
+    if [ ! -z "${HOSTNAME}" ]; then
+      INSTANCE_STRING="${HOSTNAME:0:20}"    # Use hostname as INSTANCE_STRING. It's still compatible w/ docker-compose and Kubernetes (instance will be same as Pod names)
+    else
+      INSTANCE_STRING=${RAND}
+    fi
   fi
 
+  generate_random_string 14 # Temporary not sure that that is need any more...
+
+  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${INSTANCE_STRING:0:14}"
+  MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${INSTANCE_STRING:0:14}"
+  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
 }
 
 
