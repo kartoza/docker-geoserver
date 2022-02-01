@@ -34,6 +34,11 @@ create_dir "${GEOSERVER_DATA_DIR}"/logs
 export GEOSERVER_LOG_LEVEL
 geoserver_logging
 
+#create /gwc in case of missong that
+if [ ! -d "${GEOWEBCACHE_CACHE_DIR}" ]; then
+        create_dir "${GEOWEBCACHE_CACHE_DIR}"
+fi
+
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   echo "Activating default data directory"

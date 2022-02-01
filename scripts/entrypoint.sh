@@ -8,6 +8,8 @@ source /scripts/functions.sh
 source /scripts/env-data.sh
 
 set_vars
+export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
+export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
 
 /bin/bash /scripts/start.sh
 
