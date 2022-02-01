@@ -3,6 +3,10 @@
 
 export request="wget --progress=bar:force:noscroll -c --tries=2 "
 
+function log() {
+    echo "$0:${BASH_LINENO[*]}": $@
+}
+
 function validate_url(){
   EXTRA_PARAMS=''
   if [ -n "$2" ]; then
