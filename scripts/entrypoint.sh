@@ -7,6 +7,8 @@ figlet -t "Kartoza Docker GeoServer"
 source /scripts/functions.sh
 source /scripts/env-data.sh
 
+set_vars
+
 /bin/bash /scripts/start.sh
 
 log CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR}"
