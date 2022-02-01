@@ -308,7 +308,7 @@ function set_vars() {
   
   if [[ -z ${INSTANCE_STRING} ]];then
     if [ ! -z "${HOSTNAME}" ]; then
-      INSTANCE_STRING="${HOSTNAME:-20}"    # Use hostname as INSTANCE_STRING. It's still compatible w/ docker-compose and Kubernetes (instance will be same as Pod names)
+      INSTANCE_STRING="${HOSTNAME: -20}"    # Use hostname as INSTANCE_STRING. It's still compatible w/ docker-compose and Kubernetes (instance will be same as Pod names)
     else
       INSTANCE_STRING=${RAND}
     fi
@@ -316,8 +316,8 @@ function set_vars() {
 
   generate_random_string 14 # Temporary not sure that that is need any more...
 
-  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${INSTANCE_STRING:-14}"
-  MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${INSTANCE_STRING:-14}"
+  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${INSTANCE_STRING: -14}"
+  MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${INSTANCE_STRING: -14}"
   CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
 }
 
