@@ -9,3 +9,6 @@ resources/overlays/*
 btsync-media.env 
 btsync-db.env 
 geoserver-data
+tags
+*/tags
+
