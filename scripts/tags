@@ -1,0 +1,37 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/kk573/my/docker-geoserver/scripts/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+broker_config	functions.sh	/^function broker_config() {$/;"	f
+broker_xml_config	functions.sh	/^function broker_xml_config() {$/;"	f
+cluster_config	functions.sh	/^function cluster_config() {$/;"	f
+community_config	start.sh	/^function community_config() {$/;"	f
+create_dir	functions.sh	/^function create_dir() {$/;"	f
+default_disk_quota_config	functions.sh	/^function default_disk_quota_config() {$/;"	f
+delete_file	functions.sh	/^function delete_file() {$/;"	f
+delete_folder	functions.sh	/^function delete_folder() {$/;"	f
+download_extension	functions.sh	/^function download_extension() {$/;"	f
+download_geoserver	functions.sh	/^function download_geoserver() {$/;"	f
+file_env	functions.sh	/^function file_env {$/;"	f
+generate_random_string	functions.sh	/^function generate_random_string() {$/;"	f
+geoserver_logging	functions.sh	/^function geoserver_logging() {$/;"	f
+install_plugin	functions.sh	/^function install_plugin() {$/;"	f
+jdbc_disk_quota_config	functions.sh	/^function jdbc_disk_quota_config() {$/;"	f
+log	functions.sh	/^function log() {$/;"	f
+make_hash	update_passwords.sh	/^make_hash(){$/;"	f
+postgres_ssl_setup	functions.sh	/^function postgres_ssl_setup() {$/;"	f
+s3_config	functions.sh	/^function s3_config() {$/;"	f
+set_vars	functions.sh	/^function set_vars() {$/;"	f
+setup_control_flow	functions.sh	/^function setup_control_flow() {$/;"	f
+setup_custom_crs	functions.sh	/^function setup_custom_crs() {$/;"	f
+setup_logging	functions.sh	/^function setup_logging() {$/;"	f
+tomcat_user_config	functions.sh	/^function tomcat_user_config() {$/;"	f
+validate_url	functions.sh	/^function validate_url(){$/;"	f
+web_cors	functions.sh	/^function web_cors() {$/;"	f
