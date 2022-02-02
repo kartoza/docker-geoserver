@@ -79,6 +79,7 @@ To build yourself with a local checkout using the docker-compose.build.yaml:
    DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=Specifies whether to download all community plugins or a single one
    GEOSERVER_UID=Specifies the uid to use for the user used to run GeoServer in the container
    GEOSERVER_GID=Specifies the gid to use for the group used to run GeoServer in the container
+   GEOSERVER_PUBLISH_DIR=Specifies directory under ${CATALINA_HOME}/webapps where geoserver tomcat files will be installed
    ```
 
 3. Build the container and spin up the services
