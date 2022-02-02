@@ -26,7 +26,7 @@ source /scripts/functions.sh
 
 # Setup install directory
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
+  GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
 else
   GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
 fi
