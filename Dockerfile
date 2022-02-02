@@ -14,7 +14,6 @@ ARG GEOSERVER_GID=10001
 ARG USER=geoserveruser
 ARG GROUP_NAME=geoserverusers
 ARG HTTPS_PORT=8443
-ARG GEOSERVER_PUBLISH_DIR=geoserver
 
 #Install extra fonts to use with sld font markers
 RUN apt-get -y update; apt-get -y --no-install-recommends install fonts-cantarell lmodern ttf-aenigma \

@@ -93,15 +93,15 @@ download_geoserver
 
 # Install geoserver in the tomcat dir
 if [[ -f /tmp/geoserver/geoserver.war ]]; then
-  unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/${GEOSERVER_PUBLISH_DIR} &&
-  cp -r "${CATALINA_HOME}"/webapps/${GEOSERVER_PUBLISH_DIR}/data "${CATALINA_HOME}" &&
+  unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/geoserver &&
+  cp -r "${CATALINA_HOME}"/webapps/geoserver/data "${CATALINA_HOME}" &&
   mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}" &&
-  rm -rf "${CATALINA_HOME}"/webapps/${GEOSERVER_PUBLISH_DIR}/data &&
-  mv "${CATALINA_HOME}"/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
+  rm -rf "${CATALINA_HOME}"/webapps/geoserver/data &&
+  mv "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
   rm -rf /tmp/geoserver
 else
   cp -r /tmp/geoserver/* "${GEOSERVER_HOME}"/ &&
-  cp -r "${GEOSERVER_HOME}"/webapps/${GEOSERVER_PUBLISH_DIR} "${CATALINA_HOME}"/webapps/${GEOSERVER_PUBLISH_DIR} &&
+  cp -r "${GEOSERVER_HOME}"/webapps/geoserver "${CATALINA_HOME}"/webapps/geoserver &&
   cp -r "${GEOSERVER_HOME}"/data_dir "${CATALINA_HOME}"/data &&
   mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}"
 fi
@@ -117,7 +117,7 @@ fi
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
   for p in /tmp/resources/plugins/*.zip; do
     unzip "$p" -d /tmp/gs_plugin &&
-      mv /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}"/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/ &&
+      mv /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/ &&
       rm -rf /tmp/gs_plugin
   done
 fi
@@ -133,30 +133,30 @@ fi
 # Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
 if [[ ${JAVA_VERSION} > 10 ]];then
-    if [[  -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      mv ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/marlin-* ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/marlin-render.jar
+    if [[  -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
+      mv ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-* ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-render.jar
     fi
 else
-    if [[ -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      rm "${GEOSERVER_INSTALL_DIR}"/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/marlin-* \
+    if [[ -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
+      rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-* \
       validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar && \
-      mv marlin-0.9.4.2-Unsafe-OpenJDK9.jar ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/marlin-render.jar
+      mv marlin-0.9.4.2-Unsafe-OpenJDK9.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-render.jar
     fi
 fi
 
 # Install jetty-servlets
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  if [[ ! -f ${GEOSERVER_HOME}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/jetty-servlets.jar ]]; then
+  if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
     validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/10.0.7/jetty-servlets-10.0.7.jar && \
-    mv  jetty-servlets-10.0.7.jar "${GEOSERVER_HOME}"/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/jetty-servlets.jar
+    mv  jetty-servlets-10.0.7.jar "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
   fi
 fi
 
 # Install jetty-util
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  if [[ ! -f ${GEOSERVER_HOME}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/jetty-util.jar ]]; then
+  if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then
     validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/10.0.7/jetty-util-10.0.7.jar \
-      '-O "${GEOSERVER_HOME}"/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/jetty-util.jar'
+      '-O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-util.jar'
   fi
 fi
 
@@ -167,10 +167,10 @@ rm -f /tmp/resources/overlays/README.txt &&
   fi
 
 # Temporary fix for logj4 until next release of geoserver http://geoserver.org/announcements/2021/12/13/logj4-rce-statement.html
-if [[  -f ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/log4j-1.2.17.jar ]] && [[ "${GS_VERSION}" -lt 2.20.2 ]]; then
-    rm "${GEOSERVER_INSTALL_DIR}"/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/log4j-1.2.17.jar && \
+if [[  -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]] && [[ "${GS_VERSION}" -lt 2.20.2 ]]; then
+    rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar && \
     validate_url https://repo.osgeo.org/repository/geotools-releases/log4j/log4j/1.2.17.norce/log4j-1.2.17.norce.jar && \
-    mv log4j-1.2.17.norce.jar ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_PUBLISH_DIR}/WEB-INF/lib/
+    mv log4j-1.2.17.norce.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/
 fi
 
 # Package tomcat webapps - useful to activate later
