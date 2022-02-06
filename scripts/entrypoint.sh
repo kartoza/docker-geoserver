@@ -26,6 +26,9 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Djts.overlay=ng \
        -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} \
+       -Duser.language=${LANGUAGE} \
+       -Duser.region=${REGION} \
+       -Duser.country=${COUNTRY} \
        -DENABLE_JSONP=${ENABLE_JSONP} \
        -DMAX_FILTER_RULES=${MAX_FILTER_RULES} \
        -DOPTIMIZE_LINE_WIDTH=${OPTIMIZE_LINE_WIDTH} \
@@ -37,16 +40,18 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -DGEOSERVER_FILEBROWSER_HIDEFS=${GEOSERVER_FILEBROWSER_HIDEFS} \
        -DGEOSERVER_AUDIT_PATH=${MONITOR_AUDIT_PATH} \
        -Dorg.geotools.shapefile.datetime=true \
+       -Dorg.geotools.localDateTimeHandling=true \
        -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
        -Dsun.java2d.renderer.useThreadLocal=false \
        -Dsun.java2d.renderer.pixelsize=8192 -server -XX:NewSize=300m \
        -Dlog4j.configuration=${CATALINA_HOME}/log4j.properties \
-       --patch-module java.desktop=${CATALINA_HOME}/marlin-0.9.4.2-Unsafe-OpenJDK9.jar  \
+       --patch-module java.desktop=${CATALINA_HOME}/marlin-render.jar  \
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
        -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
        -DGEOSERVER_CONSOLE_DISABLED=${DISABLE_WEB_INTERFACE} \
        -DGEOSERVER_CSRF_WHITELIST=${CSRF_WHITELIST} \
-       -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} "
+       -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} \
+       ${ADDITIONAL_JAVA_STARTUP_OPTIONS} "
 
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"

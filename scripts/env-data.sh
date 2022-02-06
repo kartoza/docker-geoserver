@@ -26,6 +26,10 @@ if [ -z "${TOMCAT_EXTRAS}" ]; then
   TOMCAT_EXTRAS=true
 fi
 
+if [ -z "${ROOT_WEBAPP_REDIRECT}" ]; then
+  ROOT_WEBAPP_REDIRECT=false
+fi
+
 if [ -z "${HTTP_PORT}" ]; then
   HTTP_PORT=8080
 fi
@@ -108,6 +112,18 @@ fi
 
 if [ -z "${TIMEZONE}" ]; then
     TIMEZONE='GMT'
+fi
+
+if [ -z "${LANGUAGE}" ]; then
+    LANGUAGE='en'
+fi
+
+if [ -z "${REGION}" ]; then
+    REGION='US'
+fi
+
+if [ -z "${COUNTRY}" ]; then
+    COUNTRY='US'
 fi
 
 if [ -z "${CHARACTER_ENCODING}" ]; then
@@ -264,6 +280,10 @@ fi
 
 if [ -z "${INITIAL_HEAP_OCCUPANCY_PERCENT}" ]; then
     INITIAL_HEAP_OCCUPANCY_PERCENT=45
+fi
+
+if [ -z "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" ]; then
+    ADDITIONAL_JAVA_STARTUP_OPTIONS=''
 fi
 
 if [ -z "${CSRF_WHITELIST}" ]; then
