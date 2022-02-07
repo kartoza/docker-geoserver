@@ -9,7 +9,9 @@
     <xsl:param name="http.redirectPort"/>
     <xsl:param name="http.connectionTimeout"/>
     <xsl:param name="http.compression"/>
+    <xsl:param name="http.scheme"/>
     <xsl:param name="http.maxHttpHeaderSize"/>
+    <xsl:param name="https.scheme"/>
     <xsl:param name="https.port"/>
     <xsl:param name="https.maxThreads"/>
     <xsl:param name="https.clientAuth"/>
@@ -64,6 +66,11 @@
                     <xsl:value-of select="$http.compression"/>
                 </xsl:attribute>
             </xsl:if>
+            <xsl:if test="$http.scheme">
+                <xsl:attribute name="scheme">
+                    <xsl:value-of select="$http.scheme"/>
+                </xsl:attribute>
+            </xsl:if>
             <xsl:if test="$http.maxHttpHeaderSize">
                 <xsl:attribute name="maxHttpHeaderSize">
                     <xsl:value-of select="$http.maxHttpHeaderSize"/>
@@ -81,10 +88,15 @@
         </xsl:copy>
         
         <Connector port="{$https.port}" protocol="org.apache.coyote.http11.Http11NioProtocol"
-                   maxThreads="{$https.maxThreads}" SSLEnabled="true" scheme="https" secure="true"
+                   maxThreads="{$https.maxThreads}" SSLEnabled="true"  secure="true"
                    keystoreFile="{$https.keystoreFile}" keystorePass="{$https.keystorePass}"
                    keyAlias="{$https.keyAlias}" keyPass="{$https.keyPass}"
                    sslProtocol="TLS">
+            <xsl:if test="$https.scheme">
+                <xsl:attribute name="scheme">
+                    <xsl:value-of select="$https.scheme"/>
+                </xsl:attribute>
+            </xsl:if>
             <xsl:if test="$https.proxyName">
                 <xsl:attribute name="proxyName">
                     <xsl:value-of select="$https.proxyName"/>

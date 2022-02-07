@@ -25,8 +25,6 @@ services:
       image: kartoza/geoserver:${GS_VERSION}
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
-      ports:
-        - ${GEOSERVER_PORT}:8080
       restart: on-failure
       environment:
         - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
@@ -43,3 +41,18 @@ services:
         interval: 1m30s
         timeout: 10s
         retries: 3
+
+   nginx:
+     image: nginx
+     volumes:
+       - ./sites-enabled:/etc/nginx/conf.d:ro
+     logging:
+       driver: json-file
+       options:
+         max-size: 200m
+         max-file: '10'
+     depends_on:
+       - geoserver
+     ports:
+       - "80:80"
+
