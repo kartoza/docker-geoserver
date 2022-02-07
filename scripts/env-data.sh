@@ -297,3 +297,7 @@ fi
 if [ -z "${SSL_MODE}" ]; then
     SSL_MODE=disable
 fi
+
+if [ -z ${HASHING_ALGORITHM} ];then
+    HASHING_ALGORITHM='SHA-256'
+fi
