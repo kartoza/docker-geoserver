@@ -2,6 +2,7 @@ version: '3'
 
 volumes:
    geoserver-data:
+   settings:
 
 services:
 
@@ -19,6 +20,7 @@ services:
           STABLE_PLUGIN_BASE_URL: ${STABLE_PLUGIN_BASE_URL}
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
+        - settings:/settings
       ports:
         - ${GEOSERVER_PORT}:8080
       restart: on-failure
