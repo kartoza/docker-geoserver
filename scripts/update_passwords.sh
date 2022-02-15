@@ -95,3 +95,9 @@ echo "${GEOSERVER_ADMIN_USER}" > "${EXTRA_CONFIG_DIR}"/.default_admin_user.txt
 echo "${PWD_HASH}" > "${EXTRA_CONFIG_DIR}"/.default_admin_encrypted_pass.txt
 echo ${GEOSERVER_ADMIN_PASSWORD} > "${EXTRA_CONFIG_DIR}"/.default_admin_pass.txt
 
+if [[ -f ${EXTRA_CONFIG_DIR}/users.xml ]]; then
+    cp ${EXTRA_CONFIG_DIR}/users.xml ${GEOSERVER_DATA_DIR}/security/usergroup/default/
+fi
+if [[ -f ${EXTRA_CONFIG_DIR}/roles.xml ]]; then
+    cp ${EXTRA_CONFIG_DIR}/roles.xml ${GEOSERVER_DATA_DIR}/security/role/default/roles.xml
+fi
