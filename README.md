@@ -458,6 +458,8 @@ The configs that can be mounted are
 * epsg.properties - for custom GeoServer EPSG values
 * server.xml - for tomcat configurations
 * broker.xml
+* users.xml - for Geoserver users. 
+* roles.xml - To define roles users should have in GeoServer
 
 
 Example
@@ -466,6 +468,8 @@ Example
 
 ```
 
+**Note:** The files `users.xml` and `roles.xml` should be mounted together to prevent errors
+during container start. Mounting these two files will overwrite `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER`
 ### CORS Support
 
 The image ships with CORS support. If you however need to modify the web.xml you
