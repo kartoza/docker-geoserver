@@ -31,7 +31,6 @@
       minEvictableIdleTimeMillis="60000"
       testWhileIdle="true"
       validationQuery="SELECT 1"
-      maxAge="600000"
       rollbackOnReturn="true"
     />
   <!--<Valve className="org.apache.catalina.valves.RemoteAddrValve"
