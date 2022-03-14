@@ -303,12 +303,13 @@ function file_env {
 }
 
 function set_vars() {
-  generate_random_string 20 # Temporary not sure that that is need any more...
+  MINLEN=20
+  generate_random_string ${MINLEN} # Temporary not sure that that is need any more...
 
-  
-  if [[ -z ${INSTANCE_STRING} ]];then
-    if [ ! -z "${HOSTNAME}" ]; then
-      INSTANCE_STRING="${HOSTNAME: -20}"    # Use hostname as INSTANCE_STRING. It's still compatible w/ docker-compose and Kubernetes (instance will be same as Pod names)
+  if [ -z ${INSTANCE_STRING} -a ! -z ${HOSTNAME} ];then
+    hostname="geoserver_geoserver_${HOSTNAME}" 
+    if [ ! -z "${hostname}" ]; then
+      INSTANCE_STRING="${hostname: -${MINLEN}}"    # Use hostname as INSTANCE_STRING. It's still compatible w/ docker-compose and Kubernetes (instance will be same as Pod names)
     else
       INSTANCE_STRING=${RAND}
     fi
