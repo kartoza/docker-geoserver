@@ -1,0 +1,12 @@
+<webauthservice>
+    <id>2ac500dd:17fd89fedc2:-7fe2</id>
+    <name>aurin-geoserver-auth</name>
+    <className>org.geoserver.security.auth.web.WebServiceAuthenticationProvider</className>
+    <connectionURL>AURIN_GEOSERVER_AUTHZ_SERVICE</connectionURL>
+    <readTimeoutOut>30</readTimeoutOut>
+    <connectionTimeOut>30</connectionTimeOut>
+    <roleRegex>(^.*)</roleRegex>
+    <useHeader>true</useHeader>
+    <authorizationOption>Web Response</authorizationOption>
+    <allowHTTPConnection>true</allowHTTPConnection>
+</webauthservice>

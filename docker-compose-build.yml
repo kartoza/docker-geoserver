@@ -7,7 +7,7 @@ volumes:
 services:
 
    geoserver:
-      image: kartoza/geoserver:${GS_VERSION}
+      image: aurin/geoserver:${GS_VERSION}
       build:
         context: .
         args:
@@ -34,4 +34,7 @@ services:
         - RECREATE_DATADIR=${RECREATE_DATADIR}
         - HTTP_PROXY_NAME
         - HTTP_PROXY_PORT
+        - AURIN_GEOSERVER_AUTHZ_SERVICE=${AURIN_GEOSERVER_AUTHZ_SERVICE}
+      container_name: aurin-geoserver
+
 

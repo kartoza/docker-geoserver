@@ -1,6 +1,18 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 ARG IMAGE_VERSION=9.0-jdk11-openjdk-slim-buster
 ARG JAVA_HOME=/usr/local/openjdk-11
+
+
+FROM maven:3.6.0-jdk-8-alpine AS build
+
+RUN apk add git
+
+RUN git clone https://github.com/geoserver/geoserver.git
+WORKDIR geoserver/src/community/web-service-auth
+RUN git checkout ${GS_VERSION}
+RUN mvn clean package -DskipTests=true
+
+
 FROM tomcat:$IMAGE_VERSION
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
@@ -67,7 +79,15 @@ EXPOSE  $HTTPS_PORT
 
 
 USER ${GEOSERVER_UID}
-RUN echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
+RUN echo 'figlet -t "AURIN Docker GeoServer"' >> ~/.bashrc
+
+
+COPY --from=build geoserver/src/community/web-service-auth/target/*.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/
+
+#Copy the config into container - These will be applied at runtime (i.e. copied to geoserver data dir)
+COPY ["web-auth-plugin/config/security/auth/aurin-geoserver-auth/config.xml", "/usr/local/aurin-config/web-auth-plugin/config/security/auth/aurin-geoserver-auth/config.xml"]
+COPY ["web-auth-plugin/config/security/config.xml", "/usr/local/aurin-config/web-auth-plugin/config/security/config.xml"]
+
 
 WORKDIR ${GEOSERVER_HOME}
 
