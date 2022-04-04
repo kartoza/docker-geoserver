@@ -19,7 +19,7 @@ services:
       healthcheck:
         test: "pg_isready -d gis"
    master:
-      image: kartoza/geoserver:2.20.0
+      image: aurin/geoserver:2.20.0
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
@@ -50,7 +50,7 @@ services:
         timeout: 10s
         retries: 3
    node:
-      image: kartoza/geoserver:2.20.0
+      image: aurin/geoserver:2.20.0
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:

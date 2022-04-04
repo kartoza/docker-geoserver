@@ -22,7 +22,7 @@ services:
         test: "exit 0"
 
    geoserver:
-      image: kartoza/geoserver:${GS_VERSION}
+      image: aurin/geoserver:${GS_VERSION}
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
       ports:
@@ -35,6 +35,7 @@ services:
         - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
         - INITIAL_MEMORY=${INITIAL_MEMORY}
         - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+        - AURIN_GEOSERVER_AUTHZ_SERVICE=${AURIN_GEOSERVER_AUTHZ_SERVICE}
       depends_on:
         db:
           condition: service_healthy
@@ -43,3 +44,4 @@ services:
         interval: 1m30s
         timeout: 10s
         retries: 3
+      container_name: aurin-geoserver

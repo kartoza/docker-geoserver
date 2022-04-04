@@ -395,4 +395,11 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
   /scripts/update_passwords.sh
 fi
 
+mkdir -p "${GEOSERVER_DATA_DIR}"/security/auth/aurin-geoserver-auth
+
+cp /usr/local/aurin-config/web-auth-plugin/config/security/auth/aurin-geoserver-auth/config.xml "${GEOSERVER_DATA_DIR}"/security/auth/aurin-geoserver-auth/config.xml
+cp /usr/local/aurin-config/web-auth-plugin/config/security/config.xml "${GEOSERVER_DATA_DIR}"/security/config.xml
+
+sed -i "s#AURIN_GEOSERVER_AUTHZ_SERVICE#${AURIN_GEOSERVER_AUTHZ_SERVICE}#g" "${GEOSERVER_DATA_DIR}"/security/auth/aurin-geoserver-auth/config.xml
+
 setup_logging

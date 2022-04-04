@@ -1,4 +1,23 @@
-# Table of Contents
+# AURIN GeoServer with web-service-auth plugin
+
+* This repo extends the `kartoza` repo by building, installing and configuring the `web-service-auth` community module.
+* Although the original repo has ability to install community modules, but Geoserver by default only provides a subset of pre-build modules (web auth is currently not in the list)
+* All features of original repo are intact (at the time of fork)
+* No extra stable and community modules are installed (this can be changed if needed see below)
+
+# Running via docker compose
+* Set all the required params in the .env file, the main variable for web-auth to work is `AURIN_GEOSERVER_AUTHZ_SERVICE`, set this to the authorization grant service endpoint which works as below:
+    * The defined endpoint should with Basic Auth, reading the auth param from a header named `X-HTTP-AUTHORIZATION`
+    * The return value should be a plain comma seperated list of GeoServer Roles, without spaces. Each role should include `ROLE_` prefix, for example a return value with two roles should be `ROLE_roleA,ROLE_roleB`
+* Other variables to note are GEOSERVER_ADMIN_USER, GEOSERVER_ADMIN_PASSWORD 
+* Build the container and spin up the services:
+   ```shell
+   cd docker-geoserver
+   docker-compose -f docker-compose-build.yml up -d --build
+   ```
+
+
+# Table of Contents (Source Documentation)
 * [Kartoza docker-geoserver](#kartoza-docker-geoserver)
    * [Getting the image](#getting-the-image)
        * [Pulling from Dockerhub](#pulling-from-dockerhub)

@@ -2,7 +2,7 @@
 set -e
 
 
-figlet -t "Kartoza Docker GeoServer"
+figlet -t "AURIN Docker GeoServer"
 
 source /scripts/functions.sh
 source /scripts/env-data.sh
