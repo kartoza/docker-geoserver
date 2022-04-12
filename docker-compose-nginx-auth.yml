@@ -1,0 +1,78 @@
+version: '3.9'
+
+volumes:
+  geoserver-data:
+  geo-db-data:
+
+services:
+  aurin-auth:
+    image: aurin/aurin-auth:latest
+    container_name: aurin-auth
+    ports:
+      - ${AURIN_AUTH_PORT}:8080
+    restart: on-failure
+    environment:
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - KEYCLOAK_AUTH_URI=${KEYCLOAK_AUTH_URI}
+      - AURIN_UI=${AURIN_UI}
+      - AURIN_TOKEN_SECRET_KEY=${AURIN_TOKEN_SECRET_KEY}
+      - AUTHN_LOGGING_LEVEL=INFO
+    healthcheck:
+      test: curl --fail -s http://localhost:8080/ || exit 1
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: kartoza/postgis:${POSTGIS_VERSION_TAG}
+    volumes:
+      - geo-db-data:/var/lib/postgresql
+    ports:
+      - ${POSTGRES_PORT}:5432
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASS=${POSTGRES_PASS}
+      - ALLOW_IP_RANGE=${ALLOW_IP_RANGE}
+      - FORCE_SSL=TRUE
+    restart: on-failure
+    healthcheck:
+      test: "exit 0"
+
+  geoserver:
+    image: aurin/geoserver:${GS_VERSION}
+    volumes:
+      - geoserver-data:/opt/geoserver/data_dir
+    restart: on-failure
+    environment:
+      - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+      - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
+      - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+      - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
+      - INITIAL_MEMORY=${INITIAL_MEMORY}
+      - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+      - AURIN_GEOSERVER_AUTHZ_SERVICE=${AURIN_GEOSERVER_AUTHZ_SERVICE}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail -s http://localhost:8080/ || exit 1
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    container_name: aurin-geoserver
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./sites-enabled:/etc/nginx/conf.d:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 200m
+        max-file: '10'
+    depends_on:
+      - geoserver
+    ports:
+      - "80:80"
