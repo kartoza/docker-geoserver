@@ -75,4 +75,4 @@ services:
     depends_on:
       - geoserver
     ports:
-      - "80:80"
+      - 80:80
