@@ -8,8 +8,6 @@ services:
   aurin-auth:
     image: aurin/aurin-auth:latest
     container_name: aurin-auth
-    ports:
-      - ${AURIN_AUTH_PORT}:8080
     restart: on-failure
     environment:
       - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
@@ -53,6 +51,15 @@ services:
       - INITIAL_MEMORY=${INITIAL_MEMORY}
       - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
       - AURIN_GEOSERVER_AUTHZ_SERVICE=${AURIN_GEOSERVER_AUTHZ_SERVICE}
+      - SSL=true
+      - RESET_ADMIN_CREDENTIALS=${RESET_ADMIN_CREDENTIALS}
+      - HTTPS_PORT=8443
+      - PKCS12_PASSWORD=geoserver
+      - JKS_KEY_PASSWORD=geoserver
+      - JKS_STORE_PASSWORD=geoserver
+    ports:
+      - 8080:8080
+      - 8443:8443
     depends_on:
       db:
         condition: service_healthy
@@ -67,6 +74,7 @@ services:
     image: nginx
     volumes:
       - ./sites-enabled:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt/:/etc/letsencrypt/
     logging:
       driver: json-file
       options:
@@ -76,3 +84,4 @@ services:
       - geoserver
     ports:
       - 80:80
+      - 443:443
