@@ -87,6 +87,7 @@ COPY --from=build geoserver/src/community/web-service-auth/target/*.jar /usr/loc
 #Copy the config into container - These will be applied at runtime (i.e. copied to geoserver data dir)
 COPY ["web-auth-plugin/config/security/auth/aurin-geoserver-auth/config.xml", "/usr/local/aurin-config/web-auth-plugin/config/security/auth/aurin-geoserver-auth/config.xml"]
 COPY ["web-auth-plugin/config/security/config.xml", "/usr/local/aurin-config/web-auth-plugin/config/security/config.xml"]
+COPY ["buil_data/monitor.properties", "/usr/local/monitoring/monitor.properties"]
 
 
 WORKDIR ${GEOSERVER_HOME}

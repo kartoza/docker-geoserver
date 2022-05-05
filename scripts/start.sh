@@ -396,9 +396,11 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
 fi
 
 mkdir -p "${GEOSERVER_DATA_DIR}"/security/auth/aurin-geoserver-auth
+mkdir -p "${GEOSERVER_DATA_DIR}"/monitoring
 
 cp /usr/local/aurin-config/web-auth-plugin/config/security/auth/aurin-geoserver-auth/config.xml "${GEOSERVER_DATA_DIR}"/security/auth/aurin-geoserver-auth/config.xml
 cp /usr/local/aurin-config/web-auth-plugin/config/security/config.xml "${GEOSERVER_DATA_DIR}"/security/config.xml
+cp /usr/local/monitoring/monitor.properties "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
 
 sed -i "s#AURIN_GEOSERVER_AUTHZ_SERVICE#${AURIN_GEOSERVER_AUTHZ_SERVICE}#g" "${GEOSERVER_DATA_DIR}"/security/auth/aurin-geoserver-auth/config.xml
 
