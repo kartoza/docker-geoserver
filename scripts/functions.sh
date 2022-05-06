@@ -3,6 +3,19 @@
 
 export request="wget --progress=bar:force:noscroll -c --tries=2 "
 
+function validate_url(){
+  EXTRA_PARAMS=''
+  if [ -n "$2" ]; then
+    EXTRA_PARAMS=$2
+  fi
+  if [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
+    ${request} $1 $2
+  else
+    echo -e "URL : \e[1;31m $1 does not exists \033[0m"
+  fi
+}
+
+
 function generate_random_string() {
   STRING_LENGTH=$1
   random_pass_string=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c "${STRING_LENGTH}")
@@ -73,7 +86,7 @@ function tomcat_user_config() {
   if [[ ! -f ${CATALINA_HOME}/conf/tomcat-users.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/tomcat-users.xml ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/tomcat-users.xml "${CATALINA_HOME}"/conf/tomcat-users.xml
+      envsubst < "${EXTRA_CONFIG_DIR}"/tomcat-users.xml > "${CATALINA_HOME}"/conf/tomcat-users.xml
     else
       # default value
       envsubst < /build_data/tomcat-users.xml > "${CATALINA_HOME}"/conf/tomcat-users.xml
@@ -89,7 +102,7 @@ function download_extension() {
   if curl --output /dev/null --silent --head --fail "${URL}"; then
     ${request} "${URL}" -O "${OUTPUT_PATH}"/"${PLUGIN}".zip
   else
-    echo "Plugin URL does not exist: ${URL}"
+    echo -e "Plugin URL does not exist:: \e[1;31m ${URL} \033[0m"
   fi
 
 }
@@ -119,7 +132,7 @@ function cluster_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/cluster.properties ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/cluster.properties "${CLUSTER_CONFIG_DIR}"/cluster.properties
+      envsubst < "${EXTRA_CONFIG_DIR}"/cluster.properties > "${CLUSTER_CONFIG_DIR}"/cluster.properties
     else
       # default values
       envsubst < /build_data/cluster.properties > "${CLUSTER_CONFIG_DIR}"/cluster.properties
@@ -134,7 +147,7 @@ function broker_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/embedded-broker.properties ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/embedded-broker.properties "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
+      envsubst < "${EXTRA_CONFIG_DIR}"/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
     else
       # default values
       envsubst < /build_data/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
@@ -146,14 +159,14 @@ function broker_xml_config() {
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/broker.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/broker.xml ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/broker.xml "${CLUSTER_CONFIG_DIR}"/broker.xml
+      envsubst < "${EXTRA_CONFIG_DIR}"/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
     else
       # default values
       if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
         envsubst < /build_data/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
         sed -i -e '11,13d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       else
-        cp /build_data/broker.xml "${CLUSTER_CONFIG_DIR}"/broker.xml
+        envsubst < /build_data/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
         sed -i -e '15,26d' {CLUSTER_CONFIG_DIR}/broker.xml
       fi
     fi
@@ -166,7 +179,7 @@ function s3_config() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/s3.properties ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/s3.properties "${GEOSERVER_DATA_DIR}"/s3.properties
+      envsubst < "${EXTRA_CONFIG_DIR}"/s3.properties > "${GEOSERVER_DATA_DIR}"/s3.properties
     else
       # default value
       envsubst < /build_data/s3.properties > "${GEOSERVER_DATA_DIR}"/s3.properties
@@ -196,10 +209,10 @@ function install_plugin() {
 # Helper function to setup disk quota configs and database configurations
 
 function default_disk_quota_config() {
-  if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml ]]; then
+  if [[ ! -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota.xml ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota.xml "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
+    if [[ -f "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota.xml ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
     else
       # default value
       envsubst < /build_data/geowebcache-diskquota.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
@@ -212,7 +225,7 @@ function jdbc_disk_quota_config() {
   if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
+      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml < "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
     else
       # default value
       envsubst < /build_data/geowebcache-diskquota-jdbc.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
@@ -224,8 +237,8 @@ function jdbc_disk_quota_config() {
 function setup_control_flow() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONFIG_DIR}/controlflow.properties ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/controlflow.properties "${GEOSERVER_DATA_DIR}"/controlflow.properties
+    if [[ -f "${EXTRA_CONFIG_DIR}"/controlflow.properties ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}"/controlflow.properties > "${GEOSERVER_DATA_DIR}"/controlflow.properties
     else
       # default value
       envsubst < /build_data/controlflow.properties > "${GEOSERVER_DATA_DIR}"/controlflow.properties
@@ -237,8 +250,8 @@ function setup_control_flow() {
 function setup_logging() {
   if [[ ! -f "${CATALINA_HOME}"/log4j.properties ]]; then
     # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
-    if [[ -f ${EXTRA_CONFIG_DIR}/log4j.properties ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/log4j.properties "${CATALINA_HOME}"/log4j.properties
+    if [[ -f "${EXTRA_CONFIG_DIR}"/log4j.properties ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}"/log4j.properties > "${CATALINA_HOME}"/log4j.properties
     else
       # default value
       envsubst < /build_data/log4j.properties > "${CATALINA_HOME}"/log4j.properties
@@ -248,27 +261,27 @@ function setup_logging() {
 }
 
 function geoserver_logging() {
-  echo "
+
+  if [[ ! -f ${GEOSERVER_DATA_DIR}/logging.xml ]];then
+    echo "
 <logging>
   <level>${GEOSERVER_LOG_LEVEL}.properties</level>
   <location>logs/geoserver.log</location>
   <stdOutLogging>true</stdOutLogging>
 </logging>
-" > /tmp/logging.xml
-  if [[ ! -f ${GEOSERVER_DATA_DIR}/logging.xml ]];then
-    envsubst < /tmp/logging.xml > "${GEOSERVER_DATA_DIR}"/logging.xml
+" > "${GEOSERVER_DATA_DIR}"/logging.xml
+
   fi
   if [[ ! -f ${GEOSERVER_DATA_DIR}/logs/geoserver.log ]];then
     touch "${GEOSERVER_DATA_DIR}"/logs/geoserver.log
   fi
-  rm /tmp/logging.xml
 }
 
 # Function to read env variables from secrets
 function file_env {
 	local var="$1"
 	local fileVar="${var}_FILE"
-	local def="${2:-}"
+	local def="${1:-}"
 	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
 		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
 		exit 1
@@ -318,4 +331,11 @@ function postgres_ssl_setup() {
        export PARAMS="sslmode=${SSL_MODE}"
   fi
 
+}
+
+function make_hash(){
+    NEW_PASSWORD=$1
+    GEO_INSTALL_PATH=$2
+    ALGO_TYPE=$3
+    (echo "digest1:" && java -classpath $(find $GEO_INSTALL_PATH -regex ".*jasypt-[0-9]\.[0-9]\.[0-9].*jar") org.jasypt.intf.cli.JasyptStringDigestCLI digest.sh algorithm=$ALGO_TYPE saltSizeBytes=16 iterations=100000 input="$NEW_PASSWORD" verbose=0) | tr -d '\n'
 }

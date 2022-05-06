@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+source /scripts/functions.sh
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
 SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
@@ -38,6 +38,13 @@ if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
 fi
 
 
+if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
+      GEOSERVER_ADMIN_PASSWORD=${random_pass_string}
+fi
+
+
+file_env 'GEOSERVER_ADMIN_USER'
+file_env 'GEOSERVER_ADMIN_PASSWORD'
 
 
 # Set random password if none provided
@@ -81,4 +88,6 @@ echo -e "\033[0m "
 fi
 
 # Put lock file to make sure password is not reinitialized on restart
+echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
+echo "[Entrypoint] GENERATED GeoServer  PASSWORD: $GEOSERVER_ADMIN_PASSWORD"
 touch ${SETUP_LOCKFILE}
