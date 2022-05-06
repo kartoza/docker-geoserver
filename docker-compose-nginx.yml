@@ -8,7 +8,7 @@ services:
    db:
       image: kartoza/postgis:${POSTGIS_VERSION_TAG}
       volumes:
-         - geo-db-data:/var/lib/postgresql
+        - geo-db-data:/var/lib/postgresql
       ports:
         - ${POSTGRES_PORT}:5432
       environment:
@@ -55,4 +55,3 @@ services:
        - geoserver
      ports:
        - "80:80"
-

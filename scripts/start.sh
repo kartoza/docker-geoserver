@@ -6,7 +6,7 @@ source /scripts/functions.sh
 source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 
-
+web_cors
 
 web_cors
 
