@@ -1,8 +1,12 @@
 #!/bin/bash
 
+
+
 source /scripts/functions.sh
 source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
+
+web_cors
 
 web_cors
 
@@ -89,9 +93,6 @@ function community_config() {
         s3_config
         echo "Installing ${ext} "
         install_plugin /community_plugins "${ext}"
-        validate_url https://repo1.maven.org/maven2/net/sf/ehcache/ehcache/2.10.9.2/ehcache-2.10.9.2.jar && \
-        mv ehcache-2.10.9.2.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/
-
     elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
         echo "Installing ${ext} "
         install_plugin /community_plugins "${ext}"

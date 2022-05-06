@@ -12,10 +12,8 @@ create_dir /usr/local/gdal_data
 create_dir /usr/local/gdal_native_libs
 create_dir "${CATALINA_HOME}"/postgres_config
 
-
-validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
- dpkg -i ttf-mscorefonts-installer_3.8_all.deb && rm ttf-mscorefonts-installer_3.8_all.deb
-
+${request} http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb && \
+    dpkg -i ttf-mscorefonts-installer_3.6_all.deb && rm ttf-mscorefonts-installer_3.6_all.deb
 
 pushd /plugins || exit
 
@@ -42,27 +40,15 @@ if [ $community_count != 0 ]; then
 fi
 
 
-# Check if we have pre downloaded plugin yet
-stable_count=`ls -1 $resources_dir/plugins/stable_plugins/*.zip 2>/dev/null | wc -l`
-if [ $stable_count != 0 ]; then
-  cp -r $resources_dir/plugins/stable_plugins/*.zip /plugins/
-fi
-
-community_count=`ls -1 $resources_dir/plugins/community_plugins/*.zip 2>/dev/null | wc -l`
-if [ $community_count != 0 ]; then
-  cp -r $resources_dir/plugins/community_plugin/*.zip /plugins/
-fi
-
-
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
 if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" -eq 0 ]; then
   plugin=$(head -n 1 /plugins/stable_plugins.txt)
-  approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+  approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
   download_extension "${approved_plugins_url}" "${plugin}" /plugins
 else
   for plugin in $(cat /plugins/stable_plugins.txt); do
-    approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+    approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
     download_extension "${approved_plugins_url}" "${plugin}" /plugins
   done
 fi
@@ -90,25 +76,25 @@ array=(geoserver-${GS_VERSION}-vectortiles-plugin.zip geoserver-${GS_VERSION}-wp
   geoserver-${GS_VERSION}-pyramid-plugin.zip geoserver-${GS_VERSION}-gdal-plugin.zip
   geoserver-${GS_VERSION}-monitor-plugin.zip geoserver-${GS_VERSION}-inspire-plugin.zip geoserver-${GS_VERSION}-csw-plugin.zip )
 for i in "${array[@]}"; do
-  url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
+  url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
   download_extension "${url}" "${i%.*}" ${resources_dir}/plugins
 done
 
 pushd gdal || exit
 
-validate_url https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/gdal-data.zip
+${request} https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.15/native/gdal/gdal-data.zip
 popd || exit
-validate_url https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
+${request} https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1.X/1.1.29/native/gdal/linux/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz
 
 popd || exit
 
 # Install libjpeg-turbo
-if [[ ! -f ${resources_dir}/libjpeg-turbo-official_2.1.2_amd64.deb ]]; then
-  validate_url https://liquidtelecom.dl.sourceforge.net/project/libjpeg-turbo/2.1.2/libjpeg-turbo-official_2.1.2_amd64.deb \
-    '-P /tmp/resources/'
+if [[ ! -f /tmp/resources/libjpeg-turbo-official_1.5.3_amd64.deb ]]; then
+  ${request} https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-official_1.5.3_amd64.deb \
+    -P ${resources_dir}
 fi
 
-dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.2_amd64.deb
+dpkg -i ${resources_dir}/libjpeg-turbo-official_1.5.3_amd64.deb
 
 pushd "${CATALINA_HOME}" || exit
 
@@ -148,39 +134,43 @@ fi
 
 # Temporary fix for the print plugin https://github.com/georchestra/georchestra/pull/2517
 
+if [[ -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/json-20180813.jar ]]; then
+  rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/json-20180813.jar && \
+  ${request} https://repo1.maven.org/maven2/org/json/json/20080701/json-20080701.jar \
+  -O "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/json-20080701.jar
+fi
+
 # Activate gdal plugin in geoserver
 if ls /tmp/resources/plugins/*gdal*.tar.gz >/dev/null 2>&1; then
   unzip /tmp/resources/plugins/gdal/gdal-data.zip -d /usr/local/gdal_data &&
     mv /usr/local/gdal_data/gdal-data/* /usr/local/gdal_data && rm -rf /usr/local/gdal_data/gdal-data &&
     tar xzf /tmp/resources/plugins/gdal192-Ubuntu12-gcc4.6.3-x86_64.tar.gz -C /usr/local/gdal_native_libs
 fi
-# Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
-JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-if [[ ${JAVA_VERSION} > 10 ]];then
-    if [[  -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      mv ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-* ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-render.jar
-    fi
-else
-    if [[ -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-* \
-      validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar && \
-      mv marlin-0.9.4.2-Unsafe-OpenJDK9.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-render.jar
-    fi
+# Install Marlin render
+if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-sun-java2d.jar ]]; then
+  ${request} https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar \
+    -O "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-0.9.4.2-Unsafe-OpenJDK9.jar
+fi
+
+# Install sqljdbc
+if [[ ! -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/sqljdbc.jar ]]; then
+  ${request} https://clojars.org/repo/com/microsoft/sqlserver/sqljdbc4/4.0/sqljdbc4-4.0.jar \
+    -O "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/sqljdbc.jar
 fi
 
 # Install jetty-servlets
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
-    validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/10.0.7/jetty-servlets-10.0.7.jar && \
-    mv  jetty-servlets-10.0.7.jar "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
+    ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/9.4.21.v20190926/jetty-servlets-9.4.21.v20190926.jar \
+      -O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
   fi
 fi
 
 # Install jetty-util
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then
-    validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/10.0.7/jetty-util-10.0.7.jar \
-      '-O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-util.jar'
+    ${request} https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.4.21.v20190926/jetty-util-9.4.21.v20190926.jar \
+      -O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-util.jar
   fi
 fi
 
@@ -191,10 +181,10 @@ rm -f /tmp/resources/overlays/README.txt &&
   fi
 
 # Temporary fix for logj4 until next release of geoserver http://geoserver.org/announcements/2021/12/13/logj4-rce-statement.html
-if [[  -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]] && [[ "${GS_VERSION}" -lt 2.20.2 ]]; then
+if [[  -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]]; then
     rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar && \
-    validate_url https://repo.osgeo.org/repository/geotools-releases/log4j/log4j/1.2.17.norce/log4j-1.2.17.norce.jar && \
-    mv log4j-1.2.17.norce.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/
+    ${request} https://repo.osgeo.org/repository/geotools-releases/log4j/log4j/1.2.17.norce/log4j-1.2.17.norce.jar \
+     -O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.norce.jar
 fi
 
 # Package tomcat webapps - useful to activate later
