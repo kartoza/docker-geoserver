@@ -31,7 +31,7 @@ else
     fi
 fi
 
-
+# Set random password if none provided
 if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
       echo -e "\e[32m ------------------------------------------ \033[0m"
       echo -e "\e[32m Set random password because none is provided \033[0m"

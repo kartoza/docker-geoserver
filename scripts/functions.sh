@@ -3,6 +3,10 @@
 
 export request="wget --progress=bar:force:noscroll -c --tries=2 "
 
+function log() {
+    echo "$0:${BASH_LINENO[*]}": $@
+}
+
 function validate_url(){
   EXTRA_PARAMS=''
   if [ -n "$2" ]; then
@@ -297,26 +301,31 @@ function file_env {
 }
 
 function set_vars() {
-  generate_random_string 14
+  if [ -z "${INSTANCE_STRING}" ];then
+    if [ ! -z "${HOSTNAME}" ]; then
+      hlength=${#HOSTNAME}
+      if [ ${hlength} -gt 12 ]; then
+        INSTANCE_STRING="${HOSTNAME}"
+      else
+        INSTANCE_STRING="${HOSTNAME:0:$hlength}"
+       fi
+    fi
+  fi
+
   if [[ -z ${RANDOMSTRING} ]];then
-    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RAND}"
-    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RAND}"
-    CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+    RANDOM_STRING="${INSTANCE_STRING}"
   else
-
-    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOMSTRING}"
-    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOMSTRING}"
-    CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+    RANDOM_STRING=${RANDOMSTRING}
   fi
 
-  generate_random_string 20
-  if [[ -z ${INSTANCE_STRING} ]];then
-    INSTANCE_STRING=${RAND}
-  else
-    INSTANCE_STRING=${INSTANCE_STRING}
-  fi
+  INSTANCE_STRING="${RANDOM_STRING}"
 
+
+  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOM_STRING}"
+  MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"
+  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
 }
+
 
 
 
@@ -332,6 +341,7 @@ function postgres_ssl_setup() {
   fi
 
 }
+
 
 function make_hash(){
     NEW_PASSWORD=$1
