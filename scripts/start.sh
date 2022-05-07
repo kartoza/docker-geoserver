@@ -173,6 +173,10 @@ export TOMCAT_PASSWORD TOMCAT_USER
 if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   postgres_ssl_setup
   export SSL_PARAMETERS=${PARAMS}
+  if [ -z "${POSTGRES_PORT}" ]; then
+    POSTGRES_PORT=5432
+    export POSTGRES_PORT="${POSTGRES_PORT}"
+  fi
   POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
   if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
     rm "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-*
