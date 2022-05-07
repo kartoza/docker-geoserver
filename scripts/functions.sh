@@ -303,15 +303,11 @@ function file_env {
 function set_vars() {
   if [ -z "${INSTANCE_STRING}" ];then
     if [ ! -z "${HOSTNAME}" ]; then
-      hlength=${#HOSTNAME}
-      if [ ${hlength} -gt 12 ]; then
-        INSTANCE_STRING="${HOSTNAME}"
-      else
-        INSTANCE_STRING="${HOSTNAME:0:$hlength}"
-       fi
+      INSTANCE_STRING="${HOSTNAME}"
     fi
   fi
 
+  # Backward compatability
   if [[ -z ${RANDOMSTRING} ]];then
     RANDOM_STRING="${INSTANCE_STRING}"
   else

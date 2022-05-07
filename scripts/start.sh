@@ -141,7 +141,10 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
     install_plugin /community_plugins ${ext}
   fi
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-      create_dir "${CLUSTER_CONFIG_DIR}"
+      if [[ -z "${EXISTING_DATA_DIR}" ]]; then
+          create_dir "${CLUSTER_CONFIG_DIR}"
+      fi
+
       if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
         postgres_ssl_setup
         export SSL_PARAMETERS=${PARAMS}
@@ -149,8 +152,12 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
       broker_xml_config
       touch "${CLUSTER_LOCKFILE}"
   fi
-  cluster_config
-  broker_config
+  # setup clustering if it's not already defined in an existing data directory
+  if [[ -z "${EXISTING_DATA_DIR}" ]]; then
+      cluster_config
+      broker_config
+  fi
+
 
 fi
 
