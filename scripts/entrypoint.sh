@@ -7,16 +7,15 @@ figlet -t "Kartoza Docker GeoServer"
 source /scripts/functions.sh
 source /scripts/env-data.sh
 
+# Credits https://github.com/kartoza/docker-geoserver/pull/371
+set_vars
+export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
+export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
+
 /bin/bash /scripts/start.sh
 
-if [[ -z ${RANDOMSTRING} ]];then
-  RANDOM_STRING=$(cat "${EXTRA_CONFIG_DIR}"/.pass_14.txt)
-else
-  RANDOM_STRING=${RANDOMSTRING}
-fi
-CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOM_STRING}"
-MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"
-
+log CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR}"
+log MONITOR_AUDIT_PATH="${MONITOR_AUDIT_PATH}"
 
 export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
