@@ -171,7 +171,7 @@ function broker_xml_config() {
         sed -i -e '11,13d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       else
         envsubst < /build_data/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
-        sed -i -e '15,26d' {CLUSTER_CONFIG_DIR}/broker.xml
+        sed -i -e '15,26d' ${CLUSTER_CONFIG_DIR}/broker.xml
       fi
     fi
   fi
