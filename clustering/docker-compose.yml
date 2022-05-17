@@ -6,7 +6,7 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:14-3.1
+      image: kartoza/postgis:14-3.2
       volumes:
         - geo-db-data:/var/lib/postgresql
       environment:
@@ -19,7 +19,7 @@ services:
       healthcheck:
         test: "pg_isready -d gis"
    master:
-      image: kartoza/geoserver:2.20.0
+      image: kartoza/geoserver:2.20.4
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
@@ -38,8 +38,8 @@ services:
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - SSL_MODE=allow
-        - RANDOMSTRING=23bd87cfa327d47e
-        - INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
+        #- RANDOMSTRING=23bd87cfa327d47e
+        #- INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
       restart: on-failure
       depends_on:
         db:
@@ -50,7 +50,7 @@ services:
         timeout: 10s
         retries: 3
    node:
-      image: kartoza/geoserver:2.20.0
+      image: kartoza/geoserver:2.20.4
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
