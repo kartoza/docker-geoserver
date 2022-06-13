@@ -79,12 +79,12 @@ validate_url https://demo.geo-solutions.it/share/github/imageio-ext/releases/1.1
 popd || exit
 
 # Install libjpeg-turbo
-if [[ ! -f ${resources_dir}/libjpeg-turbo-official_2.1.2_amd64.deb ]]; then
-  validate_url https://liquidtelecom.dl.sourceforge.net/project/libjpeg-turbo/2.1.2/libjpeg-turbo-official_2.1.2_amd64.deb \
+if [[ ! -f ${resources_dir}/libjpeg-turbo-official_2.1.3_amd64.deb ]]; then
+  validate_url https://liquidtelecom.dl.sourceforge.net/project/libjpeg-turbo/2.1.3/libjpeg-turbo-official_2.1.3_amd64.deb \
     '-P /tmp/resources/'
 fi
 
-dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.2_amd64.deb
+dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.3_amd64.deb
 
 pushd "${CATALINA_HOME}" || exit
 
@@ -147,15 +147,15 @@ fi
 # Install jetty-servlets
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar ]]; then
-    validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/10.0.7/jetty-servlets-10.0.7.jar && \
-    mv  jetty-servlets-10.0.7.jar "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar
+    validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/11.0.9/jetty-servlets-11.0.9.jar \
+    '-O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-servlets.jar'
   fi
 fi
 
 # Install jetty-util
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   if [[ ! -f ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/jetty-util.jar ]]; then
-    validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/10.0.7/jetty-util-10.0.7.jar \
+    validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.9/jetty-util-11.0.9.jar \
       '-O "${GEOSERVER_HOME}"/webapps/geoserver/WEB-INF/lib/jetty-util.jar'
   fi
 fi
@@ -166,12 +166,6 @@ rm -f /tmp/resources/overlays/README.txt &&
     cp -rf /tmp/resources/overlays/* /
   fi
 
-# Temporary fix for logj4 until next release of geoserver http://geoserver.org/announcements/2021/12/13/logj4-rce-statement.html
-if [[  -f ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar ]] && [[ "${GS_VERSION}" -lt 2.20.2 ]]; then
-    rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/log4j-1.2.17.jar && \
-    validate_url https://repo.osgeo.org/repository/geotools-releases/log4j/log4j/1.2.17.norce/log4j-1.2.17.norce.jar && \
-    mv log4j-1.2.17.norce.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/
-fi
 
 # Package tomcat webapps - useful to activate later
 if [ -d "$CATALINA_HOME"/webapps.dist ]; then
