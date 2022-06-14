@@ -201,16 +201,16 @@ function install_plugin() {
   EXT=$2
 
   if [[ -f "${DATA_PATH}"/"${EXT}".zip ]];then
-    unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
-    if [[ -f /geoserver/start.jar ]]; then
-      cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/geoserver/WEB-INF/lib/
-    else
-      cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
-    fi
-    rm -rf /tmp/gs_plugin
+     unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
+     if [[ -f /geoserver/start.jar ]]; then
+       cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/geoserver/WEB-INF/lib/
+     else
+       cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
+     fi
+     rm -rf /tmp/gs_plugin
   else
     echo -e "\e[32m ${EXT} extension will not be installed because it is not available \033[0m"
-
+ fi
 }
 
 # Helper function to setup disk quota configs and database configurations
