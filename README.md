@@ -66,7 +66,7 @@ To build yourself with a local checkout using the docker-compose.build.yaml:
 1. Clone the GitHub repository:
 
    ```shell
-   git clone git://github.com/kartoza/docker-geoserver
+   git clone https://github.com/kartoza/docker-geoserver
    ```
 2. Edit the [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) to change the build arguments:
 
