@@ -89,8 +89,10 @@ function community_config() {
         s3_config
         echo "Installing ${ext} "
         install_plugin /community_plugins "${ext}"
-        validate_url https://repo1.maven.org/maven2/net/sf/ehcache/ehcache/2.10.9.2/ehcache-2.10.9.2.jar && \
-        mv ehcache-2.10.9.2.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/
+        if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/ehcache-3.4.0.jar ]];then
+          validate_url https://repo1.maven.org/maven2/org/ehcache/ehcache/3.4.0/ehcache-3.4.0.jar && \
+          mv ehcache-3.4.0.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/
+        fi
 
     elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
         echo "Installing ${ext} "
