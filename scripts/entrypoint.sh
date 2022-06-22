@@ -38,7 +38,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -DGEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR} \
        -DGEOSERVER_FILEBROWSER_HIDEFS=${GEOSERVER_FILEBROWSER_HIDEFS} \
        -DGEOSERVER_AUDIT_PATH=${MONITOR_AUDIT_PATH} \
-       -Dorg.geotools.shapefile.datetime=true \
+       -Dorg.geotools.shapefile.datetime=${USE_DATETIME_IN_SHAPEFILE} \
        -Dorg.geotools.localDateTimeHandling=true \
        -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
        -Dsun.java2d.renderer.useThreadLocal=false \

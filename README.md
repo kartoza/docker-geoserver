@@ -530,6 +530,42 @@ Once the services are running GeoServer will be available from
 
 http://localhost/geoserver/web/
 
+
+### Additional Notes for MacOS M1 Chip 
+
+To run the docker image with MacOS M1 Chip, the image needs to be built locally. 
+
+- JDK version of “9-jdk17-openjdk-slim-buster “ can work with M1 Chip as it is instructed on "Local build using repository checkout" section, the parameters below needs to be changed in [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) file and [Dockerfile](https://github.com/kartoza/docker-geoserver/blob/master/Dockerfile)
+
+```
+IMAGE_VERSION=9-jdk17-openjdk-slim-buster
+JAVA_HOME=/usr/local/openjdk-17
+```
+
+ - The change above also requires the removal of some command-line options in [entrypoint.sh](https://github.com/kartoza/docker-geoserver/blob/master/scripts/entrypoint.sh) file. (Since they generate ```Unrecognized VM option 'CMSClassUnloadingEnabled' ``` error and these options are related to JDK10 and lower)
+
+```
+-XX:+CMSClassUnloadingEnabled
+-XX:+UseG1GC
+```
+
+After these changes, the image can be built as instructed. 
+
+To run the just-built local image with your docker-compose file, the platform option in the docker-compose file needs to be specified as ```linux/arm64/v8```. Otherwise, it will try to pull the docker image from the docker hub instead of using the local image. 
+
+### Reverse Proxy using NGINX
+
+You can also put nginx in front of geoserver to receive http request and translate it to uwsgi.
+
+A sample `docker-compose-nginx.yml` is provided for running geoserver and nginx
+
+```shell
+docker-compose -f docker-compose-nginx.yml  up -d
+```
+Once the services are running GeoServer will be available from
+
+http://localhost/geoserver/web/
+
 ## Kubernetes (Helm Charts)
 
 You can run the image in Kubernetes following the [recipe](https://github.com/kartoza/charts/tree/develop/charts/geoserver)
