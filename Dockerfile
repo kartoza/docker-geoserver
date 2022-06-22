@@ -23,7 +23,7 @@ RUN set -eux \
         locales gnupg2 wget ca-certificates rpl pwgen software-properties-common  iputils-ping \
         apt-transport-https curl gettext fonts-cantarell lmodern ttf-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev  \
-        wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet \
+        wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet
 # Install gdal3 - bullseye doesn't build libgdal-java anymore so we can't upgrade
 RUN curl https://deb.meteo.guru/velivole-keyring.asc |  apt-key add - \
     && echo "deb https://deb.meteo.guru/debian buster main" > /etc/apt/sources.list.d/meteo.guru.list \
