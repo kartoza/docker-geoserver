@@ -282,6 +282,10 @@ if [ -z "${INITIAL_HEAP_OCCUPANCY_PERCENT}" ]; then
     INITIAL_HEAP_OCCUPANCY_PERCENT=45
 fi
 
+if [ -z "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" ]; then
+    ADDITIONAL_JAVA_STARTUP_OPTIONS=''
+fi
+
 if [ -z "${CSRF_WHITELIST}" ]; then
     CSRF_WHITELIST=
 fi
@@ -294,14 +298,8 @@ if [ -z "${SSL_MODE}" ]; then
     SSL_MODE=disable
 fi
 
-if [ -z ${CSRF_WHITELIST} ]; then
-    CSRF_WHITELIST=
+if [ -z ${HASHING_ALGORITHM} ];then
+    HASHING_ALGORITHM='SHA-256'
 fi
 
-if [ -z ${INITIAL_HEAT_OCCUPANCY_PERCENT} ]; then
-    INITIAL_HEAT_OCCUPANCY_PERCENT=45
-fi
 
-if [ -z "${USE_DATETIME_IN_SHAPEFILE}" ]; then
-    USE_DATETIME_IN_SHAPEFILE=true
-fi
