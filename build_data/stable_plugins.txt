@@ -33,7 +33,7 @@ wcs2_0-eo-plugin
 web-resource-plugin
 wmts-multi-dimensional-plugin
 wps-cluster-hazelcast-plugin
+wps-download-plugin
 wps-jdbc-plugin
-wps-plugin
 xslt-plugin
 ysld-plugin

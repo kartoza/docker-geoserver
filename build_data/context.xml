@@ -20,7 +20,7 @@
       auth="Container"
       type="javax.sql.DataSource"
       driverClassName="org.postgresql.Driver"
-      url="jdbc:postgresql://${HOST}:5432/${POSTGRES_DB}?${SSL_PARAMETERS}"
+      url="jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?${SSL_PARAMETERS}"
       username="${POSTGRES_USER}" password="${POSTGRES_PASS}"
       maxTotal="8"
       initialSize="0"
@@ -31,7 +31,6 @@
       minEvictableIdleTimeMillis="60000"
       testWhileIdle="true"
       validationQuery="SELECT 1"
-      maxAge="600000"
       rollbackOnReturn="true"
     />
   <!--<Valve className="org.apache.catalina.valves.RemoteAddrValve"

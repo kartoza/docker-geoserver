@@ -3,6 +3,10 @@
 
 export request="wget --progress=bar:force:noscroll -c --tries=2 "
 
+function log() {
+    echo "$0:${BASH_LINENO[*]}": $@
+}
+
 function validate_url(){
   EXTRA_PARAMS=''
   if [ -n "$2" ]; then
@@ -167,7 +171,7 @@ function broker_xml_config() {
         sed -i -e '11,13d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       else
         envsubst < /build_data/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
-        sed -i -e '15,26d' {CLUSTER_CONFIG_DIR}/broker.xml
+        sed -i -e '15,26d' ${CLUSTER_CONFIG_DIR}/broker.xml
       fi
     fi
   fi
@@ -196,14 +200,17 @@ function install_plugin() {
   fi
   EXT=$2
 
-  unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
-  if [[ -f /geoserver/start.jar ]]; then
-    cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/geoserver/WEB-INF/lib/
+  if [[ -f "${DATA_PATH}"/"${EXT}".zip ]];then
+     unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
+     if [[ -f /geoserver/start.jar ]]; then
+       cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/geoserver/WEB-INF/lib/
+     else
+       cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
+     fi
+     rm -rf /tmp/gs_plugin
   else
-    cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
-  fi
-  rm -rf /tmp/gs_plugin
-
+    echo -e "\e[32m ${EXT} extension will not be installed because it is not available \033[0m"
+ fi
 }
 
 # Helper function to setup disk quota configs and database configurations
@@ -265,7 +272,7 @@ function geoserver_logging() {
   if [[ ! -f ${GEOSERVER_DATA_DIR}/logging.xml ]];then
     echo "
 <logging>
-  <level>${GEOSERVER_LOG_LEVEL}.properties</level>
+  <level>${GEOSERVER_LOG_LEVEL}</level>
   <location>logs/geoserver.log</location>
   <stdOutLogging>true</stdOutLogging>
 </logging>
@@ -296,27 +303,29 @@ function file_env {
 	unset "$fileVar"
 }
 
+# Credits to https://github.com/korkin25 from https://github.com/kartoza/docker-geoserver/pull/371
 function set_vars() {
-  generate_random_string 14
+  if [ -z "${INSTANCE_STRING}" ];then
+    if [ ! -z "${HOSTNAME}" ]; then
+      INSTANCE_STRING="${HOSTNAME}"
+    fi
+  fi
+
+  # Backward compatability
   if [[ -z ${RANDOMSTRING} ]];then
-    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RAND}"
-    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RAND}"
-    CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+    RANDOM_STRING="${INSTANCE_STRING}"
   else
-
-    CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOMSTRING}"
-    MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOMSTRING}"
-    CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+    RANDOM_STRING=${RANDOMSTRING}
   fi
 
-  generate_random_string 20
-  if [[ -z ${INSTANCE_STRING} ]];then
-    INSTANCE_STRING=${RAND}
-  else
-    INSTANCE_STRING=${INSTANCE_STRING}
-  fi
+  INSTANCE_STRING="${RANDOM_STRING}"
 
+
+  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOM_STRING}"
+  MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"
+  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
 }
+
 
 
 
@@ -332,6 +341,7 @@ function postgres_ssl_setup() {
   fi
 
 }
+
 
 function make_hash(){
     NEW_PASSWORD=$1
