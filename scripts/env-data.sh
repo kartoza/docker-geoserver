@@ -302,4 +302,7 @@ if [ -z ${HASHING_ALGORITHM} ];then
     HASHING_ALGORITHM='SHA-256'
 fi
 
+if [ -z "${USE_DATETIME_IN_SHAPEFILE}" ]; then
+    USE_DATETIME_IN_SHAPEFILE=true
+fi
 
