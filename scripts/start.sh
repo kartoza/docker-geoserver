@@ -60,7 +60,7 @@ else
   for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
       if [[ ! -f /plugins/${ext}.zip ]]; then
-        approved_plugins_url="https://netix.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+        approved_plugins_url="${COMMUNITY_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
         download_extension "${approved_plugins_url}" "${ext}" /plugins
         install_plugin /plugins "${ext}"
       else
