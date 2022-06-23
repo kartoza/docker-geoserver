@@ -6,31 +6,66 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:14-3.2
+      image: kartoza/postgis:14-3.1
       volumes:
         - geo-db-data:/var/lib/postgresql
+      ports:
+        - "5432:5432"
+      env_file:
+        - ../.env
       environment:
+        - POSTGRES_PORT=5432
         - POSTGRES_DB=gis
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - ALLOW_IP_RANGE=0.0.0.0/0
-        - FORCE_SSL=TRUE
+        - FORCE_SSL=FALSE
       restart: on-failure
       healthcheck:
         test: "pg_isready -d gis"
+   activemq:
+      build: activemq-docker
+      volumes:
+         - geoserver-cluster-data:/opt/geoserver/data_dir
+      ports:
+        - "1098:1098"
+        - "8083:8080"
+        - "61666:61666"
+      env_file:
+        - ../.env
+      environment:
+        - JAVA_HOME=/opt/java/openjdk
+        - HOST=db
+        - POSTGRES_PORT=5432
+        - POSTGRES_DB=gis
+        - POSTGRES_USER=docker
+        - POSTGRES_PASS=docker
+        - SSL_MODE=false
+      restart: on-failure
+      depends_on:
+        db:
+          condition: service_healthy
+      healthcheck:
+        test: netstat -ltn | grep -c ":61666"
+        interval: 30s
+        timeout: 10s
+        retries: 3
    master:
       image: kartoza/geoserver:2.21.0
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
         - "8081:8080"
+      env_file:
+        - ../.env
       environment:
-        - BROKER_URL=tcp://0.0.0.0:61661
+        - BROKER_URL=tcp://activemq:61666
         - READONLY=disabled
-        - CLUSTER_DURABILITY=false
-        - CLUSTERING=True
+        - CLUSTER_DURABILITY=true
+        - CLUSTERING=true
         - TOGGLE_MASTER=true
         - TOGGLE_SLAVE=true
+        - EMBEDDED_BROKER=disabled
         - DB_BACKEND=POSTGRES
         - HOST=db
         - POSTGRES_PORT=5432
@@ -38,11 +73,13 @@ services:
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - SSL_MODE=allow
-        #- RANDOMSTRING=23bd87cfa327d47e
-        #- INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
+        - RANDOMSTRING=23bd87cfa327d47e
+        - INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
       restart: on-failure
       depends_on:
         db:
+          condition: service_healthy
+        activemq:
           condition: service_healthy
       healthcheck:
         test: curl --fail -s http://localhost:8080/ || exit 1
@@ -55,31 +92,35 @@ services:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
         - "8082:8080"
+      env_file:
+        - ../.env
       environment:
-        - BROKER_URL=tcp://master:61661
-        - READONLY=disabled
-        - CLUSTER_DURABILITY=false
-        - CLUSTERING=True
-        - TOGGLE_MASTER=true
+        - BROKER_URL=tcp://activemq:61666
+        - READONLY=enabled
+        - CLUSTER_DURABILITY=true
+        - CLUSTERING=true
+        - TOGGLE_MASTER=false
         - TOGGLE_SLAVE=true
         - EMBEDDED_BROKER=disabled
+        - DB_BACKEND=POSTGRES
         - HOST=db
         - POSTGRES_PORT=5432
         - POSTGRES_DB=gis
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - SSL_MODE=allow
+        - RANDOMSTRING=23bd87cfa327d47f
+        - INSTANCE_STRING=bc3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
       restart: on-failure
       depends_on:
         master:
           condition: service_healthy
         db:
           condition: service_healthy
+        activemq:
+          condition: service_healthy
       healthcheck:
         test: curl --fail -s http://localhost:8080/ || exit 1
         interval: 1m30s
         timeout: 10s
         retries: 3
-
-   
-

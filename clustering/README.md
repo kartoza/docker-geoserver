@@ -1,3 +1,18 @@
+# How to build
+
+## 1. Build the GeoServer images
+From docker-geoserver root folder:
+
+ - Edit the `.env` file
+ - Run: ```docker-compose -f docker-compose-build.yml build```
+
+## 2. Build the Cluster and Run it
+```
+cd clustering
+docker-compose build --no-cache activemq
+docker-compose up
+```
+
 # Clustering using JMS Plugin
 GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-broker. 
 
