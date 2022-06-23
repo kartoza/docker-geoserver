@@ -25,8 +25,6 @@ services:
         test: "pg_isready -d gis"
    activemq:
       build: activemq-docker
-      volumes:
-         - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
         - "1098:1098"
         - "8083:8080"
@@ -53,7 +51,7 @@ services:
    master:
       image: kartoza/geoserver:2.21.0
       volumes:
-         - geoserver-cluster-data:/opt/geoserver/data_dir
+        - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
         - "8081:8080"
       env_file:
@@ -64,7 +62,7 @@ services:
         - CLUSTER_DURABILITY=true
         - CLUSTERING=true
         - TOGGLE_MASTER=true
-        - TOGGLE_SLAVE=true
+        - TOGGLE_SLAVE=false
         - EMBEDDED_BROKER=disabled
         - DB_BACKEND=POSTGRES
         - HOST=db
@@ -89,7 +87,7 @@ services:
    node:
       image: kartoza/geoserver:2.21.0
       volumes:
-         - geoserver-cluster-data:/opt/geoserver/data_dir
+        - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
         - "8082:8080"
       env_file:
