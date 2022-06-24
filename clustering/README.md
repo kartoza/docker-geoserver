@@ -9,8 +9,7 @@ From docker-geoserver root folder:
 ## 2. Build the Cluster and Run it
 ```
 cd clustering
-docker-compose build --no-cache activemq
-docker-compose up
+docker-compose up --build --remove-orphans
 ```
 
 # Clustering using JMS Plugin
