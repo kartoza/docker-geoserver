@@ -86,9 +86,14 @@
 			if your producer is "hanging", it's probably due to producer flow control. 
 			For more information, see: http://activemq.apache.org/producer-flow-control.html -->
 
-		<networkConnectors xmlns="http://activemq.apache.org/schema/core">
+		<!-- <networkConnectors xmlns="http://activemq.apache.org/schema/core">
 			<networkConnector
 				uri="${activemq.transportConnectors.server.discoveryURI}" />
+		</networkConnectors> -->
+
+		<networkConnectors xmlns="http://activemq.apache.org/schema/core">
+			<networkConnector
+				uri="${ACTIVEMQ_SERVER_DISCOVERYURI}" />
 		</networkConnectors>
 
 		<!--destinationInterceptors>
@@ -99,6 +104,24 @@
 				</virtualDestinations>
 			</virtualDestinationInterceptor>
 		</destinationInterceptors-->
+
+        <destinationPolicy>
+            <policyMap>
+              <policyEntries>
+                <policyEntry topic=">" expireMessagesPeriod="30000">
+                    <!--The constantPendingMessageLimitStrategy is used to prevent
+                         slow topic consumers to block producers and affect other consumers
+                         by limiting the number of messages that are retained
+                         For more information, see:
+                         http://activemq.apache.org/slow-consumer-handling.html
+                    -->
+                  <pendingMessageLimitStrategy>
+                    <constantPendingMessageLimitStrategy limit="1000"/>
+                  </pendingMessageLimitStrategy>
+                </policyEntry>
+              </policyEntries>
+            </policyMap>
+        </destinationPolicy>
 
 		<!-- Configure message persistence for the broker. The default persistence 
 			mechanism is the KahaDB store (identified by the kahaDB tag). For more information, 
@@ -140,9 +163,14 @@
 
 		<!-- The transport connectors expose ActiveMQ over a given protocol to 
 			clients and other brokers. For more information, see: http://activemq.apache.org/configuring-transports.html -->
-		<transportConnectors>
+		<!-- <transportConnectors>
 			<transportConnector name="openwire"
 				uri="${activemq.transportConnectors.server.uri}" discoveryUri="${activemq.transportConnectors.server.discoveryURI}" />
+		</transportConnectors> -->
+
+		<transportConnectors>
+			<transportConnector name="openwire"
+				uri="${ACTIVEMQ_SERVER_URI}" discoveryUri="${ACTIVEMQ_SERVER_DISCOVERYURI}" />
 		</transportConnectors>
 
 		<!-- destroy the spring context on shutdown to stop jetty -->
