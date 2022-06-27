@@ -2,21 +2,6 @@
 set -e
 
 
-figlet -t "Kartoza Docker GeoServer"
-
-source /scripts/functions.sh
-source /scripts/env-data.sh
-
-# Credits https://github.com/kartoza/docker-geoserver/pull/371
-set_vars
-export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
-export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
-
-/bin/bash /scripts/start.sh
-
-log CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR}"
-log MONITOR_AUDIT_PATH="${MONITOR_AUDIT_PATH}"
-
 export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
        -XX:SoftRefLRUPolicyMSPerMB=36000  -XX:NewRatio=2 \
@@ -55,8 +40,4 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
-if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  exec java "$JAVA_OPTS"  -jar start.jar
-else
-  exec /usr/local/tomcat/bin/catalina.sh run
-fi
+exec /usr/local/tomcat/bin/catalina.sh run
