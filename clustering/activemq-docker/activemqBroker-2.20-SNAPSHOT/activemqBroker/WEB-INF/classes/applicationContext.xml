@@ -86,11 +86,6 @@
 			if your producer is "hanging", it's probably due to producer flow control. 
 			For more information, see: http://activemq.apache.org/producer-flow-control.html -->
 
-		<!-- <networkConnectors xmlns="http://activemq.apache.org/schema/core">
-			<networkConnector
-				uri="${activemq.transportConnectors.server.discoveryURI}" />
-		</networkConnectors> -->
-
 		<networkConnectors xmlns="http://activemq.apache.org/schema/core">
 			<networkConnector
 				uri="${ACTIVEMQ_SERVER_DISCOVERYURI}" />
@@ -163,11 +158,6 @@
 
 		<!-- The transport connectors expose ActiveMQ over a given protocol to 
 			clients and other brokers. For more information, see: http://activemq.apache.org/configuring-transports.html -->
-		<!-- <transportConnectors>
-			<transportConnector name="openwire"
-				uri="${activemq.transportConnectors.server.uri}" discoveryUri="${activemq.transportConnectors.server.discoveryURI}" />
-		</transportConnectors> -->
-
 		<transportConnectors>
 			<transportConnector name="openwire"
 				uri="${ACTIVEMQ_SERVER_URI}" discoveryUri="${ACTIVEMQ_SERVER_DISCOVERYURI}" />
@@ -186,7 +176,7 @@
 	<!-- <bean id="postgres-ds" class="org.postgresql.ds.PGPoolingDataSource"> -->
 	<!-- <property name="serverName" value="localhost" /> -->
 	<!-- <property name="databaseName" value="activemq" /> -->
-	<!-- <property name="portNumber" value="5434" /> -->
+	<!-- <property name="portNumber" value="5432" /> -->
 	<!-- <property name="user" value="postgres" /> -->
 	<!-- <property name="password" value="postgres" /> -->
 	<!-- <property name="dataSourceName" value="postgres" /> -->
