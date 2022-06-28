@@ -8,14 +8,6 @@ x-common-activemq:
   env_file:
     - ../.env
   restart: on-failure
-  depends_on:
-    db:
-      condition: service_healthy
-  healthcheck:
-    test: netstat -ltn | grep -c ":61666"
-    interval: 30s
-    timeout: 10s
-    retries: 3
 
 # Common template for GeoServer services below
 x-common-geoserver:
@@ -68,8 +60,16 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - SSL_MODE=false
-      - ACTIVEMQ_SERVER_URI=tcp://broker1:61666?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
+      - ACTIVEMQ_SERVER_URI=tcp://broker1:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
       - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: netstat -ltn | grep -c ":61616"
+      interval: 30s
+      timeout: 10s
+      retries: 10
 
   broker2:
     << : *default-common-activemq
@@ -81,8 +81,13 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - SSL_MODE=false
-      - ACTIVEMQ_SERVER_URI=tcp://broker2:61666?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
+      - ACTIVEMQ_SERVER_URI=tcp://broker2:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
       - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
+    depends_on:
+      db:
+        condition: service_healthy
+      broker1:
+        condition: service_healthy
 
   broker3:
     << : *default-common-activemq
@@ -94,8 +99,13 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - SSL_MODE=false
-      - ACTIVEMQ_SERVER_URI=tcp://broker3:61666?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
+      - ACTIVEMQ_SERVER_URI=tcp://broker3:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
       - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
+    depends_on:
+      db:
+        condition: service_healthy
+      broker1:
+        condition: service_healthy
 
   master:
     << : *default-common-geoserver
@@ -111,7 +121,7 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - SSL_MODE=allow
-      - BROKER_URL=failover:(tcp://broker1:61666,tcp://broker2:61666,tcp://broker3:61666)
+      - BROKER_URL=failover:(tcp://broker1:61616,tcp://broker2:61616,tcp://broker3:61616)
       - READONLY=disabled
       - TOGGLE_MASTER=true
       - TOGGLE_SLAVE=false
@@ -133,7 +143,7 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - SSL_MODE=allow
-      - BROKER_URL=failover:(tcp://broker1:61666,tcp://broker2:61666,tcp://broker3:61666)
+      - BROKER_URL=failover:(tcp://broker1:61616,tcp://broker2:61616,tcp://broker3:61616)
       - READONLY=enabled
       - TOGGLE_MASTER=false
       - TOGGLE_SLAVE=true
