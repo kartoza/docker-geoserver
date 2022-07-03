@@ -286,6 +286,12 @@ if [ -z "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" ]; then
     ADDITIONAL_JAVA_STARTUP_OPTIONS=''
 fi
 
+if [ -z "${CSRF_WHITELIST}" ]; then
+    CSRF_WHITELIST=
+if [ -z "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" ]; then
+    ADDITIONAL_JAVA_STARTUP_OPTIONS=''
+fi
+
 if [ -z "${POSTGRES_JNDI}" ]; then
     POSTGRES_JNDI=false
 fi
