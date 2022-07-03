@@ -16,3 +16,5 @@ This value will be different for (Master-Node)
 * `TOGGLE_MASTER=true` - Differentiates if the instance will be a Master
 * `TOGGLE_SLAVE=true` - Differentiates if the instance will be a Node
 * `EMBEDDED_BROKER=disabled` - Should be disabled for the Node
+* `CLUSTER_CONNECTION_RETRY_COUNT=10` - How many times try to connect to broker
+* `CLUSTER_CONNECTION_MAX_WAIT=500` - Wait time between connection to broker retry (in milliseconds)
