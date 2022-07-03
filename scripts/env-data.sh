@@ -286,6 +286,10 @@ if [ -z "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" ]; then
     ADDITIONAL_JAVA_STARTUP_OPTIONS=''
 fi
 
+if [ -z "${CSRF_WHITELIST}" ]; then
+    CSRF_WHITELIST=
+fi
+
 if [ -z "${POSTGRES_JNDI}" ]; then
     POSTGRES_JNDI=false
 fi
@@ -298,4 +302,7 @@ if [ -z ${HASHING_ALGORITHM} ];then
     HASHING_ALGORITHM='SHA-256'
 fi
 
+if [ -z "${USE_DATETIME_IN_SHAPEFILE}" ]; then
+    USE_DATETIME_IN_SHAPEFILE=true
+fi
 
