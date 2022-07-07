@@ -14,24 +14,20 @@ ARG GEOSERVER_GID=10001
 ARG USER=geoserveruser
 ARG GROUP_NAME=geoserverusers
 ARG HTTPS_PORT=8443
-
+ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
-RUN set -eux \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get update \
-    && apt-get -y --no-install-recommends install \
+RUN set -eux; \
+    apt-get update; \
+    apt-get -y --no-install-recommends install \
         locales gnupg2 wget ca-certificates rpl pwgen software-properties-common  iputils-ping \
         apt-transport-https curl gettext fonts-cantarell lmodern ttf-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev  \
-        wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet
-# Install gdal3 - bullseye doesn't build libgdal-java anymore so we can't upgrade
-RUN curl https://deb.meteo.guru/velivole-keyring.asc |  apt-key add - \
+        wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet; \
+    # Install gdal3 - bullseye doesn't build libgdal-java anymore so we can't upgrade
+    curl https://deb.meteo.guru/velivole-keyring.asc |  apt-key add - \
     && echo "deb https://deb.meteo.guru/debian buster main" > /etc/apt/sources.list.d/meteo.guru.list \
     && apt-get update \
-    && apt-get -y --no-install-recommends install gdal-bin libgdal-java
-
-RUN set -e \
-    export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y --no-install-recommends install gdal-bin libgdal-java; \
     dpkg-divert --local --rename --add /sbin/initctl \
     && (echo "Yes, do as I say!" | apt-get remove --force-yes login) \
     && apt-get clean \
@@ -53,23 +49,22 @@ ENV \
 
 
 WORKDIR /scripts
-RUN groupadd -r ${GROUP_NAME} -g ${GEOSERVER_GID} && \
-    useradd -m -d /home/${USER}/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G ${GROUP_NAME} ${USER}
-RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
-             ${GEOWEBCACHE_CACHE_DIR} ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /community_plugins /stable_plugins \
-           /plugins /geo_data
-
 ADD resources /tmp/resources
 ADD build_data /build_data
-RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
-    cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
-
 ADD scripts /scripts
-RUN echo $GS_VERSION > /scripts/geoserver_version.txt
-RUN chmod +x /scripts/*.sh;/scripts/setup.sh \
+
+RUN groupadd -r ${GROUP_NAME} -g ${GEOSERVER_GID} && \
+    useradd -l -m -d /home/${USER}/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G ${GROUP_NAME} ${USER}; \
+    mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
+             ${GEOWEBCACHE_CACHE_DIR} ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /community_plugins /stable_plugins \
+            /geo_data; \
+    cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
+    cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl; \
+    echo $GS_VERSION > /scripts/geoserver_version.txt ;\
+    chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*;chown -R ${USER}:${GROUP_NAME} \
     ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR} ${GEOSERVER_DATA_DIR} /scripts ${CERT_DIR} ${FONTS_DIR} \
-    /tmp/ /home/${USER}/ /community_plugins/ /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} \
+    /tmp/ /home/${USER}/ /community_plugins/ /stable_plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} \
     /usr/share/fonts/ /geo_data;chmod o+rw ${CERT_DIR}
 
 
