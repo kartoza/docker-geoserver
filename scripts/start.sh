@@ -59,23 +59,23 @@ if [[ -z "${STABLE_EXTENSIONS}" ]]; then
 else
   for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-      if [[ ! -f /plugins/${ext}.zip ]]; then
+      if [[ ! -f /stable_plugins/${ext}.zip ]]; then
         approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-        download_extension "${approved_plugins_url}" "${ext}" /plugins
-        install_plugin /plugins "${ext}"
+        download_extension "${approved_plugins_url}" "${ext}" /stable_plugins/
+        install_plugin /stable_plugins/ "${ext}"
       else
-        install_plugin /plugins "${ext}"
+        install_plugin /stable_plugins/ "${ext}"
       fi
 
   done
 fi
 
 if [[ ${ACTIVATE_ALL_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-  pushd /plugins/ || exit
+  pushd /stable_plugins/ || exit
   for val in *.zip; do
       ext=${val%.*}
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-      install_plugin /plugins "${ext}"
+      install_plugin /stable_plugins/ "${ext}"
   done
   pushd "${GEOSERVER_HOME}" || exit
 fi
@@ -191,7 +191,7 @@ fi
 
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    unzip -qq /tomcat_apps.zip -d /tmp/ &&
+    unzip -qq ${EXTRA_CONFIG_DIR}/tomcat_apps.zip -d /tmp/ &&
     cp -r  /tmp/tomcat_apps/webapps.dist/* "${CATALINA_HOME}"/webapps/ &&
     rm -r /tmp/tomcat_apps
     if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
@@ -201,8 +201,7 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
-        echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD"
-        echo -e "\033[0m "
+        echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
     fi
     tomcat_user_config
 else
