@@ -55,27 +55,39 @@ fi
 
 # Install stable plugins
 if [[ -z "${STABLE_EXTENSIONS}" ]]; then
-  echo "STABLE_EXTENSIONS is unset, so we do not install any stable extensions"
+  echo -e "\e[32m STABLE_EXTENSIONS is unset, so we do not install any stable extensions \033[0m"
 else
-  for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-      if [[ ! -f /plugins/${ext}.zip ]]; then
-        approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-        download_extension "${approved_plugins_url}" "${ext}" /plugins
-        install_plugin /plugins "${ext}"
-      else
-        install_plugin /plugins "${ext}"
-      fi
+  if  [[ ${FORCE_DOWNLOAD_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+      rm -rf /stable_plugins/*.zip
+      for plugin in $(cat /stable_plugins/stable_plugins.txt); do
+        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+        download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
+      done
+      for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
+        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+        install_plugin /stable_plugins/ "${ext}"
+    done
+  else
+    for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
+        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+        if [[ ! -f /stable_plugins/${ext}.zip ]]; then
+          approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+          download_extension "${approved_plugins_url}" "${ext}" /stable_plugins/
+          install_plugin /stable_plugins/ "${ext}"
+        else
+          install_plugin /stable_plugins/ "${ext}"
+        fi
 
-  done
+    done
+  fi
 fi
 
 if [[ ${ACTIVATE_ALL_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-  pushd /plugins/ || exit
+  pushd /stable_plugins/ || exit
   for val in *.zip; do
       ext=${val%.*}
       echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-      install_plugin /plugins "${ext}"
+      install_plugin /stable_plugins/ "${ext}"
   done
   pushd "${GEOSERVER_HOME}" || exit
 fi
@@ -102,18 +114,30 @@ function community_config() {
 
 # Install community modules plugins
 if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
-  echo "COMMUNITY_EXTENSIONS is unset, so we do not install any community extensions"
+  echo -e "\e[32m COMMUNITY_EXTENSIONS is unset, so we do not install any community extensions \033[0m"
 else
-  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-      if [[ ! -f /community_plugins/${ext}.zip ]]; then
-        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-        download_extension "${community_plugins_url}" "${ext}" /community_plugins
+  if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+    rm -rf /community_plugins/*.zip
+    for plugin in $(cat /community_plugins/community_plugins.txt); do
+      community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
+      download_extension "${community_plugins_url}" "${plugin}" /community_plugins
+    done
+    for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
         community_config
-      else
-        community_config
-      fi
-  done
+    done
+  else
+    for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+        if [[ ! -f /community_plugins/${ext}.zip ]]; then
+          community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+          download_extension "${community_plugins_url}" "${ext}" /community_plugins
+          community_config
+        else
+          community_config
+        fi
+    done
+  fi
 fi
 
 
@@ -191,7 +215,7 @@ fi
 
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    unzip -qq /tomcat_apps.zip -d /tmp/ &&
+    unzip -qq ${EXTRA_CONFIG_DIR}/tomcat_apps.zip -d /tmp/ &&
     cp -r  /tmp/tomcat_apps/webapps.dist/* "${CATALINA_HOME}"/webapps/ &&
     rm -r /tmp/tomcat_apps
     if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
@@ -201,8 +225,7 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
-        echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD"
-        echo -e "\033[0m "
+        echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
     fi
     tomcat_user_config
 else
