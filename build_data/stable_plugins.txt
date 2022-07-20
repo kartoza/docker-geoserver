@@ -9,6 +9,7 @@ excel-plugin
 feature-pregeneralized-plugin
 geofence-plugin
 geofence-server-plugin
+geopkg-output-plugin
 grib-plugin
 gwc-s3-plugin
 h2-plugin
@@ -28,7 +29,6 @@ params-extractor-plugin
 querylayer-plugin
 sldservice-plugin
 sqlserver-plugin
-teradata-plugin
 wcs2_0-eo-plugin
 web-resource-plugin
 wmts-multi-dimensional-plugin

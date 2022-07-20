@@ -163,14 +163,16 @@ rm -f /tmp/resources/overlays/README.txt &&
 # Package tomcat webapps - useful to activate later
 if [ -d "$CATALINA_HOME"/webapps.dist ]; then
     mv "$CATALINA_HOME"/webapps.dist ${EXTRA_CONFIG_DIR}/tomcat_apps &&
-    zip -r ${EXTRA_CONFIG_DIR}/tomcat_apps.zip ${EXTRA_CONFIG_DIR}/tomcat_apps && rm -r ${EXTRA_CONFIG_DIR}/tomcat_apps
+    pushd "${EXTRA_CONFIG_DIR}" || exit &&
+    zip -r tomcat_apps.zip tomcat_apps && rm -r tomcat_apps
 else
     cp -r "${CATALINA_HOME}"/webapps/ROOT ${EXTRA_CONFIG_DIR}/tomcat_apps &&
     cp -r "${CATALINA_HOME}"/webapps/docs ${EXTRA_CONFIG_DIR}/tomcat_apps &&
     cp -r "${CATALINA_HOME}"/webapps/examples ${EXTRA_CONFIG_DIR}/tomcat_apps &&
     cp -r "${CATALINA_HOME}"/webapps/host-manager ${EXTRA_CONFIG_DIR}/tomcat_apps &&
     cp -r "${CATALINA_HOME}"/webapps/manager ${EXTRA_CONFIG_DIR}/tomcat_apps &&
-    zip -r ${EXTRA_CONFIG_DIR}/tomcat_apps.zip ${EXTRA_CONFIG_DIR}/tomcat_apps && rm -r ${EXTRA_CONFIG_DIR}/tomcat_apps
+    pushd "${EXTRA_CONFIG_DIR}" || exit &&
+    zip -r tomcat_apps.zip tomcat_apps && rm -r tomcat_apps
 fi
 
 # Delete resources after installation
