@@ -13,11 +13,35 @@ x-common-activemq:
 x-common-geoserver:
   &default-common-geoserver
   image: kartoza/geoserver:2.21.0
+  build:
+    context: .
+    args:
+      IMAGE_VERSION: ${IMAGE_VERSION}
+      JAVA_HOME: ${JAVA_HOME}
+      GS_VERSION: ${GS_VERSION}
+      WAR_URL: ${WAR_URL}
+      DOWNLOAD_ALL_STABLE_EXTENSIONS: ${DOWNLOAD_ALL_STABLE_EXTENSIONS}
+      DOWNLOAD_ALL_COMMUNITY_EXTENSIONS: ${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}
+      STABLE_PLUGIN_BASE_URL: ${STABLE_PLUGIN_BASE_URL}
   volumes:
     - geoserver-cluster-data:/opt/geoserver/data_dir
+    - settings:/settings
+    - "/mnt/c/Data/:/opt/data"
+  ports:
+    - ${GEOSERVER_PORT}:8080
+  restart: on-failure
   env_file:
     - ../.env
-  restart: on-failure
+  environment:
+    - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+    - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
+    - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+    - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
+    - INITIAL_MEMORY=${INITIAL_MEMORY}
+    - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+    - RECREATE_DATADIR=${RECREATE_DATADIR}
+    - HTTP_PROXY_NAME
+    - HTTP_PROXY_PORT
   depends_on:
     db:
       condition: service_healthy
@@ -113,7 +137,7 @@ services:
       - "8081:8080"
     environment:
       - CLUSTERING=true
-      - CLUSTER_DURABILITY=true
+      - CLUSTER_DURABILITY=false
       - DB_BACKEND=POSTGRES
       - HOST=db
       - POSTGRES_PORT=5432
@@ -135,7 +159,7 @@ services:
       - "8082:8080"
     environment:
       - CLUSTERING=true
-      - CLUSTER_DURABILITY=true
+      - CLUSTER_DURABILITY=false
       - DB_BACKEND=POSTGRES
       - HOST=db
       - POSTGRES_PORT=5432
@@ -154,3 +178,4 @@ services:
 volumes:
    geoserver-cluster-data:
    geo-db-data:
+   settings:

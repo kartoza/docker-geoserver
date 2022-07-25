@@ -31,6 +31,11 @@
     <bean id="postgres-ds" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
         <property name="dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
         <property name="maximumPoolSize" value="20" />
+        <property name="connectionTimeout" value="30000" />
+        <property name="validationTimeout" value="10000" />
+        <property name="idleTimeout" value="300000" />
+        <property name="connectionInitSql" value="SELECT 1" />
+        <property name="connectionTestQuery" value="SELECT 1" />
         <property name="dataSourceProperties" >
             <props>
                 <prop key="portNumber">${POSTGRES_PORT}</prop>
@@ -48,7 +53,8 @@
     <!--
         The <broker> element is used to configure the ActiveMQ broker.
     -->
-    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}">
+    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}"
+            offlineDurableSubscriberTimeout="300000" offlineDurableSubscriberTaskSchedule="300000">
 
         <destinationPolicy>
             <policyMap>
@@ -61,10 +67,19 @@
 
                          http://activemq.apache.org/slow-consumer-handling.html
 
-                    -->
                   <pendingMessageLimitStrategy>
                     <constantPendingMessageLimitStrategy limit="1000"/>
                   </pendingMessageLimitStrategy>
+                  -->
+                  <!-- 
+                    Tell the dead letter strategy not to process expired messages
+                    so that they will just be discarded instead of being sent to
+                    the DLQ 
+                    -->
+                  <deadLetterStrategy>
+                     <!-- <sharedDeadLetterStrategy processExpired="false" /> -->
+                     <discarding/>
+                  </deadLetterStrategy>
                 </policyEntry>
               </policyEntries>
             </policyMap>
