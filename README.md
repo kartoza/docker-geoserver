@@ -208,6 +208,9 @@ docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-p
 
 ```
 
+You can also pass the environment variable `FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS=true` to download
+the latest community plugins during initialisation of the container.
+
 **Note:** Community plugins are always in flux state. There is no guarantee that
 plugins will be accessible between each successive build. You can build the extensions
 following the guidelines from [GeoServer develop guidelines](https://docs.geoserver.org/latest/en/developer/maven-guide/index.html#building-extensions)
