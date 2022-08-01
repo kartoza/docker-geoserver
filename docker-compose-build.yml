@@ -34,5 +34,4 @@ services:
         - RECREATE_DATADIR=${RECREATE_DATADIR}
         - HTTP_PROXY_NAME
         - HTTP_PROXY_PORT
-        - TOMCAT_EXTRAS=false
 
