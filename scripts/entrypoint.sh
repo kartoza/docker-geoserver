@@ -4,6 +4,30 @@ set -e
 
 figlet -t "Kartoza Docker GeoServer"
 
+# Gosu preparations
+USER_ID=${GEOSERVER_UID:-1000}
+GROUP_ID=${GEOSERVER_GID:-1000}
+USER_NAME=${USER:-geoserveruser}
+GEO_GROUP_NAME=${GROUP_NAME:-geoserverusers}
+
+# Add group
+if [ ! $(getent group "${GEO_GROUP_NAME}") ]; then
+  groupadd -r "${GEO_GROUP_NAME}" -g ${GROUP_ID}
+fi
+
+# Add user to system
+if id "${USER_NAME}" &>/dev/null; then
+    echo ' skipping user creation'
+else
+    useradd -l -m -d /home/"${USER_NAME}"/ -u "${USER_ID}" --gid "${GROUP_ID}" -s /bin/bash -G "${GEO_GROUP_NAME}" "${USER_NAME}"
+fi
+
+# Create directories
+mkdir -p  "${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}" \
+"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}"
+
+
+
 source /scripts/functions.sh
 source /scripts/env-data.sh
 
@@ -13,6 +37,8 @@ export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOG
 export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
 
 /bin/bash /scripts/start.sh
+
+
 
 log CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR}"
 log MONITOR_AUDIT_PATH="${MONITOR_AUDIT_PATH}"
@@ -55,8 +81,15 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
+
+# Chown again - seems to fix issue with resolving all created directories
+chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CATALINA_HOME}" "${FOOTPRINTS_DATA_DIR}" "${GEOSERVER_DATA_DIR}" \
+"${CERT_DIR}" "${FONTS_DIR}"  /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}" "${STABLE_PLUGINS_DIR}" \
+"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}"  /usr/share/fonts/ /scripts /tomcat_apps.zip \
+/tmp/ "${GEOWEBCACHE_CACHE_DIR}";chmod o+rw "${CERT_DIR}"
+
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  exec java "$JAVA_OPTS"  -jar start.jar
+  exec gosu ${USER_NAME} java "$JAVA_OPTS"  -jar start.jar
 else
-  exec /usr/local/tomcat/bin/catalina.sh run
+  exec gosu ${USER_NAME} /usr/local/tomcat/bin/catalina.sh run
 fi

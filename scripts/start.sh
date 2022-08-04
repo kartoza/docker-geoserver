@@ -23,6 +23,7 @@ fi
 
 # Add custom espg properties file or the default one
 create_dir "${GEOSERVER_DATA_DIR}"/user_projections
+create_dir "${GEOWEBCACHE_CACHE_DIR}"
 
 setup_custom_crs
 
@@ -215,7 +216,7 @@ fi
 
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    unzip -qq ${EXTRA_CONFIG_DIR}/tomcat_apps.zip -d /tmp/ &&
+    unzip -qq /tomcat_apps.zip -d /tmp/ &&
     cp -r  /tmp/tomcat_apps/webapps.dist/* "${CATALINA_HOME}"/webapps/ &&
     rm -r /tmp/tomcat_apps
     if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then

@@ -7,14 +7,20 @@ source /scripts/functions.sh
 resources_dir="/tmp/resources"
 create_dir ${resources_dir}/plugins/gdal
 create_dir /usr/share/fonts/opentype
-create_dir ${EXTRA_CONFIG_DIR}/tomcat_apps
+create_dir /tomcat_apps
 create_dir "${CATALINA_HOME}"/postgres_config
+create_dir "${STABLE_PLUGINS_DIR}"
+create_dir "${COMMUNITY_PLUGINS_DIR}"
+
+# Copy config files
+cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
+cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
 validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
  dpkg -i ttf-mscorefonts-installer_3.8_all.deb && rm ttf-mscorefonts-installer_3.8_all.deb
 
 
-pushd /stable_plugins || exit
+pushd "${STABLE_PLUGINS_DIR}" || exit
 
 # Check if we have pre downloaded plugin yet
 stable_count=$(ls -1 $resources_dir/plugins/stable_plugins/*.zip 2>/dev/null | wc -l)
@@ -41,7 +47,7 @@ else
 fi
 
 # Download community extensions. This needs to be checked on each iterations as they sometimes become unavailable
-pushd /community_plugins || exit
+pushd "${COMMUNITY_PLUGINS_DIR}" || exit
 
 if [ -z "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" -eq 0 ]; then
   plugin=$(head -n 1 /community_plugins/community_plugins.txt)
@@ -162,17 +168,15 @@ rm -f /tmp/resources/overlays/README.txt &&
 
 # Package tomcat webapps - useful to activate later
 if [ -d "$CATALINA_HOME"/webapps.dist ]; then
-    mv "$CATALINA_HOME"/webapps.dist ${EXTRA_CONFIG_DIR}/tomcat_apps &&
-    pushd "${EXTRA_CONFIG_DIR}" || exit &&
-    zip -r tomcat_apps.zip tomcat_apps && rm -r tomcat_apps
+    mv "$CATALINA_HOME"/webapps.dist /tomcat_apps &&
+    zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
 else
-    cp -r "${CATALINA_HOME}"/webapps/ROOT ${EXTRA_CONFIG_DIR}/tomcat_apps &&
-    cp -r "${CATALINA_HOME}"/webapps/docs ${EXTRA_CONFIG_DIR}/tomcat_apps &&
-    cp -r "${CATALINA_HOME}"/webapps/examples ${EXTRA_CONFIG_DIR}/tomcat_apps &&
-    cp -r "${CATALINA_HOME}"/webapps/host-manager ${EXTRA_CONFIG_DIR}/tomcat_apps &&
-    cp -r "${CATALINA_HOME}"/webapps/manager ${EXTRA_CONFIG_DIR}/tomcat_apps &&
-    pushd "${EXTRA_CONFIG_DIR}" || exit &&
-    zip -r tomcat_apps.zip tomcat_apps && rm -r tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps &&
+    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps &&
+    zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
 fi
 
 # Delete resources after installation
