@@ -8,42 +8,46 @@ resources_dir="/tmp/resources"
 create_dir ${resources_dir}/plugins/gdal
 create_dir /usr/share/fonts/opentype
 create_dir /tomcat_apps
-create_dir /usr/local/gdal_data
-create_dir /usr/local/gdal_native_libs
 create_dir "${CATALINA_HOME}"/postgres_config
+create_dir "${STABLE_PLUGINS_DIR}"
+create_dir "${COMMUNITY_PLUGINS_DIR}"
+
+# Copy config files
+cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
+cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
 validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
  dpkg -i ttf-mscorefonts-installer_3.8_all.deb && rm ttf-mscorefonts-installer_3.8_all.deb
 
 
-pushd /plugins || exit
+pushd "${STABLE_PLUGINS_DIR}" || exit
 
 # Check if we have pre downloaded plugin yet
 stable_count=$(ls -1 $resources_dir/plugins/stable_plugins/*.zip 2>/dev/null | wc -l)
 if [ "$stable_count" != 0 ]; then
-  cp -r $resources_dir/plugins/stable_plugins/*.zip /plugins/
+  cp -r $resources_dir/plugins/stable_plugins/*.zip /stable_plugins/
 fi
 
 community_count=$(ls -1 $resources_dir/plugins/community_plugins/*.zip 2>/dev/null | wc -l)
 if [ "${community_count}" != 0 ]; then
-  cp -r $resources_dir/plugins/community_plugin/*.zip /plugins/
+  cp -r $resources_dir/plugins/community_plugin/*.zip /community_plugins/
 fi
 
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
 if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" -eq 0 ]; then
-  plugin=$(head -n 1 /plugins/stable_plugins.txt)
+  plugin=$(head -n 1 /stable_plugins/stable_plugins.txt)
   approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-  download_extension "${approved_plugins_url}" "${plugin}" /plugins
+  download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
 else
-  for plugin in $(cat /plugins/stable_plugins.txt); do
+  for plugin in $(cat /stable_plugins/stable_plugins.txt); do
     approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-    download_extension "${approved_plugins_url}" "${plugin}" /plugins
+    download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
   done
 fi
 
 # Download community extensions. This needs to be checked on each iterations as they sometimes become unavailable
-pushd /community_plugins || exit
+pushd "${COMMUNITY_PLUGINS_DIR}" || exit
 
 if [ -z "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" -eq 0 ]; then
   plugin=$(head -n 1 /community_plugins/community_plugins.txt)

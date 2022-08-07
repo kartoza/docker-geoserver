@@ -25,7 +25,7 @@ jdbc-metrics-plugin
 jdbcconfig-plugin
 jdbcstore-plugin
 jms-cluster-plugin
-kmlppio-plugin
+libdeflate-plugin
 mbtiles-plugin
 mbtiles-store-plugin
 metadata-plugin
@@ -33,14 +33,12 @@ mongodb-schemaless-plugin
 ncwms-plugin
 netcdf-ghrsst-plugin
 notification-plugin
-nsg-wfs-profile-plugin
 nsg-wmts-profile-plugin
 ogcapi-plugin
 ogr-datastore-plugin
 opensearch-eo-plugin
 ows-simulate-plugin
 pgraster-plugin
-qos-plugin
 s3-geotiff-plugin
 saml-plugin
 sec-keycloak-plugin
@@ -52,7 +50,8 @@ smart-data-loader-plugin
 solr-plugin
 taskmanager-core-plugin
 taskmanager-s3-plugin
-wfs3-plugin
+teradata-plugin
+vsi-plugin
 wms-eo-plugin
 wmts-styles-plugin
 wps-remote-plugin
