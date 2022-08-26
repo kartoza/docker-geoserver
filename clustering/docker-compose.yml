@@ -3,7 +3,7 @@ version: "3.9"
 # Common template for ActiveMQ services below
 x-common-activemq:
   &default-common-activemq
-  image: kartoza/activemq-docker:2.21.0
+  image: kartoza/activemq-docker:2.20.2
   build: activemq-docker
   env_file:
     - ../.env
@@ -12,7 +12,7 @@ x-common-activemq:
 # Common template for GeoServer services below
 x-common-geoserver:
   &default-common-geoserver
-  image: kartoza/geoserver:2.21.0
+  image: kartoza/geoserver:2.20.2
   build:
     context: .
     args:
@@ -72,7 +72,7 @@ services:
       - FORCE_SSL=FALSE
     restart: on-failure
     healthcheck:
-      test: "pg_isready -d gis"
+      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
 
   broker1:
     << : *default-common-activemq

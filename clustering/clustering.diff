@@ -1,0 +1,122 @@
+diff --git a/.env b/.env
+index 6de2a1c..97f770d 100644
+--- a/.env
++++ b/.env
+@@ -14,12 +14,12 @@ DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=0
+ GEOSERVER_UID=1000
+ GEOSERVER_GID=10001
+ SAMPLE_DATA=TRUE
+-RECREATE_DATADIR=TRUE
++RECREATE_DATADIR=FALSE
+ # Generic Env variables
+ GEOSERVER_ADMIN_USER=admin
+ GEOSERVER_ADMIN_PASSWORD=geoserver
+ # Reset admin credentials on container restart
+-RESET_ADMIN_CREDENTIALS=TRUE
++RESET_ADMIN_CREDENTIALS=FALSE
+ # https://docs.geoserver.org/latest/en/user/datadirectory/setting.html
+ GEOSERVER_DATA_DIR=/opt/geoserver/data_dir
+ # https://docs.geoserver.org/latest/en/user/data/raster/gdal.html#external-footprints-data-directory
+@@ -82,7 +82,7 @@ CHARACTER_ENCODING='UTF-8'
+ # Activates clustering using JMS cluster plugin
+ CLUSTERING=False
+ # cluster env variables specified https://docs.geoserver.org/stable/en/user/community/jms-cluster/index.html
+-CLUSTER_DURABILITY=true
++CLUSTER_DURABILITY=false
+ BROKER_URL=
+ READONLY=disabled
+ RANDOMSTRING=23bd87cfa327d47e
+diff --git a/clustering/activemq-docker/Dockerfile b/clustering/activemq-docker/Dockerfile
+index d4321f6..75c3536 100644
+--- a/clustering/activemq-docker/Dockerfile
++++ b/clustering/activemq-docker/Dockerfile
+@@ -4,9 +4,9 @@ LABEL maintainer="Alessio Fabiani <alessio.fabiani@geosolutionsgroup.com>"
+ 
+ ENV ACTIVEMQ_VERSION 5.17.1
+ ENV ACTIVEMQ apache-activemq-$ACTIVEMQ_VERSION
+-ENV ACTIVEMQ_HOME /opt/activemq
+-ENV ACTIVEMQ_CONF $ACTIVEMQ_HOME/conf
+-ENV ACTIVEMQ_LIB $ACTIVEMQ_HOME/lib/optional
++ENV ACTIVEMQ_HOME /opt/activemq/
++ENV ACTIVEMQ_CONF $ACTIVEMQ_HOME/conf/
++ENV ACTIVEMQ_LIB $ACTIVEMQ_HOME/lib/optional/
+ 
+ RUN apk add --update curl && \
+     rm -rf /var/cache/apk/* && \
+diff --git a/clustering/activemq-docker/activemq.xml b/clustering/activemq-docker/activemq.xml
+index 89b8eea..3ec9521 100644
+--- a/clustering/activemq-docker/activemq.xml
++++ b/clustering/activemq-docker/activemq.xml
+@@ -31,6 +31,11 @@
+     <bean id="postgres-ds" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+         <property name="dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
+         <property name="maximumPoolSize" value="20" />
++        <property name="connectionTimeout" value="30000" />
++        <property name="validationTimeout" value="10000" />
++        <property name="idleTimeout" value="300000" />
++        <property name="connectionInitSql" value="SELECT 1" />
++        <property name="connectionTestQuery" value="SELECT 1" />
+         <property name="dataSourceProperties" >
+             <props>
+                 <prop key="portNumber">${POSTGRES_PORT}</prop>
+@@ -48,7 +53,8 @@
+     <!--
+         The <broker> element is used to configure the ActiveMQ broker.
+     -->
+-    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}">
++    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}"
++            offlineDurableSubscriberTimeout="300000" offlineDurableSubscriberTaskSchedule="300000">
+ 
+         <destinationPolicy>
+             <policyMap>
+@@ -61,10 +67,19 @@
+ 
+                          http://activemq.apache.org/slow-consumer-handling.html
+ 
+-                    -->
+                   <pendingMessageLimitStrategy>
+                     <constantPendingMessageLimitStrategy limit="1000"/>
+                   </pendingMessageLimitStrategy>
++                  -->
++                  <!-- 
++                    Tell the dead letter strategy not to process expired messages
++                    so that they will just be discarded instead of being sent to
++                    the DLQ 
++                    -->
++                  <deadLetterStrategy>
++                     <!-- <sharedDeadLetterStrategy processExpired="false" /> -->
++                     <discarding/>
++                  </deadLetterStrategy>
+                 </policyEntry>
+               </policyEntries>
+             </policyMap>
+diff --git a/clustering/docker-compose.yml b/clustering/docker-compose.yml
+index 9cd9aa1..0ae854b 100644
+--- a/clustering/docker-compose.yml
++++ b/clustering/docker-compose.yml
+@@ -15,6 +15,7 @@ x-common-geoserver:
+   image: kartoza/geoserver:2.20.2
+   volumes:
+     - geoserver-cluster-data:/opt/geoserver/data_dir
++    - "/mnt/c/Data/:/opt/data"
+   env_file:
+     - ../.env
+   restart: on-failure
+@@ -113,7 +114,7 @@ services:
+       - "8081:8080"
+     environment:
+       - CLUSTERING=true
+-      - CLUSTER_DURABILITY=true
++      - CLUSTER_DURABILITY=false
+       - DB_BACKEND=POSTGRES
+       - HOST=db
+       - POSTGRES_PORT=5432
+@@ -135,7 +136,7 @@ services:
+       - "8082:8080"
+     environment:
+       - CLUSTERING=true
+-      - CLUSTER_DURABILITY=true
++      - CLUSTER_DURABILITY=false
+       - DB_BACKEND=POSTGRES
+       - HOST=db
+       - POSTGRES_PORT=5432
