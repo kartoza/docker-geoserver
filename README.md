@@ -5,6 +5,7 @@
        * [Building the image](#building-the-image)
        * [Local build using repository checkout](#local-build-using-repository-checkout)
        * [Building with a specific version of  Tomcat](#building-with-a-specific-version-of--tomcat)
+       * [Building on Windows](#building-on-windows)
    * [Environment Variables](#environment-variables)
        * [Default installed  plugins](#default-installed--plugins)
            * [Activate stable plugins during contain startup](#activate-stable-plugins-during-contain-startup)
@@ -21,7 +22,7 @@
        * [Installing extra fonts](#installing-extra-fonts)
        * [Other Environment variables supported](#other-environment-variables-supported)
        * [Control flow properties](#control-flow-properties)
-       * [Changing GeoServer password and username on runtime](#changing-geoserver-password-and-username-on-runtime)
+       * [Changing GeoServer password and username](#changing-geoserver-password-and-username)
            * [Docker secrets](#docker-secrets)
    * [Mounting Configs](#mounting-configs)
        * [CORS Support](#cors-support)
@@ -29,6 +30,8 @@
    * [Running the Image](#running-the-image)
        * [Run (automated using docker-compose)](#run-automated-using-docker-compose)
        * [Reverse Proxy using NGINX](#reverse-proxy-using-nginx)
+       * [Additional Notes for MacOS M1 Chip](#additional-notes-for-macos-m1-chip)
+       * [Reverse Proxy using NGINX](#reverse-proxy-using-nginx-1)
    * [Kubernetes (Helm Charts)](#kubernetes-helm-charts)
    * [Contributing to the image](#contributing-to-the-image)
        * [Upgrading GeoServer Versions](#upgrading-geoserver-versions)
@@ -349,11 +352,25 @@ HTTP_PROXY_NAME
 HTTP_PROXY_PORT
 ```
 
+If you are running GeoServer under SSL with reverse proxy i.e nginx you will need
+to set the following env variables
+
+Example below:
+
+```bash
+HTTP_PROXY_NAME=foo.org
+HTTP_SCHEME=https
+```
+
+This will prevent the login form from sending insecure http post request as experienced
+in [login issue](https://github.com/kartoza/docker-geoserver/issues/293)
+
 For SSL based connections the env variables are:
 
 ```
 HTTPS_PROXY_NAME
 HTTPS_PROXY_PORT
+HTTPS_SCHEME
 ```
 
 ### Removing Tomcat extras
