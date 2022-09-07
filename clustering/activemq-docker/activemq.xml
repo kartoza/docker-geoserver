@@ -59,7 +59,7 @@
         <destinationPolicy>
             <policyMap>
               <policyEntries>
-                <policyEntry topic=">" expireMessagesPeriod="30000">
+                <policyEntry topic="VirtualTopic.geoserver" expireMessagesPeriod="30">
                     <!--The constantPendingMessageLimitStrategy is used to prevent
                          slow topic consumers to block producers and affect other consumers
                          by limiting the number of messages that are retained

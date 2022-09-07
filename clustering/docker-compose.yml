@@ -84,7 +84,7 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - SSL_MODE=false
-      - ACTIVEMQ_SERVER_URI=tcp://broker1:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
+      - ACTIVEMQ_SERVER_URI=tcp://broker1:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=false&transport.daemon=true
       - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
     depends_on:
       db:
@@ -105,7 +105,7 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - SSL_MODE=false
-      - ACTIVEMQ_SERVER_URI=tcp://broker2:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
+      - ACTIVEMQ_SERVER_URI=tcp://broker2:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=false&transport.daemon=true
       - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
     depends_on:
       db:
@@ -123,7 +123,7 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - SSL_MODE=false
-      - ACTIVEMQ_SERVER_URI=tcp://broker3:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true
+      - ACTIVEMQ_SERVER_URI=tcp://broker3:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=false&transport.daemon=true
       - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
     depends_on:
       db:
