@@ -17,7 +17,7 @@ services:
         - FORCE_SSL=TRUE
       restart: on-failure
       healthcheck:
-        test: "pg_isready -d gis"
+        test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
    master:
       image: kartoza/geoserver:2.21.1
       volumes:
@@ -38,8 +38,6 @@ services:
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - SSL_MODE=allow
-        #- RANDOMSTRING=23bd87cfa327d47e
-        #- INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
       restart: on-failure
       depends_on:
         db:

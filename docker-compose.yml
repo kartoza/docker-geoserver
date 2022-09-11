@@ -19,7 +19,7 @@ services:
         - FORCE_SSL=TRUE
       restart: on-failure
       healthcheck:
-        test: "exit 0"
+        test: "PGPASSWORD=${POSTGRES_PASS} pg_isready -h 127.0.0.1 -U docker -d gis"
 
    geoserver:
       image: kartoza/geoserver:${GS_VERSION}
