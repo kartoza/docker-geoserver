@@ -433,3 +433,4 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
 fi
 
 setup_logging
+

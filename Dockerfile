@@ -1,5 +1,5 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0-jdk11-openjdk-slim-bullseye
+ARG IMAGE_VERSION=9.0.65-jdk11-openjdk-slim-buster
 ARG JAVA_HOME=/usr/local/openjdk-11
 FROM tomcat:$IMAGE_VERSION
 
@@ -18,7 +18,7 @@ RUN set -eux; \
         locales gnupg2 wget ca-certificates rpl pwgen software-properties-common  iputils-ping \
         apt-transport-https curl gettext fonts-cantarell lmodern ttf-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev  \
-        wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu; \
+        wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
     # Install gdal3 - bullseye doesn't build libgdal-java anymore so we can't upgrade
     curl https://deb.meteo.guru/velivole-keyring.asc |  apt-key add - \
     && echo "deb https://deb.meteo.guru/debian buster main" > /etc/apt/sources.list.d/meteo.guru.list \
