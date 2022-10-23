@@ -192,10 +192,6 @@ export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 # Setup control flow properties
 setup_control_flow
 
-# Setup tomcat apps manager
-export TOMCAT_PASSWORD TOMCAT_USER
-
-
 
 if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   postgres_ssl_setup
@@ -227,7 +223,11 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
         echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
+    else
+       export TOMCAT_PASSWORD
     fi
+    # Setup tomcat apps manager
+    export TOMCAT_USER
     tomcat_user_config
 else
     delete_folder "${CATALINA_HOME}"/webapps/ROOT &&
@@ -306,7 +306,8 @@ else
     sed -i -e '83,126d' "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
     SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
-fi
+fi # End SSL settings
+
 
 # change server configuration
 
@@ -423,9 +424,8 @@ else
 fi
 
 
-if [[ -f ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl ]];then
-  rm "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
-fi
+# Cleanup temp file
+delete_file ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
