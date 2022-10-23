@@ -5,12 +5,20 @@ source /scripts/env-data.sh
 source /scripts/functions.sh
 
 resources_dir="/tmp/resources"
+GS_VERSION=$(cat /scripts/geoserver_version.txt)
 create_dir ${resources_dir}/plugins/gdal
 create_dir /usr/share/fonts/opentype
 create_dir /tomcat_apps
 create_dir "${CATALINA_HOME}"/postgres_config
 create_dir "${STABLE_PLUGINS_DIR}"
 create_dir "${COMMUNITY_PLUGINS_DIR}"
+create_dir "${GEOSERVER_HOME}"
+
+pushd "${CATALINA_HOME}" || exit
+
+
+# Download geoserver and install it
+package_geoserver
 
 # Copy config files
 cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
@@ -75,32 +83,15 @@ done
 
 
 # Install libjpeg-turbo
+system_architecture=$(dpkg --print-architecture)
 if [[ ! -f ${resources_dir}/libjpeg-turbo-official_2.1.3_amd64.deb ]]; then
-  validate_url https://liquidtelecom.dl.sourceforge.net/project/libjpeg-turbo/2.1.3/libjpeg-turbo-official_2.1.3_amd64.deb \
+  validate_url https://tenet.dl.sourceforge.net/project/libjpeg-turbo/2.1.4/libjpeg-turbo-official_2.1.4_${system_architecture}.deb \
     '-P /tmp/resources/'
 fi
 
-dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.3_amd64.deb
+dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.4_${system_architecture}.deb
 
 pushd "${CATALINA_HOME}" || exit
-
-# Download geoserver
-download_geoserver
-
-# Install geoserver in the tomcat dir
-if [[ -f /tmp/geoserver/geoserver.war ]]; then
-  unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/geoserver &&
-  cp -r "${CATALINA_HOME}"/webapps/geoserver/data "${CATALINA_HOME}" &&
-  mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}" &&
-  rm -rf "${CATALINA_HOME}"/webapps/geoserver/data &&
-  mv "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
-  rm -rf /tmp/geoserver
-else
-  cp -r /tmp/geoserver/* "${GEOSERVER_HOME}"/ &&
-  cp -r "${GEOSERVER_HOME}"/webapps/geoserver "${CATALINA_HOME}"/webapps/geoserver &&
-  cp -r "${GEOSERVER_HOME}"/data_dir "${CATALINA_HOME}"/data &&
-  mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}"
-fi
 
 # Install GeoServer plugins in correct install dir
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then

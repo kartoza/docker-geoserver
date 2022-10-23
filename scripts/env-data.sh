@@ -322,4 +322,6 @@ if [ -z "${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS}" ]; then
     FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS=false
 fi
 
-
+if [ -z "${DISABLE_CORS}" ]; then
+  DISABLE_CORS=false
+fi
