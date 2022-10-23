@@ -124,7 +124,7 @@ function validate_geo_install() {
   DATA_PATH=$1
   # Check if geoserver is installed early so that we can fail early on
   if [[ $(ls -A ${DATA_PATH})  ]]; then
-    echo -e "\e[32m  GeoServer install dir exist proceed with install \033[0m"
+    echo "GeoServer install dir exist proceed with install"
   else
     exit 1
   fi

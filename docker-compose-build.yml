@@ -21,7 +21,6 @@ services:
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
         - settings:/settings
-        - /tmp/server.xml:/settings/server.xml
       ports:
         - ${GEOSERVER_PORT}:8080
       restart: on-failure
@@ -37,5 +36,4 @@ services:
         - HTTP_PROXY_PORT
         - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
         - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
-
 
