@@ -37,7 +37,5 @@ services:
         - HTTP_PROXY_PORT
         - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
         - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
-        - TOMCAT_EXTRAS=true
-        - TOMCAT_PASSWORD=docker
-        - TOMCAT_USER=docker
+
 
