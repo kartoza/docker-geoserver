@@ -124,7 +124,7 @@ function validate_geo_install() {
   DATA_PATH=$1
   # Check if geoserver is installed early so that we can fail early on
   if [[ $(ls -A ${DATA_PATH})  ]]; then
-    echo "GeoServer install dir exist proceed with install"
+     echo -e "\e[32m  GeoServer install dir exist proceed with install \033[0m"
   else
     exit 1
   fi
@@ -237,17 +237,7 @@ function broker_xml_config() {
 
 # Helper function to configure s3 bucket
 # https://docs.geoserver.org/latest/en/user/community/s3-geotiff/index.html
-function s3_config() {
-  if [[ ! -f "${GEOSERVER_DATA_DIR}"/s3.properties ]]; then
-    # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONFIG_DIR}/s3.properties ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/s3.properties > "${GEOSERVER_DATA_DIR}"/s3.properties
-    else
-      # default value
-      envsubst < /build_data/s3.properties > "${GEOSERVER_DATA_DIR}"/s3.properties
-    fi
-  fi
-}
+# Remove this based on https://www.mail-archive.com/geoserver-users@lists.sourceforge.net/msg34214.html
 
 # Helper function to install plugin in proper path
 
