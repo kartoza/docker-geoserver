@@ -98,19 +98,8 @@ fi
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 
 function community_config() {
-    if [[ ${ext} == 's3-geotiff-plugin' ]]; then
-        s3_config
-        echo "Installing ${ext} "
-        install_plugin /community_plugins "${ext}"
-        if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/ehcache-3.4.0.jar ]];then
-          validate_url https://repo1.maven.org/maven2/org/ehcache/ehcache/3.4.0/ehcache-3.4.0.jar && \
-          mv ehcache-3.4.0.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/
-        fi
-
-    elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
-        echo "Installing ${ext} "
-        install_plugin /community_plugins "${ext}"
-    fi
+     echo -e "\e[32m  Installing ${ext} \033[0m"
+    install_plugin /community_plugins "${ext}"
 }
 
 # Install community modules plugins
@@ -146,7 +135,7 @@ if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
    pushd /community_plugins/ || exit
     for val in *.zip; do
         ext=${val%.*}
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+        echo -e "\e[32m  Enabling ${ext} for GeoServer ${GS_VERSION} \033[0m"
         community_config
     done
     pushd "${GEOSERVER_HOME}" || exit
@@ -242,7 +231,7 @@ else
     fi
 fi
 
-
+# Enable SSL
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
   # convert LetsEncrypt certificates

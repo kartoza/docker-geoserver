@@ -66,7 +66,6 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -DGEOSERVER_AUDIT_PATH=${MONITOR_AUDIT_PATH} \
        -Dorg.geotools.shapefile.datetime=${USE_DATETIME_IN_SHAPEFILE} \
        -Dorg.geotools.localDateTimeHandling=true \
-       -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties \
        -Dsun.java2d.renderer.useThreadLocal=false \
        -Dsun.java2d.renderer.pixelsize=8192 -server -XX:NewSize=300m \
        -Dlog4j.configuration=${CATALINA_HOME}/log4j.properties \

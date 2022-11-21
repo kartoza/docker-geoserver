@@ -19,7 +19,7 @@ services:
       healthcheck:
         test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
    master:
-      image: kartoza/geoserver:2.21.1
+      image: kartoza/geoserver:2.21.2
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
@@ -48,7 +48,7 @@ services:
         timeout: 10s
         retries: 3
    node:
-      image: kartoza/geoserver:2.21.1
+      image: kartoza/geoserver:2.21.2
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
