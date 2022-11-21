@@ -172,7 +172,8 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resourc
     else
       destination=/tmp/geoserver/geoserver.war
       mkdir -p /tmp/geoserver/ &&
-      ${request} "${WAR_URL}" -O ${destination}
+      ${request} "${WAR_URL}" -O ${destination} && \
+      unzip_geoserver
     fi
 else
   if [[  -f /tmp/resources/geoserver-${GS_VERSION}.zip ]];then
