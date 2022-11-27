@@ -54,3 +54,4 @@ vsi-plugin
 wms-eo-plugin
 wmts-styles-plugin
 wps-remote-plugin
+stac-datastore-plugin
