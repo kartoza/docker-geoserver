@@ -72,6 +72,8 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        --patch-module java.desktop=${CATALINA_HOME}/marlin-render.jar  \
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
        -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
+       -DUPDATE_BUILT_IN_LOGGING_PROFILES=${UPDATE_LOGGING_PROFILES} \
+       -DRELINQUISH_LOG4J_CONTROL=${RELINQUISH_LOG4J_CONTROL} \
        -DGEOSERVER_CONSOLE_DISABLED=${DISABLE_WEB_INTERFACE} \
        -DGEOSERVER_CSRF_WHITELIST=${CSRF_WHITELIST} \
        -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} \

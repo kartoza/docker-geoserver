@@ -74,7 +74,7 @@ pushd ${resources_dir}/plugins || exit
 
 array=(geoserver-${GS_VERSION}-vectortiles-plugin.zip geoserver-${GS_VERSION}-wps-plugin.zip geoserver-${GS_VERSION}-printing-plugin.zip
   geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip geoserver-${GS_VERSION}-control-flow-plugin.zip
-  geoserver-${GS_VERSION}-pyramid-plugin.zip geoserver-${GS_VERSION}-gdal-plugin.zip
+  geoserver-${GS_VERSION}-pyramid-plugin.zip geoserver-${GS_VERSION}-gdal-plugin.zip geoserver-${GS_VERSION}-csw-iso-plugin.zip
   geoserver-${GS_VERSION}-monitor-plugin.zip geoserver-${GS_VERSION}-inspire-plugin.zip geoserver-${GS_VERSION}-csw-plugin.zip )
 for i in "${array[@]}"; do
   url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
