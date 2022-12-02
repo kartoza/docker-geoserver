@@ -86,7 +86,7 @@ function web_cors() {
       ###
       if [[ "${DISABLE_CORS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         echo "Deactivating Tomcat CORS filter"
-        sed 's/<!-- CORS_START.*/<!-- CORS DEACTIVATED BY DISABLE_CORS -->\n<!--/; s/^.*<!-- CORS_END -->/-->/' \
+        sed -i 's/<!-- CORS_START.*/<!-- CORS DEACTIVATED BY DISABLE_CORS -->\n<!--/; s/^.*<!-- CORS_END -->/-->/' \
           ${CATALINA_HOME}/conf/web.xml
       fi
     fi
@@ -172,7 +172,8 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resourc
     else
       destination=/tmp/geoserver/geoserver.war
       mkdir -p /tmp/geoserver/ &&
-      ${request} "${WAR_URL}" -O ${destination}
+      ${request} "${WAR_URL}" -O ${destination} && \
+      unzip_geoserver
     fi
 else
   if [[  -f /tmp/resources/geoserver-${GS_VERSION}.zip ]];then

@@ -36,4 +36,11 @@ services:
         - HTTP_PROXY_PORT
         - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
         - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
+      healthcheck:
+        test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u ${GEOSERVER_ADMIN_USER}:'${GEOSERVER_ADMIN_PASSWORD}' http://localhost:8080/geoserver/rest/about/version.xml"
+        interval: 1m
+        timeout: 10s
+        retries: 3
+
+
 
