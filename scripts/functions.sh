@@ -398,3 +398,12 @@ function make_hash(){
     ALGO_TYPE=$3
     (echo "digest1:" && java -classpath $(find $GEO_INSTALL_PATH -regex ".*jasypt-[0-9]\.[0-9]\.[0-9].*jar") org.jasypt.intf.cli.JasyptStringDigestCLI digest.sh algorithm=$ALGO_TYPE saltSizeBytes=16 iterations=100000 input="$NEW_PASSWORD" verbose=0) | tr -d '\n'
 }
+
+function postgres_ready_status() {
+  HOST="$1"
+  PORT="$2"
+  USER="$3"
+  until psql -h "$HOST" -p "$PORT" -U "$USER"  -c '\l'; do
+  >&2 echo "Postgres is unavailable - sleeping"
+  sleep 1
+done

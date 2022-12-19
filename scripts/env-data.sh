@@ -266,10 +266,6 @@ if [ -z "${ACTIVATE_ALL_STABLE_EXTENSIONS}" ]; then
     ACTIVATE_ALL_STABLE_EXTENSIONS=false
 fi
 
-file_env 'TOMCAT_PASSWORD'
-
-
-file_env 'TOMCAT_USER'
 if [ -z "${TOMCAT_USER}" ]; then
     TOMCAT_USER='tomcat'
 fi

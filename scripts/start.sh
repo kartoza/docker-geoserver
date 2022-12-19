@@ -213,7 +213,7 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         export TOMCAT_PASSWORD=${RAND}
         echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
     else
-       export TOMCAT_PASSWORD
+       export TOMCAT_PASSWORD=${TOMCAT_PASSWORD}
     fi
     # Setup tomcat apps manager
     export TOMCAT_USER
