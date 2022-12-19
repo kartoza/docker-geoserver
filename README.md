@@ -664,6 +664,16 @@ which can be run to update the respective files which mention GeoServer version.
 to push the changes to his specific branch of choice and then complete the pull request
 
 ## Support
+When reporting issue especially related to installed plugins (community and stable) please refer to the [GeoServer Issue page](https://osgeo-org.atlassian.net/jira/software/c/projects/GEOS/issues)
+to see if there are no issues reported there. We rely on the GeoServer community to resolve upstream
+issues. For urgent upstream problems you will need to get paid support
+the developers in [GeoServer](https://geoserver.org/). 
+
+Other platforms where users can ask questions and get assistance are listed below:
+* [Stack Exchange](https://stackexchange.com/)
+* [GeoServer Mailing lists](https://sourceforge.net/projects/geoserver/lists/geoserver-users)
+* [GeoServer Commercial Support](https://geoserver.org/support/)
+
 
 If you require more substantial assistance from [kartoza](https://kartoza.com)  (because our work and interaction on 
 docker-geoserver is pro bono), please consider taking out a [Support Level Agreeement](https://kartoza.com/en/shop/product/support)
