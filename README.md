@@ -453,7 +453,7 @@ what each parameter mean can be read from [documentation](http://docs.geoserver.
 * Example default values for the environment variables
 
     * `REQUEST_TIMEOUT=60`
-    * `PARARELL_REQUEST=100`
+    * `PARALLEL_REQUEST=100`
     * `GETMAP=10`
     * `REQUEST_EXCEL=4`
     * `SINGLE_USER=6`
