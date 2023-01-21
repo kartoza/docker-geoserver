@@ -1,0 +1,19 @@
+blank_issues_enabled: false
+
+contact_links:
+
+  - name: Question
+    url: https://gis.stackexchange.com/
+    about: >
+      Questions should go to the geoserver-user mailing list at https://sourceforge.net/projects/geoserver/lists/geoserver-users
+      or other support forums such as https://gis.stackexchange.com/.
+      GitHub issues are for bug reports and suggestions for new features.
+
+  - name: GeoServer extensions issue
+    # There must be a link to make this option valid for GitHub
+    url: https://docs.geoserver.org/stable/en/user/extensions/index.html
+    about: >
+      If the issue concerns an community extension / stable extension then it can't be fixed
+      by this docker orchestration. Please raise your issue in the dedicated bug tracker for that specific extension.
+      Issues related to how the extensions are packaged will not be resolved here.
+      
