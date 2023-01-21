@@ -1,0 +1,52 @@
+name: Bug/Crash report
+description: Create a bug report to help us improve docker-geoserver.
+labels:
+  - 'Bug'
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report correctly.
+
+        Please report only issues related to the docker-geoserver.
+
+        If the issue is related to an extension, you should file the issue in the [GeoServer jira](https://osgeo-org.atlassian.net/projects/GEOS/summary).
+        
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What is the bug or the crash?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce the issue
+      description: |
+        Steps, sample docker-compose to reproduce the behavior. Screencasts or screenshots are more than welcome, you can drag&drop them in the text box.
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: about-info
+    attributes:
+      label: Versions
+      description: |
+        Check the version of GeoServer in the UI or docker-compose. Finally paste here.
+        Do not make a screenshot.
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: |
+        Add any other context about the problem here.
