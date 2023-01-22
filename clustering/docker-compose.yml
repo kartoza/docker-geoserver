@@ -6,7 +6,7 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:14-3.2
+      image: kartoza/postgis:15-3.3
       volumes:
         - geo-db-data:/var/lib/postgresql
       environment:
@@ -38,12 +38,14 @@ services:
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - SSL_MODE=allow
+        - GEOSERVER_ADMIN_PASSWORD=admin
+        - GEOSERVER_ADMIN_USER=myawesomegeoserver
       restart: on-failure
       depends_on:
         db:
           condition: service_healthy
       healthcheck:
-        test: curl --fail -s http://localhost:8080/ || exit 1
+        test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"
         interval: 1m30s
         timeout: 10s
         retries: 3
@@ -67,6 +69,8 @@ services:
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - SSL_MODE=allow
+        - GEOSERVER_ADMIN_PASSWORD=admin
+        - GEOSERVER_ADMIN_USER=myawesomegeoserver
       restart: on-failure
       depends_on:
         master:
@@ -74,7 +78,7 @@ services:
         db:
           condition: service_healthy
       healthcheck:
-        test: curl --fail -s http://localhost:8080/ || exit 1
+        test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"
         interval: 1m30s
         timeout: 10s
         retries: 3

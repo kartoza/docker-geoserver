@@ -16,9 +16,7 @@ if [ ! $(getent group "${GEO_GROUP_NAME}") ]; then
 fi
 
 # Add user to system
-if id "${USER_NAME}" &>/dev/null; then
-    echo ' skipping user creation'
-else
+if ! id -u "${USER_NAME}" >/dev/null 2>&1; then
     useradd -l -m -d /home/"${USER_NAME}"/ -u "${USER_ID}" --gid "${GROUP_ID}" -s /bin/bash -G "${GEO_GROUP_NAME}" "${USER_NAME}"
 fi
 
@@ -92,7 +90,7 @@ chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CATALINA_HOME}" "${FOOTPRINTS_DAT
 echo -e "[Entrypoint] Checking PostgreSQL connection to see if init tables are loaded: \033[0m"
 if [[  "$DB_BACKEND" =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
   export PGPASSWORD="${POSTGRES_PASS}"
-  postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER}
+  postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
 fi
 
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then

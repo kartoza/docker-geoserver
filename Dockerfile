@@ -6,7 +6,7 @@ FROM tomcat:$IMAGE_VERSION
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.22.0
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
-ARG STABLE_PLUGIN_BASE_URL=https://sonik.dl.sourceforge.net
+ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
 ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
 ARG HTTPS_PORT=8443

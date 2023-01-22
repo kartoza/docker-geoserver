@@ -403,7 +403,9 @@ function postgres_ready_status() {
   HOST="$1"
   PORT="$2"
   USER="$3"
-  until psql -h "$HOST" -p "$PORT" -U "$USER"  -c '\l'; do
+  DB="$4"
+  until psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB"  -c '\l'; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done
+}
