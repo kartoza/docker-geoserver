@@ -61,7 +61,7 @@ else
   if  [[ ${FORCE_DOWNLOAD_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
       rm -rf /stable_plugins/*.zip
       for plugin in $(cat /stable_plugins/stable_plugins.txt); do
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
         download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
       done
       for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
@@ -72,7 +72,7 @@ else
     for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
         echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
         if [[ ! -f /stable_plugins/${ext}.zip ]]; then
-          approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+          approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
           download_extension "${approved_plugins_url}" "${ext}" /stable_plugins/
           install_plugin /stable_plugins/ "${ext}"
         else
@@ -149,13 +149,24 @@ create_dir "${MONITOR_AUDIT_PATH}"
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   ext=jms-cluster-plugin
-  if [[ ! -f /community_plugins/${ext}.zip ]]; then
+  if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+    if [[  -f /community_plugins/${ext}.zip ]]; then
+      rm -rf /community_plugins/${ext}.zip
+    fi
     community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
     download_extension "${community_plugins_url}" ${ext} /community_plugins
     install_plugin /community_plugins ${ext}
   else
-    install_plugin /community_plugins ${ext}
+    if [[ ! -f /community_plugins/${ext}.zip ]]; then
+      community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+      download_extension "${community_plugins_url}" ${ext} /community_plugins
+      install_plugin /community_plugins ${ext}
+    else
+      install_plugin /community_plugins ${ext}
+    fi
+
   fi
+
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
       if [[ -z "${EXISTING_DATA_DIR}" ]]; then
           create_dir "${CLUSTER_CONFIG_DIR}"

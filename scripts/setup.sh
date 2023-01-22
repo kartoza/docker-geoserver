@@ -24,8 +24,8 @@ package_geoserver
 cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
 cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
-validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
- dpkg -i ttf-mscorefonts-installer_3.8_all.deb && rm ttf-mscorefonts-installer_3.8_all.deb
+validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8.1_all.deb && \
+ dpkg -i ttf-mscorefonts-installer_3.8.1_all.deb && rm ttf-mscorefonts-installer_3.8.1_all.deb
 
 
 pushd "${STABLE_PLUGINS_DIR}" || exit
@@ -45,11 +45,11 @@ fi
 
 if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" -eq 0 ]; then
   plugin=$(head -n 1 /stable_plugins/stable_plugins.txt)
-  approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+  approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
   download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
 else
   for plugin in $(cat /stable_plugins/stable_plugins.txt); do
-    approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+    approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
     download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
   done
 fi
@@ -78,7 +78,7 @@ array=(geoserver-${GS_VERSION}-vectortiles-plugin.zip geoserver-${GS_VERSION}-wp
   geoserver-${GS_VERSION}-monitor-plugin.zip geoserver-${GS_VERSION}-inspire-plugin.zip
   geoserver-${GS_VERSION}-csw-plugin.zip geoserver-${GS_VERSION}-csw-iso-plugin.zip)
 for i in "${array[@]}"; do
-  url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
+  url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/${i}"
   download_extension "${url}" "${i%.*}" ${resources_dir}/plugins
 done
 
