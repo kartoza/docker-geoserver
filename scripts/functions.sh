@@ -409,3 +409,18 @@ function postgres_ready_status() {
   sleep 1
 done
 }
+
+function create_gwc_tile_tables(){
+  HOST="$1"
+  PORT="$2"
+  USER="$3"
+  DB="$4"
+  POSTGRES_SCHEMA="$5"
+  if [ ${POSTGRES_SCHEMA} != 'public' ]; then
+   psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE SCHEMA IF NOT EXISTS ${POSTGRES_SCHEMA}"
+   psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE TABLE IF NOT EXISTS ${POSTGRES_SCHEMA}.tileset(key character varying(320) COLLATE pg_catalog.\"default\" NOT NULL,layer_name character varying(128) COLLATE pg_catalog.\"default\",gridset_id character varying(32) COLLATE pg_catalog.\"default\",blob_format character varying(64) COLLATE pg_catalog.\"default\",parameters_id character varying(41) COLLATE pg_catalog.\"default\",bytes numeric(21,0) NOT NULL DEFAULT 0,CONSTRAINT tileset_pkey PRIMARY KEY (key))"
+   psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE TABLE IF NOT EXISTS $POSTGRES_SCHEMA.tilepage(key character varying(320) COLLATE pg_catalog.\"default\" NOT NULL,tileset_id character varying(320) COLLATE pg_catalog."default",page_z smallint,page_x integer,page_y integer,creation_time_minutes integer,frequency_of_use double precision,last_access_time_minutes integer,fill_factor double precision,num_hits numeric(64,0),CONSTRAINT tilepage_pkey PRIMARY KEY (key),CONSTRAINT tilepage_tileset_id_fkey FOREIGN KEY (tileset_id) REFERENCES $POSTGRES_SCHEMA.tileset (key) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE CASCADE)"
+  fi
+
+}
+

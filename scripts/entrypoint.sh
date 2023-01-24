@@ -91,6 +91,7 @@ echo -e "[Entrypoint] Checking PostgreSQL connection to see if init tables are l
 if [[  "$DB_BACKEND" =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
   export PGPASSWORD="${POSTGRES_PASS}"
   postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
+  create_gwc_tile_tables ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB $POSTGRES_SCHEMA
 fi
 
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then

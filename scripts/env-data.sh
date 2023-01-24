@@ -19,7 +19,7 @@ if [ -z "${DISK_QUOTA_SIZE}" ]; then
 fi
 
 if [ -z "${POSTGRES_SCHEMA}"]; then
-    POSTGRES_SCHEMA=public
+    POSTGRES_SCHEMA='public'
 fi
 
 if [ -z "${SSL}" ]; then
