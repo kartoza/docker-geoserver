@@ -18,6 +18,10 @@ if [ -z "${DISK_QUOTA_SIZE}" ]; then
   DISK_QUOTA_SIZE=20
 fi
 
+if [ -z "${POSTGRES_SCHEMA}"]; then
+    POSTGRES_SCHEMA=public
+fi
+
 if [ -z "${SSL}" ]; then
   SSL=false
 fi

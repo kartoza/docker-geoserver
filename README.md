@@ -253,6 +253,22 @@ Some additional environment variables to use when activating the disk quota are:
 If you are using the `kartoza/docker-postgis` image as a database backend you can additionally
 configure communication between the containers to use [SSL](https://github.com/kartoza/docker-postgis#postgres-ssl-setup)
 
+If you want to test it locally with docker-compose postgres db you need to specify these env variables:
+
+        - DB_BACKEND=POSTGRES               
+        - HOST=db                          
+        - POSTGRES_PORT=5432                
+        - POSTGRES_DB=gwc                   
+        - POSTGRES_USER=${POSTGRES_USER}    
+        - POSTGRES_PASS=${POSTGRES_PASS}    
+        - SSL_MODE=allow                    
+        - POSTGRES_SCHEMA=public           
+        - DISK_QUOTA_SIZE=5                 
+
+NOTE: 
+
+    HOST should be your local container name for db
+    POSTGRES_SCHEMA works only with 'public' right now
 #### Using SSL and Default PostgreSQL ssl certificates
 
 When the environment variable `FORCE_SSL=TRUE` is set for the database container you
