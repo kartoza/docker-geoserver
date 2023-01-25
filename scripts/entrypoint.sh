@@ -87,13 +87,6 @@ chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CATALINA_HOME}" "${FOOTPRINTS_DAT
 "${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}"  /usr/share/fonts/ /scripts /tomcat_apps.zip \
 /tmp/ "${GEOWEBCACHE_CACHE_DIR}";chmod o+rw "${CERT_DIR}";chmod 400 ${CATALINA_HOME}/conf/*
 
-echo -e "[Entrypoint] Checking PostgreSQL connection to see if init tables are loaded: \033[0m"
-if [[  "$DB_BACKEND" =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
-  export PGPASSWORD="${POSTGRES_PASS}"
-  postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
-  create_gwc_tile_tables ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB $POSTGRES_SCHEMA
-fi
-
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   exec gosu ${USER_NAME} ${GEOSERVER_HOME}/bin/startup.sh
 else
