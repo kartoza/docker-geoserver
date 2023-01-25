@@ -69,7 +69,9 @@ else
   default_disk_quota_config
 fi
 
-
+# Direct Integration with GeoServer WMS
+echo "Direct Integration with Geoserver WMS option"
+enable_direct_integration_wms
 
 # Install stable plugins
 if [[ -z "${STABLE_EXTENSIONS}" ]]; then

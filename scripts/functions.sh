@@ -285,6 +285,20 @@ function jdbc_disk_quota_config() {
   fi
 }
 
+function enable_direct_integration_wms() {
+  if [[ ! -f "${GEOSERVER_DATA_DIR}"/gwc-gs.xml ]]; then
+    if [[ -f "${EXTRA_CONFIG_DIR}"/gwc-gs.xml ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}"/gwc-gs.xml < "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
+    else
+      # default value
+      envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
+    fi
+  else
+      # default value
+      envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
+  fi
+}
+
 # Function to setup control flow https://docs.geoserver.org/stable/en/user/extensions/controlflow/index.html
 function setup_control_flow() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then

@@ -14,6 +14,10 @@ if [ -z "${OPTIMIZE_LINE_WIDTH}" ]; then
   OPTIMIZE_LINE_WIDTH=false
 fi
 
+if [ -z "${WMS_DIR_INTEGRATION}" ]; then
+  WMS_DIR_INTEGRATION=false
+fi
+
 if [ -z "${DISK_QUOTA_SIZE}" ]; then
   DISK_QUOTA_SIZE=20
 fi
