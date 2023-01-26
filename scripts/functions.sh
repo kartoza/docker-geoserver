@@ -131,8 +131,6 @@ function validate_geo_install() {
 
 }
 
-
-
 function unzip_geoserver() {
   if [[ -f /tmp/geoserver/geoserver.war ]]; then
     unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/geoserver &&
@@ -150,8 +148,6 @@ else
 fi
 
 }
-
-
 
 # A little logic that will fetch the geoserver war zip file if it is not available locally in the resources dir
 function package_geoserver() {
@@ -278,14 +274,28 @@ function default_disk_quota_config() {
 
 function jdbc_disk_quota_config() {
 
-  if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
+  if [[ ! -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
+    if [[ -f "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
       envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml < "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
     else
       # default value
       envsubst < /build_data/geowebcache-diskquota-jdbc.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
     fi
+  fi
+}
+
+function enable_direct_integration_wms() {
+  if [[ ! -f "${GEOSERVER_DATA_DIR}"/gwc-gs.xml ]]; then
+    if [[ -f "${EXTRA_CONFIG_DIR}"/gwc-gs.xml ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}"/gwc-gs.xml < "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
+    else
+      # default value
+      envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
+    fi
+  else
+      # default value
+      envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
   fi
 }
 
@@ -409,3 +419,18 @@ function postgres_ready_status() {
   sleep 1
 done
 }
+
+function create_gwc_tile_tables(){
+  HOST="$1"
+  PORT="$2"
+  USER="$3"
+  DB="$4"
+  POSTGRES_SCHEMA="$5"
+  if [ ${POSTGRES_SCHEMA} != 'public' ]; then
+   psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE SCHEMA IF NOT EXISTS ${POSTGRES_SCHEMA}"
+   psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE TABLE IF NOT EXISTS ${POSTGRES_SCHEMA}.tileset(key character varying(320) NOT NULL,layer_name character varying(128),gridset_id character varying(32) ,blob_format character varying(64) ,parameters_id character varying(41) ,bytes numeric(21,0) NOT NULL DEFAULT 0,CONSTRAINT tileset_pkey PRIMARY KEY (key))"
+   psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE TABLE IF NOT EXISTS $POSTGRES_SCHEMA.tilepage(key character varying(320) NOT NULL,tileset_id character varying(320),page_z smallint,page_x integer,page_y integer,creation_time_minutes integer,frequency_of_use double precision,last_access_time_minutes integer,fill_factor double precision,num_hits numeric(64,0),CONSTRAINT tilepage_pkey PRIMARY KEY (key),CONSTRAINT tilepage_tileset_id_fkey FOREIGN KEY (tileset_id) REFERENCES $POSTGRES_SCHEMA.tileset (key) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE CASCADE)"
+  fi
+
+}
+

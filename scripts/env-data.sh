@@ -14,8 +14,20 @@ if [ -z "${OPTIMIZE_LINE_WIDTH}" ]; then
   OPTIMIZE_LINE_WIDTH=false
 fi
 
+if [ -z "${WMS_DIR_INTEGRATION}" ]; then
+  WMS_DIR_INTEGRATION=false
+fi
+
 if [ -z "${DISK_QUOTA_SIZE}" ]; then
   DISK_QUOTA_SIZE=20
+fi
+
+if [ -z "${DISK_QUOTA_FREQUENCY}" ]; then
+  DISK_QUOTA_FREQUENCY=5
+fi
+
+if [ -z "${POSTGRES_SCHEMA}" ]; then
+    POSTGRES_SCHEMA=public
 fi
 
 if [ -z "${SSL}" ]; then
@@ -181,6 +193,10 @@ fi
 
 if [ -z "${RECREATE_DATADIR}" ]; then
     RECREATE_DATADIR=false
+fi
+
+if [ -z "${RECREATE_DISKQUOTA}" ]; then
+    RECREATE_DISKQUOTA=false
 fi
 
 if [ -z "${RESET_ADMIN_CREDENTIALS}" ]; then

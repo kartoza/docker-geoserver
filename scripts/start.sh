@@ -38,6 +38,19 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
 fi
 
 
+# Recreate DISK QUOTA config, useful to change between H2 and jdbc and change connection or schema
+if [[ "${RECREATE_DISKQUOTA}" =~ [Tt][Rr][Uu][Ee] ]]; then
+
+  echo "Remove old geowebcache disk quota xml."
+  if [[ -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml ]]; then
+    rm "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
+    echo "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml removed"
+  fi
+  if [[ -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
+    rm "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
+    echo "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml removed"
+  fi
+fi
 
 export DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
@@ -46,13 +59,19 @@ if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   export SSL_PARAMETERS=${PARAMS}
   default_disk_quota_config
   jdbc_disk_quota_config
+
+  echo -e "[Entrypoint] Checking PostgreSQL connection to see if init tables are loaded: \033[0m"
+  export PGPASSWORD="${POSTGRES_PASS}"
+  postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
+  create_gwc_tile_tables ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB $POSTGRES_SCHEMA
 else
   export DISK_QUOTA_BACKEND=H2
   default_disk_quota_config
-
 fi
 
-
+# Direct Integration with GeoServer WMS
+echo "Direct Integration with Geoserver WMS option"
+enable_direct_integration_wms
 
 # Install stable plugins
 if [[ -z "${STABLE_EXTENSIONS}" ]]; then
