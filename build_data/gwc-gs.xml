@@ -1,10 +1,10 @@
 <GeoServerGWCConfig>
   <version>1.1.0</version>
   <directWMSIntegrationEnabled>${WMS_DIR_INTEGRATION}</directWMSIntegrationEnabled>
-  <requireTiledParameter>true</requireTiledParameter>
-  <WMSCEnabled>true</WMSCEnabled>
-  <TMSEnabled>true</TMSEnabled>
-  <securityEnabled>false</securityEnabled>
+  <requireTiledParameter>${REQUIRE_TILED_PARAMETER}</requireTiledParameter>
+  <WMSCEnabled>${WMSC_ENABLED}</WMSCEnabled>
+  <TMSEnabled>${TMS_ENABLED}</TMSEnabled>
+  <securityEnabled>${SECURITY_ENABLED}</securityEnabled>
   <innerCachingEnabled>false</innerCachingEnabled>
   <persistenceEnabled>true</persistenceEnabled>
   <cacheProviderClass>class org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider</cacheProviderClass>

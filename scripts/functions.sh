@@ -34,7 +34,6 @@ function create_dir() {
   DATA_PATH=$1
 
   if [[ ! -d ${DATA_PATH} ]]; then
-    echo "Creating" "${DATA_PATH}" "directory"
     mkdir -p "${DATA_PATH}"
   fi
 }
@@ -85,7 +84,6 @@ function web_cors() {
       # Useful if CORS is handled outside of Tomcat (e.g. in a proxying webserver like nginx)
       ###
       if [[ "${DISABLE_CORS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-        echo "Deactivating Tomcat CORS filter"
         sed -i 's/<!-- CORS_START.*/<!-- CORS DEACTIVATED BY DISABLE_CORS -->\n<!--/; s/^.*<!-- CORS_END -->/-->/' \
           ${CATALINA_HOME}/conf/web.xml
       fi
@@ -247,6 +245,7 @@ function install_plugin() {
 
   if [[ -f "${DATA_PATH}"/"${EXT}".zip ]];then
      unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
+     echo -e "\e[32m Enabling ${EXT} for GeoServer \033[0m"
      if [[ -f /geoserver/start.jar ]]; then
        cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/geoserver/WEB-INF/lib/
      else
@@ -285,7 +284,7 @@ function jdbc_disk_quota_config() {
   fi
 }
 
-function enable_direct_integration_wms() {
+function activate_gwc_global_configs() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/gwc-gs.xml ]]; then
     if [[ -f "${EXTRA_CONFIG_DIR}"/gwc-gs.xml ]]; then
       envsubst < "${EXTRA_CONFIG_DIR}"/gwc-gs.xml < "${GEOSERVER_DATA_DIR}"/gwc-gs.xml

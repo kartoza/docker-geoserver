@@ -18,6 +18,25 @@ if [ -z "${WMS_DIR_INTEGRATION}" ]; then
   WMS_DIR_INTEGRATION=false
 fi
 
+if [ -z "${REQUIRE_TILED_PARAMETER}" ]; then
+  REQUIRE_TILED_PARAMETER=true
+fi
+
+
+if [ -z "${WMSC_ENABLED}" ]; then
+  WMSC_ENABLED=true
+fi
+
+
+if [ -z "${TMS_ENABLED}" ]; then
+  TMS_ENABLED=true
+fi
+
+
+if [ -z "${SECURITY_ENABLED}" ]; then
+  SECURITY_ENABLED=false
+fi
+
 if [ -z "${DISK_QUOTA_SIZE}" ]; then
   DISK_QUOTA_SIZE=20
 fi
