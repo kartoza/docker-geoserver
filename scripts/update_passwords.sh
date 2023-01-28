@@ -27,6 +27,7 @@ else
         if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
           echo -e "\e[32m Copying default security folder \033[0m"
           cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
+          sed -i 's/pbePasswordEncoder/strongPbePasswordEncoder/g' ${GEOSERVER_DATA_DIR}/security/config.xml
         fi
     fi
 fi

@@ -47,7 +47,7 @@ if [[ "${RECREATE_DISKQUOTA}" =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
 fi
 
-export DISK_QUOTA_SIZE
+export DISK_QUOTA_FREQUENCY DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   postgres_ssl_setup
   export DISK_QUOTA_BACKEND=JDBC
@@ -65,6 +65,7 @@ else
 fi
 
 # GWC Global Config options GeoServer WMS
+export WMS_DIR_INTEGRATION REQUIRE_TILED_PARAMETER WMSC_ENABLED TMS_ENABLED SECURITY_ENABLED
 activate_gwc_global_configs
 
 # Install stable plugins
