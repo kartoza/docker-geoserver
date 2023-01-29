@@ -33,26 +33,21 @@ geoserver_logging
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
-  echo "Activating default data directory"
   cp -r "${CATALINA_HOME}"/data/* "${GEOSERVER_DATA_DIR}"
 fi
 
 
 # Recreate DISK QUOTA config, useful to change between H2 and jdbc and change connection or schema
 if [[ "${RECREATE_DISKQUOTA}" =~ [Tt][Rr][Uu][Ee] ]]; then
-
-  echo "Remove old geowebcache disk quota xml."
   if [[ -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml ]]; then
     rm "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
-    echo "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml removed"
   fi
   if [[ -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
     rm "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
-    echo "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml removed"
   fi
 fi
 
-export DISK_QUOTA_SIZE
+export DISK_QUOTA_FREQUENCY DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   postgres_ssl_setup
   export DISK_QUOTA_BACKEND=JDBC
@@ -60,7 +55,7 @@ if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   default_disk_quota_config
   jdbc_disk_quota_config
 
-  echo -e "[Entrypoint] Checking PostgreSQL connection to see if init tables are loaded: \033[0m"
+  echo -e "[Entrypoint] Checking PostgreSQL connection to see if diskquota tables are loaded: \033[0m"
   export PGPASSWORD="${POSTGRES_PASS}"
   postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
   create_gwc_tile_tables ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB $POSTGRES_SCHEMA
@@ -69,14 +64,12 @@ else
   default_disk_quota_config
 fi
 
-# Direct Integration with GeoServer WMS
-echo "Direct Integration with Geoserver WMS option"
-enable_direct_integration_wms
+# GWC Global Config options GeoServer WMS
+export WMS_DIR_INTEGRATION REQUIRE_TILED_PARAMETER WMSC_ENABLED TMS_ENABLED SECURITY_ENABLED
+activate_gwc_global_configs
 
 # Install stable plugins
-if [[ -z "${STABLE_EXTENSIONS}" ]]; then
-  echo -e "\e[32m STABLE_EXTENSIONS is unset, so we do not install any stable extensions \033[0m"
-else
+if [[ ! -z "${STABLE_EXTENSIONS}" ]]; then
   if  [[ ${FORCE_DOWNLOAD_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
       rm -rf /stable_plugins/*.zip
       for plugin in $(cat /stable_plugins/stable_plugins.txt); do
@@ -84,12 +77,10 @@ else
         download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
       done
       for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
         install_plugin /stable_plugins/ "${ext}"
     done
   else
     for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
         if [[ ! -f /stable_plugins/${ext}.zip ]]; then
           approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
           download_extension "${approved_plugins_url}" "${ext}" /stable_plugins/
@@ -106,7 +97,6 @@ if [[ ${ACTIVATE_ALL_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
   pushd /stable_plugins/ || exit
   for val in *.zip; do
       ext=${val%.*}
-      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
       install_plugin /stable_plugins/ "${ext}"
   done
   pushd "${GEOSERVER_HOME}" || exit
@@ -116,15 +106,9 @@ fi
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 
-function community_config() {
-     echo -e "\e[32m  Installing ${ext} \033[0m"
-    install_plugin /community_plugins "${ext}"
-}
 
 # Install community modules plugins
-if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
-  echo -e "\e[32m COMMUNITY_EXTENSIONS is unset, so we do not install any community extensions \033[0m"
-else
+if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
   if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
     rm -rf /community_plugins/*.zip
     for plugin in $(cat /community_plugins/community_plugins.txt); do
@@ -132,18 +116,16 @@ else
       download_extension "${community_plugins_url}" "${plugin}" /community_plugins
     done
     for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-        community_config
+        install_plugin /community_plugins "${ext}"
     done
   else
     for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
         if [[ ! -f /community_plugins/${ext}.zip ]]; then
           community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
           download_extension "${community_plugins_url}" "${ext}" /community_plugins
-          community_config
+          install_plugin /community_plugins "${ext}"
         else
-          community_config
+          install_plugin /community_plugins "${ext}"
         fi
     done
   fi
@@ -154,8 +136,7 @@ if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
    pushd /community_plugins/ || exit
     for val in *.zip; do
         ext=${val%.*}
-        echo -e "\e[32m  Enabling ${ext} for GeoServer ${GS_VERSION} \033[0m"
-        community_config
+        install_plugin /community_plugins "${ext}"
     done
     pushd "${GEOSERVER_HOME}" || exit
 fi
