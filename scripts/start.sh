@@ -30,6 +30,7 @@ fi
 
 # Add custom espg properties file or the default one
 create_dir "${GEOSERVER_DATA_DIR}"/user_projections
+create_dir "${GEOWEBCACHE_CACHE_DIR}"
 
 setup_custom_crs
 
@@ -39,59 +40,58 @@ geoserver_logging
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
-  echo "Activating default data directory"
   cp -r "${CATALINA_HOME}"/data/* "${GEOSERVER_DATA_DIR}"
 fi
 
 
-
-function postgres_ssl_setup() {
-  if [[ ${SSL_MODE} == 'verify-ca' || ${SSL_MODE} == 'verify-full' ]]; then
-        if [[ -z ${SSL_CERT_FILE} || -z ${SSL_KEY_FILE} || -z ${SSL_CA_FILE} ]]; then
-                exit 0
-        else
-          export PARAMS="sslmode=${SSL_MODE}&sslcert=${SSL_CERT_FILE}&sslkey=${SSL_KEY_FILE}&sslrootcert=${SSL_CA_FILE}"
-        fi
-  elif [[ ${SSL_MODE} == 'disable' || ${SSL_MODE} == 'allow' || ${SSL_MODE} == 'prefer' || ${SSL_MODE} == 'require' ]]; then
-       export PARAMS="sslmode=${SSL_MODE}"
+# Recreate DISK QUOTA config, useful to change between H2 and jdbc and change connection or schema
+if [[ "${RECREATE_DISKQUOTA}" =~ [Tt][Rr][Uu][Ee] ]]; then
+  if [[ -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml ]]; then
+    rm "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
   fi
+  if [[ -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
+    rm "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
+  fi
+fi
 
-}
-
-export DISK_QUOTA_SIZE
+export DISK_QUOTA_FREQUENCY DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   postgres_ssl_setup
   export DISK_QUOTA_BACKEND=JDBC
   export SSL_PARAMETERS=${PARAMS}
   default_disk_quota_config
   jdbc_disk_quota_config
+
+  echo -e "[Entrypoint] Checking PostgreSQL connection to see if diskquota tables are loaded: \033[0m"
+  export PGPASSWORD="${POSTGRES_PASS}"
+  postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
+  create_gwc_tile_tables ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB $POSTGRES_SCHEMA
 else
   export DISK_QUOTA_BACKEND=H2
   default_disk_quota_config
-
 fi
 
-
+# GWC Global Config options GeoServer WMS
+export WMS_DIR_INTEGRATION REQUIRE_TILED_PARAMETER WMSC_ENABLED TMS_ENABLED SECURITY_ENABLED
+activate_gwc_global_configs
 
 # Install stable plugins
-if [[ -z "${STABLE_EXTENSIONS}" ]]; then
-  echo -e "\e[32m STABLE_EXTENSIONS is unset, so we do not install any stable extensions \033[0m"
-else
+
+if [[ ! -z "${STABLE_EXTENSIONS}" ]]; then
   if  [[ ${FORCE_DOWNLOAD_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
       rm -rf /stable_plugins/*.zip
       for plugin in $(cat /stable_plugins/stable_plugins.txt); do
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
         download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
       done
       for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
         install_plugin /stable_plugins/ "${ext}"
     done
   else
     for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+
         if [[ ! -f /stable_plugins/${ext}.zip ]]; then
-          approved_plugins_url="https://liquidtelecom.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+          approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
           download_extension "${approved_plugins_url}" "${ext}" /stable_plugins/
           install_plugin /stable_plugins/ "${ext}"
         else
@@ -106,7 +106,7 @@ if [[ ${ACTIVATE_ALL_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
   pushd /stable_plugins/ || exit
   for val in *.zip; do
       ext=${val%.*}
-      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+
       install_plugin /stable_plugins/ "${ext}"
   done
   pushd "${GEOSERVER_HOME}" || exit
@@ -116,26 +116,10 @@ fi
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 
-function community_config() {
-    if [[ ${ext} == 's3-geotiff-plugin' ]]; then
-        s3_config
-        echo "Installing ${ext} "
-        install_plugin /community_plugins "${ext}"
-        if [[ ! -f ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/ehcache-3.4.0.jar ]];then
-          validate_url https://repo1.maven.org/maven2/org/ehcache/ehcache/3.4.0/ehcache-3.4.0.jar && \
-          mv ehcache-3.4.0.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/
-        fi
-
-    elif [[ ${ext} != 's3-geotiff-plugin' ]]; then
-        echo "Installing ${ext} "
-        install_plugin /community_plugins "${ext}"
-    fi
-}
 
 # Install community modules plugins
-if [[ -z ${COMMUNITY_EXTENSIONS} ]]; then
-  echo -e "\e[32m COMMUNITY_EXTENSIONS is unset, so we do not install any community extensions \033[0m"
-else
+
+if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
   if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
     rm -rf /community_plugins/*.zip
     for plugin in $(cat /community_plugins/community_plugins.txt); do
@@ -143,18 +127,17 @@ else
       download_extension "${community_plugins_url}" "${plugin}" /community_plugins
     done
     for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-        community_config
+
+        install_plugin /community_plugins "${ext}"
     done
   else
     for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
         if [[ ! -f /community_plugins/${ext}.zip ]]; then
           community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
           download_extension "${community_plugins_url}" "${ext}" /community_plugins
-          community_config
+          install_plugin /community_plugins "${ext}"
         else
-          community_config
+          install_plugin /community_plugins "${ext}"
         fi
     done
   fi
@@ -165,8 +148,7 @@ if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
    pushd /community_plugins/ || exit
     for val in *.zip; do
         ext=${val%.*}
-        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
-        community_config
+        install_plugin /community_plugins "${ext}"
     done
     pushd "${GEOSERVER_HOME}" || exit
 fi
@@ -176,13 +158,24 @@ export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOG
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   ext=jms-cluster-plugin
-  if [[ ! -f /community_plugins/${ext}.zip ]]; then
+  if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+    if [[  -f /community_plugins/${ext}.zip ]]; then
+      rm -rf /community_plugins/${ext}.zip
+    fi
     community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
     download_extension ${community_plugins_url} ${ext} /community_plugins
     install_plugin /community_plugins ${ext}
   else
-    install_plugin /community_plugins ${ext}
+    if [[ ! -f /community_plugins/${ext}.zip ]]; then
+      community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+      download_extension "${community_plugins_url}" ${ext} /community_plugins
+      install_plugin /community_plugins ${ext}
+    else
+      install_plugin /community_plugins ${ext}
+    fi
+
   fi
+
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
       create_dir ${CLUSTER_CONFIG_DIR}
       broker_xml_config
@@ -212,10 +205,6 @@ fi
 export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
 # Setup control flow properties
 setup_control_flow
-
-# Setup tomcat apps manager
-export TOMCAT_PASSWORD TOMCAT_USER
-
 
 
 if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
@@ -263,7 +252,12 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
         echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
+
+    else
+       export TOMCAT_PASSWORD=${TOMCAT_PASSWORD}
     fi
+    # Setup tomcat apps manager
+    export TOMCAT_USER
     tomcat_user_config
 else
     delete_folder "${CATALINA_HOME}"/webapps/ROOT &&
@@ -278,7 +272,7 @@ else
     fi
 fi
 
-
+# Enable SSL
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
   # convert LetsEncrypt certificates
@@ -342,7 +336,8 @@ else
     sed -i -e '83,120d' ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
     SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
-fi
+fi # End SSL settings
+
 
 # change server configuration
 
@@ -459,9 +454,8 @@ else
 fi
 
 
-if [[ -f ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl ]];then
-  rm "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
-fi
+# Cleanup temp file
+delete_file ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
@@ -469,3 +463,4 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
 fi
 
 setup_logging
+

@@ -19,7 +19,7 @@ services:
         - FORCE_SSL=TRUE
       restart: on-failure
       healthcheck:
-        test: "exit 0"
+        test: "PGPASSWORD=${POSTGRES_PASS} pg_isready -h 127.0.0.1 -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
 
    geoserver:
       image: kartoza/geoserver:${GS_VERSION}
@@ -35,11 +35,13 @@ services:
         - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
         - INITIAL_MEMORY=${INITIAL_MEMORY}
         - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+        - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
+        - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
       depends_on:
         db:
           condition: service_healthy
       healthcheck:
-        test: curl --fail -s http://localhost:8080/ || exit 1
+        test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u ${GEOSERVER_ADMIN_USER}:'${GEOSERVER_ADMIN_PASSWORD}' http://localhost:8080/geoserver/rest/about/version.xml"
         interval: 1m30s
         timeout: 10s
         retries: 3

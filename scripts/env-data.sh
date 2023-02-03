@@ -14,11 +14,42 @@ if [ -z "${OPTIMIZE_LINE_WIDTH}" ]; then
   OPTIMIZE_LINE_WIDTH=false
 fi
 
-if [ -z ${DISK_QUOTA_SIZE} ]; then
+if [ -z "${WMS_DIR_INTEGRATION}" ]; then
+  WMS_DIR_INTEGRATION=false
+fi
+
+if [ -z "${REQUIRE_TILED_PARAMETER}" ]; then
+  REQUIRE_TILED_PARAMETER=true
+fi
+
+
+if [ -z "${WMSC_ENABLED}" ]; then
+  WMSC_ENABLED=true
+fi
+
+
+if [ -z "${TMS_ENABLED}" ]; then
+  TMS_ENABLED=true
+fi
+
+
+if [ -z "${SECURITY_ENABLED}" ]; then
+  SECURITY_ENABLED=false
+fi
+
+if [ -z "${DISK_QUOTA_SIZE}" ]; then
   DISK_QUOTA_SIZE=20
 fi
 
-if [ -z ${SSL} ]; then
+if [ -z "${DISK_QUOTA_FREQUENCY}" ]; then
+  DISK_QUOTA_FREQUENCY=5
+fi
+
+if [ -z "${POSTGRES_SCHEMA}" ]; then
+    POSTGRES_SCHEMA=public
+fi
+
+if [ -z "${SSL}" ]; then
   SSL=false
 fi
 
@@ -179,7 +210,12 @@ if [ -z "${RECREATE_DATADIR}" ]; then
     RECREATE_DATADIR=false
 fi
 
-if [ -z ${RESET_ADMIN_CREDENTIALS} ]; then
+
+if [ -z "${RECREATE_DISKQUOTA}" ]; then
+    RECREATE_DISKQUOTA=false
+fi
+
+if [ -z "${RESET_ADMIN_CREDENTIALS}" ]; then
   RESET_ADMIN_CREDENTIALS=false
 fi
 
@@ -272,10 +308,6 @@ if [ -z "${ACTIVATE_ALL_STABLE_EXTENSIONS}" ]; then
     ACTIVATE_ALL_STABLE_EXTENSIONS=false
 fi
 
-file_env 'TOMCAT_PASSWORD'
-
-
-file_env 'TOMCAT_USER'
 if [ -z "${TOMCAT_USER}" ]; then
     TOMCAT_USER='tomcat'
 fi
@@ -311,3 +343,33 @@ fi
 if [ -z ${SSL_MODE} ]; then
     SSL_MODE=disable
 fi
+
+
+if [ -z ${HASHING_ALGORITHM} ];then
+    HASHING_ALGORITHM='SHA-256'
+fi
+
+if [ -z "${USE_DATETIME_IN_SHAPEFILE}" ]; then
+    USE_DATETIME_IN_SHAPEFILE=true
+fi
+
+if [ -z "${FORCE_DOWNLOAD_STABLE_EXTENSIONS}" ]; then
+    FORCE_DOWNLOAD_STABLE_EXTENSIONS=false
+fi
+
+if [ -z "${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS}" ]; then
+    FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS=false
+fi
+
+if [ -z "${DISABLE_CORS}" ]; then
+  DISABLE_CORS=false
+fi
+
+if [ -z "${UPDATE_LOGGING_PROFILES}" ]; then
+  UPDATE_LOGGING_PROFILES=false
+fi
+
+if [ -z "${RELINQUISH_LOG4J_CONTROL}" ]; then
+  RELINQUISH_LOG4J_CONTROL=false
+fi
+

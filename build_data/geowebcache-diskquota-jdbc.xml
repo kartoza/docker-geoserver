@@ -2,7 +2,7 @@
   <dialect>PostgreSQL</dialect>
   <connectionPool>
     <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?${SSL_PARAMETERS}</url>
+    <url>jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?${SSL_PARAMETERS}&amp;currentSchema=${POSTGRES_SCHEMA}</url>
     <username>${POSTGRES_USER}</username>
     <password>${POSTGRES_PASS}</password>
     <minConnections>1</minConnections>

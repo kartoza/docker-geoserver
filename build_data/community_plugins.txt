@@ -39,7 +39,6 @@ ogr-datastore-plugin
 opensearch-eo-plugin
 ows-simulate-plugin
 pgraster-plugin
-s3-geotiff-plugin
 saml-plugin
 sec-keycloak-plugin
 sec-oauth2-geonode-plugin
@@ -55,3 +54,4 @@ vsi-plugin
 wms-eo-plugin
 wmts-styles-plugin
 wps-remote-plugin
+stac-datastore-plugin

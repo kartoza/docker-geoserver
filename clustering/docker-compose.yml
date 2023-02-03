@@ -6,7 +6,7 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:14-3.2
+      image: kartoza/postgis:15-3.3
       volumes:
         - geo-db-data:/var/lib/postgresql
       environment:
@@ -17,9 +17,9 @@ services:
         - FORCE_SSL=TRUE
       restart: on-failure
       healthcheck:
-        test: "pg_isready -d gis"
+        test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
    master:
-      image: kartoza/geoserver:2.21.0
+      image: kartoza/geoserver:2.22.0
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
@@ -38,19 +38,19 @@ services:
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - SSL_MODE=allow
-        #- RANDOMSTRING=23bd87cfa327d47e
-        #- INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
+        - GEOSERVER_ADMIN_PASSWORD=admin
+        - GEOSERVER_ADMIN_USER=myawesomegeoserver
       restart: on-failure
       depends_on:
         db:
           condition: service_healthy
       healthcheck:
-        test: curl --fail -s http://localhost:8080/ || exit 1
+        test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"
         interval: 1m30s
         timeout: 10s
         retries: 3
    node:
-      image: kartoza/geoserver:2.21.0
+      image: kartoza/geoserver:2.22.0
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
@@ -69,6 +69,8 @@ services:
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - SSL_MODE=allow
+        - GEOSERVER_ADMIN_PASSWORD=admin
+        - GEOSERVER_ADMIN_USER=myawesomegeoserver
       restart: on-failure
       depends_on:
         master:
@@ -76,7 +78,7 @@ services:
         db:
           condition: service_healthy
       healthcheck:
-        test: curl --fail -s http://localhost:8080/ || exit 1
+        test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"
         interval: 1m30s
         timeout: 10s
         retries: 3
