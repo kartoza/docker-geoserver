@@ -2,6 +2,18 @@
 
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
+SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.updatepassword.lock"
+# Reset Admin credentials
+if [[ "${RESET_ADMIN_CREDENTIALS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+  if [[ -f "${SETUP_LOCKFILE}" ]];then
+        rm ${SETUP_LOCKFILE}
+  fi
+fi
+
+
+if [[ -f "${SETUP_LOCKFILE}"  ]]; then
+	exit 0
+fi
 
 # Source the functions from other bash scripts
 
@@ -33,12 +45,12 @@ fi
 
 # Set random password if none provided
 if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
-      echo -e "\e[32m ------------------------------------------ \033[0m"
-      echo -e "\e[32m Set random password because none is provided \033[0m"
+      if [[ "${RESET_ADMIN_CREDENTIALS}" =~ [Tt][Rr][Uu][Ee] ]];then
+        delete_file /scripts/.pass_15.txt
+      fi
       generate_random_string 15
       GEOSERVER_ADMIN_PASSWORD=${RAND}
       echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
-      echo -e "[Entrypoint] GENERATED GeoServer  PASSWORD: \e[1;31m $GEOSERVER_ADMIN_PASSWORD \033[0m"
 fi
 
 USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
@@ -90,14 +102,11 @@ cp $ROLES_XML $ROLES_XML.orig
 # <userRoles username="admin">
 cat $ROLES_XML.orig | sed -e "s/ username=\"${GEOSERVER_ADMIN_DEFAULT_USER}\"/ username=\"${GEOSERVER_ADMIN_USER}\"/" > $ROLES_XML
 
-# Set default passwords
-echo "${GEOSERVER_ADMIN_USER}" > "${EXTRA_CONFIG_DIR}"/.default_admin_user.txt
-echo "${PWD_HASH}" > "${EXTRA_CONFIG_DIR}"/.default_admin_encrypted_pass.txt
-echo ${GEOSERVER_ADMIN_PASSWORD} > "${EXTRA_CONFIG_DIR}"/.default_admin_pass.txt
+# Write GeoServer Admin password only if we are setting a random password
+if [[ -f ${GEOSERVER_DATA_DIR}/security/pass.txt ]];then
+echo -e "[Entrypoint] GENERATED GeoServer  PASSWORD: \e[1;31m $GEOSERVER_ADMIN_PASSWORD"
+echo -e "\033[0m "
+fi
 
-if [[ -f ${EXTRA_CONFIG_DIR}/users.xml ]]; then
-    cp ${EXTRA_CONFIG_DIR}/users.xml ${GEOSERVER_DATA_DIR}/security/usergroup/default/
-fi
-if [[ -f ${EXTRA_CONFIG_DIR}/roles.xml ]]; then
-    cp ${EXTRA_CONFIG_DIR}/roles.xml ${GEOSERVER_DATA_DIR}/security/role/default/roles.xml
-fi
+# Put lock file to make sure password is not reinitialized on restart
+touch ${SETUP_LOCKFILE}

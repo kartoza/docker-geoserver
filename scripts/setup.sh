@@ -7,8 +7,10 @@ source /scripts/functions.sh
 resources_dir="/tmp/resources"
 create_dir ${resources_dir}/plugins/gdal
 create_dir /usr/share/fonts/opentype
-create_dir ${EXTRA_CONFIG_DIR}/tomcat_apps
-create_dir "${CATALINA_HOME}"/postgres_config
+create_dir /tomcat_apps
+create_dir /usr/local/gdal_data
+create_dir /usr/local/gdal_native_libs
+create_dir ${CATALINA_HOME}/postgres_config
 
 validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
  dpkg -i ttf-mscorefonts-installer_3.8_all.deb && rm ttf-mscorefonts-installer_3.8_all.deb
@@ -29,14 +31,14 @@ fi
 
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
-if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" -eq 0 ]; then
-  plugin=$(head -n 1 /stable_plugins/stable_plugins.txt)
-  approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-  download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
+if [ -z "${ACTIVATE_ALL_STABLE_EXTENTIONS}" ] || [ ${ACTIVATE_ALL_STABLE_EXTENTIONS} -eq 0 ]; then
+  plugin=$(head -n 1 /plugins/stable_plugins.txt)
+  approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+  download_extension ${approved_plugins_url} ${plugin} /plugins
 else
-  for plugin in $(cat /stable_plugins/stable_plugins.txt); do
-    approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-    download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
+  for plugin in $(cat /plugins/stable_plugins.txt); do
+    approved_plugins_url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+    download_extension ${approved_plugins_url} ${plugin} /plugins
   done
 fi
 
@@ -63,8 +65,8 @@ array=(geoserver-${GS_VERSION}-vectortiles-plugin.zip geoserver-${GS_VERSION}-wp
   geoserver-${GS_VERSION}-pyramid-plugin.zip geoserver-${GS_VERSION}-gdal-plugin.zip
   geoserver-${GS_VERSION}-monitor-plugin.zip geoserver-${GS_VERSION}-inspire-plugin.zip geoserver-${GS_VERSION}-csw-plugin.zip )
 for i in "${array[@]}"; do
-  url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
-  download_extension "${url}" "${i%.*}" ${resources_dir}/plugins
+  url="https://tenet.dl.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
+  download_extension ${url} ${i%.*} ${resources_dir}/plugins
 done
 
 
@@ -83,17 +85,17 @@ download_geoserver
 
 # Install geoserver in the tomcat dir
 if [[ -f /tmp/geoserver/geoserver.war ]]; then
-  unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/geoserver &&
-  cp -r "${CATALINA_HOME}"/webapps/geoserver/data "${CATALINA_HOME}" &&
-  mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}" &&
-  rm -rf "${CATALINA_HOME}"/webapps/geoserver/data &&
-  mv "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
+  unzip /tmp/geoserver/geoserver.war -d ${CATALINA_HOME}/webapps/geoserver &&
+  cp -r ${CATALINA_HOME}/webapps/geoserver/data ${CATALINA_HOME} &&
+  mv ${CATALINA_HOME}/data/security ${CATALINA_HOME} &&
+  rm -rf ${CATALINA_HOME}/webapps/geoserver/data &&
+  mv ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* ${CATALINA_HOME}/postgres_config/ &&
   rm -rf /tmp/geoserver
 else
-  cp -r /tmp/geoserver/* "${GEOSERVER_HOME}"/ &&
-  cp -r "${GEOSERVER_HOME}"/webapps/geoserver "${CATALINA_HOME}"/webapps/geoserver &&
-  cp -r "${GEOSERVER_HOME}"/data_dir "${CATALINA_HOME}"/data &&
-  mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}"
+  cp -r /tmp/geoserver/* ${GEOSERVER_HOME}/ &&
+  cp -r ${GEOSERVER_HOME}/webapps/geoserver ${CATALINA_HOME}/webapps/geoserver &&
+  cp -r ${GEOSERVER_HOME}/data_dir ${CATALINA_HOME}/data &&
+  mv ${CATALINA_HOME}/data/security ${CATALINA_HOME}
 fi
 
 # Install GeoServer plugins in correct install dir
@@ -180,5 +182,5 @@ rm -rf /tmp/resources
 
 # Delete resources which will be setup on first run
 
-delete_file "${CATALINA_HOME}"/conf/tomcat-users.xml
-delete_file "${CATALINA_HOME}"/conf/web.xml
+delete_file ${CATALINA_HOME}/conf/tomcat-users.xml
+delete_file ${CATALINA_HOME}/conf/web.xml

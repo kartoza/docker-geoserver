@@ -14,11 +14,11 @@ if [ -z "${OPTIMIZE_LINE_WIDTH}" ]; then
   OPTIMIZE_LINE_WIDTH=false
 fi
 
-if [ -z "${DISK_QUOTA_SIZE}" ]; then
+if [ -z ${DISK_QUOTA_SIZE} ]; then
   DISK_QUOTA_SIZE=20
 fi
 
-if [ -z "${SSL}" ]; then
+if [ -z ${SSL} ]; then
   SSL=false
 fi
 
@@ -42,15 +42,11 @@ if [ -z "${HTTP_PROXY_PORT}" ]; then
   HTTP_PROXY_PORT=
 fi
 
-if [ -z "${HTTP_SCHEME}" ]; then
+if [ -z ${HTTP_SCHEME} ]; then
   HTTP_SCHEME=http
 fi
 
-if [ -z "${HTTPS_SCHEME}" ]; then
-  HTTPS_SCHEME=https
-fi
-
-if [ -z "${HTTP_REDIRECT_PORT}" ]; then
+if [ -z ${HTTP_REDIRECT_PORT} ]; then
   HTTP_REDIRECT_PORT=
 fi
 
@@ -147,7 +143,7 @@ if [ -z "${READONLY}" ]; then
 fi
 
 
-if [ -z "${TOGGLE_MASTER}" ]; then
+if [ -z ${TOGGLE_MASTER} ]; then
     TOGGLE_MASTER=true
 fi
 
@@ -175,7 +171,7 @@ if [ -z "${LOGIN_STATUS}" ]; then
     LOGIN_STATUS=on
 fi
 
-if [ -z "${DISABLE_WEB_INTERFACE}" ]; then
+if [ -z ${DISABLE_WEB_INTERFACE} ]; then
     DISABLE_WEB_INTERFACE=false
 fi
 
@@ -183,11 +179,11 @@ if [ -z "${RECREATE_DATADIR}" ]; then
     RECREATE_DATADIR=false
 fi
 
-if [ -z "${RESET_ADMIN_CREDENTIALS}" ]; then
+if [ -z ${RESET_ADMIN_CREDENTIALS} ]; then
   RESET_ADMIN_CREDENTIALS=false
 fi
 
-if [ -z "${INITIAL_MEMORY}" ]; then
+if [ -z ${INITIAL_MEMORY} ]; then
     INITIAL_MEMORY="2G"
 fi
 
@@ -203,7 +199,7 @@ if [ -z "${REQUEST_TIMEOUT}" ]; then
     REQUEST_TIMEOUT=60
 fi
 
-if [ -z "${PARALLEL_REQUEST}" ]; then
+if [ -z ${PARALLEL_REQUEST} ]; then
     PARALLEL_REQUEST=100
 fi
 
@@ -249,8 +245,18 @@ if [ -z "${GEOSERVER_FILEBROWSER_HIDEFS}" ]; then
     GEOSERVER_FILEBROWSER_HIDEFS=false
 fi
 
-if [ -z "${PROXY_BASE_URL_PARAMETRIZATION}" ]; then
+if [ -z ${PROXY_BASE_URL_PARAMETRIZATION} ]; then
     PROXY_BASE_URL_PARAMETRIZATION=false
+fi
+
+if [ -z ${GEOSERVER_LOG_LEVEL} ]; then
+    GEOSERVER_LOG_LEVEL=DEFAULT_LOGGING
+fi
+
+
+file_env 'TOMCAT_PASSWORD'
+if [ -z ${TOMCAT_PASSWORD} ]; then
+    TOMCAT_PASSWORD='tomcat'
 fi
 
 if [ -z "${GEOSERVER_LOG_LEVEL}" ]; then
@@ -302,24 +308,6 @@ if [ -z "${POSTGRES_JNDI}" ]; then
     POSTGRES_JNDI=false
 fi
 
-if [ -z "${SSL_MODE}" ]; then
+if [ -z ${SSL_MODE} ]; then
     SSL_MODE=disable
 fi
-
-if [ -z ${HASHING_ALGORITHM} ];then
-    HASHING_ALGORITHM='SHA-256'
-fi
-
-if [ -z "${USE_DATETIME_IN_SHAPEFILE}" ]; then
-    USE_DATETIME_IN_SHAPEFILE=true
-fi
-
-if [ -z "${FORCE_DOWNLOAD_STABLE_EXTENSIONS}" ]; then
-    FORCE_DOWNLOAD_STABLE_EXTENSIONS=false
-fi
-
-if [ -z "${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS}" ]; then
-    FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS=false
-fi
-
-

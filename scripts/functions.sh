@@ -3,30 +3,13 @@
 
 export request="wget --progress=bar:force:noscroll -c --tries=2 "
 
-function log() {
-    echo "$0:${BASH_LINENO[*]}": $@
-}
-
-function validate_url(){
-  EXTRA_PARAMS=''
-  if [ -n "$2" ]; then
-    EXTRA_PARAMS=$2
-  fi
-  if [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
-    ${request} $1 $2
-  else
-    echo -e "URL : \e[1;31m $1 does not exists \033[0m"
-  fi
-}
-
-
 function generate_random_string() {
   STRING_LENGTH=$1
-  random_pass_string=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c "${STRING_LENGTH}")
-  if [[ ! -f ${EXTRA_CONFIG_DIR}/.pass_${STRING_LENGTH}.txt ]]; then
-    echo "${random_pass_string}" > "${EXTRA_CONFIG_DIR}"/.pass_"${STRING_LENGTH}".txt
+  random_pass_string=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c ${STRING_LENGTH})
+  if [[ ! -f /scripts/.pass_${STRING_LENGTH}.txt ]]; then
+    echo ${random_pass_string} > /scripts/.pass_${STRING_LENGTH}.txt
   fi
-  export RAND=$(cat "${EXTRA_CONFIG_DIR}"/.pass_"${STRING_LENGTH}".txt)
+  export RAND=$(cat /scripts/.pass_${STRING_LENGTH}.txt)
 }
 
 
@@ -47,15 +30,6 @@ function delete_file() {
 
 }
 
-function delete_folder() {
-    FOLDER_PATH=$1
-    if [  -d "${FOLDER_PATH}" ]; then
-        rm -r "${FOLDER_PATH}"
-    fi
-
-}
-
-
 # Function to add custom crs in geoserver data directory
 # https://docs.geoserver.org/latest/en/user/configuration/crshandling/customcrs.html
 function setup_custom_crs() {
@@ -65,7 +39,7 @@ function setup_custom_crs() {
       cp -f "${EXTRA_CONFIG_DIR}"/epsg.properties "${GEOSERVER_DATA_DIR}"/user_projections/
     else
       # default values
-      cp -r "${CATALINA_HOME}"/data/user_projections/epsg.properties "${GEOSERVER_DATA_DIR}"/user_projections/epsg.properties
+      cp -r ${CATALINA_HOME}/data/user_projections/epsg.properties ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties
     fi
   fi
 }
@@ -177,6 +151,18 @@ function broker_xml_config() {
   fi
 }
 
+function broker_xml_config() {
+  if [[ ! -f ${CLUSTER_CONFIG_DIR}/broker.xml ]]; then
+    # If it doesn't exists, copy from /settings directory if exists
+    if [[ -f ${EXTRA_CONFIG_DIR}/broker.xml ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/broker.xml ${CLUSTER_CONFIG_DIR}/broker.xml
+    else
+      # default values
+      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}/broker.xml
+    fi
+  fi
+}
+
 # Helper function to configure s3 bucket
 # https://docs.geoserver.org/latest/en/user/community/s3-geotiff/index.html
 function s3_config() {
@@ -216,13 +202,13 @@ function install_plugin() {
 # Helper function to setup disk quota configs and database configurations
 
 function default_disk_quota_config() {
-  if [[ ! -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml ]]; then
+  if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota.xml ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
+    if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota.xml ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota.xml ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml
     else
       # default value
-      envsubst < /build_data/geowebcache-diskquota.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
+      envsubst < /build_data/geowebcache-diskquota.xml > ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml
     fi
   fi
 }
@@ -231,11 +217,11 @@ function jdbc_disk_quota_config() {
 
   if [[ ! -f ${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml < "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
+    if [[ -f "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota.xml ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
     else
       # default value
-      envsubst < /build_data/geowebcache-diskquota-jdbc.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
+      envsubst < /build_data/geowebcache-diskquota.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
     fi
   fi
 }
@@ -257,8 +243,8 @@ function setup_control_flow() {
 function setup_logging() {
   if [[ ! -f "${CATALINA_HOME}"/log4j.properties ]]; then
     # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
-    if [[ -f "${EXTRA_CONFIG_DIR}"/log4j.properties ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/log4j.properties > "${CATALINA_HOME}"/log4j.properties
+    if [[ -f ${EXTRA_CONFIG_DIR}/log4j.properties ]]; then
+      cp -f ${EXTRA_CONFIG_DIR}/log4j.properties "${CATALINA_HOME}"/log4j.properties
     else
       # default value
       envsubst < /build_data/log4j.properties > "${CATALINA_HOME}"/log4j.properties
@@ -268,20 +254,18 @@ function setup_logging() {
 }
 
 function geoserver_logging() {
-
-  if [[ ! -f ${GEOSERVER_DATA_DIR}/logging.xml ]];then
-    echo "
+  echo "
 <logging>
-  <level>${GEOSERVER_LOG_LEVEL}</level>
+  <level>${GEOSERVER_LOG_LEVEL}.properties</level>
   <location>logs/geoserver.log</location>
   <stdOutLogging>true</stdOutLogging>
 </logging>
-" > "${GEOSERVER_DATA_DIR}"/logging.xml
-
-  fi
+" > /tmp/logging.xml
+  envsubst < /tmp/logging.xml > ${GEOSERVER_DATA_DIR}/logging.xml
   if [[ ! -f ${GEOSERVER_DATA_DIR}/logs/geoserver.log ]];then
-    touch "${GEOSERVER_DATA_DIR}"/logs/geoserver.log
+    touch ${GEOSERVER_DATA_DIR}/logs/geoserver.log
   fi
+  rm /tmp/logging.xml
 }
 
 # Function to read env variables from secrets
@@ -303,49 +287,3 @@ function file_env {
 	unset "$fileVar"
 }
 
-# Credits to https://github.com/korkin25 from https://github.com/kartoza/docker-geoserver/pull/371
-function set_vars() {
-  if [ -z "${INSTANCE_STRING}" ];then
-    if [ ! -z "${HOSTNAME}" ]; then
-      INSTANCE_STRING="${HOSTNAME}"
-    fi
-  fi
-
-  # Backward compatability
-  if [[ -z ${RANDOMSTRING} ]];then
-    RANDOM_STRING="${INSTANCE_STRING}"
-  else
-    RANDOM_STRING=${RANDOMSTRING}
-  fi
-
-  INSTANCE_STRING="${RANDOM_STRING}"
-
-
-  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOM_STRING}"
-  MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"
-  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
-}
-
-
-
-
-function postgres_ssl_setup() {
-  if [[ ${SSL_MODE} == 'verify-ca' || ${SSL_MODE} == 'verify-full' ]]; then
-        if [[ -z ${SSL_CERT_FILE} || -z ${SSL_KEY_FILE} || -z ${SSL_CA_FILE} ]]; then
-                exit 0
-        else
-          export PARAMS="sslmode=${SSL_MODE}&sslcert=${SSL_CERT_FILE}&sslkey=${SSL_KEY_FILE}&sslrootcert=${SSL_CA_FILE}"
-        fi
-  elif [[ ${SSL_MODE} == 'disable' || ${SSL_MODE} == 'allow' || ${SSL_MODE} == 'prefer' || ${SSL_MODE} == 'require' ]]; then
-       export PARAMS="sslmode=${SSL_MODE}"
-  fi
-
-}
-
-
-function make_hash(){
-    NEW_PASSWORD=$1
-    GEO_INSTALL_PATH=$2
-    ALGO_TYPE=$3
-    (echo "digest1:" && java -classpath $(find $GEO_INSTALL_PATH -regex ".*jasypt-[0-9]\.[0-9]\.[0-9].*jar") org.jasypt.intf.cli.JasyptStringDigestCLI digest.sh algorithm=$ALGO_TYPE saltSizeBytes=16 iterations=100000 input="$NEW_PASSWORD" verbose=0) | tr -d '\n'
-}

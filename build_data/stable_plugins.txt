@@ -12,7 +12,6 @@ geofence-server-plugin
 geopkg-output-plugin
 grib-plugin
 gwc-s3-plugin
-h2-plugin
 imagemap-plugin
 importer-plugin
 jp2k-plugin

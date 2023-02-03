@@ -1,5 +1,5 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0-jdk11-openjdk-slim-bullseye
+ARG IMAGE_VERSION=9.0-jdk11-openjdk-slim-buster
 ARG JAVA_HOME=/usr/local/openjdk-11
 FROM tomcat:$IMAGE_VERSION
 
@@ -49,24 +49,24 @@ ENV \
 
 
 WORKDIR /scripts
+RUN groupadd -r ${GROUP_NAME} -g ${GEOSERVER_GID} && \
+    useradd -m -d /home/${USER}/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G ${GROUP_NAME} ${USER}
+RUN mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
+             ${GEOWEBCACHE_CACHE_DIR} ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /community_plugins /stable_plugins \
+           /plugins
+
 ADD resources /tmp/resources
 ADD build_data /build_data
-ADD scripts /scripts
+RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugins.txt /community_plugins && \
+    cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
-RUN groupadd -r ${GROUP_NAME} -g ${GEOSERVER_GID} && \
-    useradd -l -m -d /home/${USER}/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G ${GROUP_NAME} ${USER}; \
-    mkdir -p  ${GEOSERVER_DATA_DIR} ${CERT_DIR} ${FOOTPRINTS_DATA_DIR} ${FONTS_DIR} \
-             ${GEOWEBCACHE_CACHE_DIR} ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /community_plugins /stable_plugins \
-            /geo_data; \
-    cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
-    cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl; \
-    echo $GS_VERSION > /scripts/geoserver_version.txt ;\
-    chmod +x /scripts/*.sh;/scripts/setup.sh \
+ADD scripts /scripts
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt
+RUN chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*;chown -R ${USER}:${GROUP_NAME} \
     ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR} ${GEOSERVER_DATA_DIR} /scripts ${CERT_DIR} ${FONTS_DIR} \
-    /tmp/ /home/${USER}/ /community_plugins/ /stable_plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} \
-    /usr/share/fonts/ /geo_data;chmod o+rw ${CERT_DIR}
-
+    /tmp/ /home/${USER}/ /community_plugins/ /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} \
+    /usr/share/fonts/;chmod o+rw ${CERT_DIR}
 
 EXPOSE  $HTTPS_PORT
 
