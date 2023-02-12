@@ -73,7 +73,7 @@ if [ -z "${HTTP_PROXY_PORT}" ]; then
   HTTP_PROXY_PORT=
 fi
 
-if [ -z ${HTTP_SCHEME} ]; then
+if [ -z "${HTTP_SCHEME}" ]; then
   HTTP_SCHEME=http
 fi
 

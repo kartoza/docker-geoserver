@@ -65,7 +65,6 @@ EXPOSE  $HTTPS_PORT
 
 
 RUN echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
-VOLUME ["${GEOSERVER_DATA_DIR}", "${CERT_DIR}", "${FOOTPRINTS_DATA_DIR}", "${FONTS_DIR}"]
 WORKDIR ${GEOSERVER_HOME}
 
 ENTRYPOINT ["/bin/bash", "/scripts/entrypoint.sh"]
