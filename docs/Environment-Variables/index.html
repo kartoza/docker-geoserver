@@ -1,0 +1,1015 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../Getting-the-image/">
+      
+      
+        <link rel="next" href="../Mounting-Configs/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.8">
+    
+    
+      
+        <title>Environment Variables - Kartoza/docker-geoserver Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.0d440cfe.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="brown" data-md-color-accent="yellow">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#environment-variables" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Kartoza/docker-geoserver Documentation" class="md-header__button md-logo" aria-label="Kartoza/docker-geoserver Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kartoza/docker-geoserver Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Environment Variables
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kartoza/docker-geoserver" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Kartoza/docker-geoserver Documentation" class="md-nav__button md-logo" aria-label="Kartoza/docker-geoserver Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Kartoza/docker-geoserver Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kartoza/docker-geoserver" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Kartoza/docker-geoserver
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Getting-the-image/" class="md-nav__link">
+        Getting the image
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Environment Variables
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Environment Variables
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    Environment Variables
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-installed-plugins" class="md-nav__link">
+    Default installed  plugins
+  </a>
+  
+    <nav class="md-nav" aria-label="Default installed  plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#activate-stable-plugins-during-contain-startup" class="md-nav__link">
+    Activate stable plugins during contain startup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activate-community-plugins-during-contain-startup" class="md-nav__link">
+    Activate community plugins during contain startup
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-sample-data" class="md-nav__link">
+    Using sample data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enable-disk-quota-storage-in-postgresql-backend" class="md-nav__link">
+    Enable disk quota storage in PostgreSQL backend
+  </a>
+  
+    <nav class="md-nav" aria-label="Enable disk quota storage in PostgreSQL backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-ssl-and-default-postgresql-ssl-certificates" class="md-nav__link">
+    Using SSL and Default PostgreSQL ssl certificates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-ssl-certificates-signed-by-a-certificate-authority" class="md-nav__link">
+    Using SSL certificates signed by a certificate authority
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activating-jndi-postgresql-connector" class="md-nav__link">
+    Activating JNDI PostgreSQL connector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-under-ssl" class="md-nav__link">
+    Running under SSL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxy-base-url" class="md-nav__link">
+    Proxy Base URL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removing-tomcat-extras" class="md-nav__link">
+    Removing Tomcat extras
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-image-to-use-a-specific-version" class="md-nav__link">
+    Upgrading image to use a specific version
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-extra-fonts" class="md-nav__link">
+    Installing extra fonts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-environment-variables-supported" class="md-nav__link">
+    Other Environment variables supported
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control-flow-properties" class="md-nav__link">
+    Control flow properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-geoserver-password-and-username" class="md-nav__link">
+    Changing GeoServer password and username
+  </a>
+  
+    <nav class="md-nav" aria-label="Changing GeoServer password and username">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-secrets" class="md-nav__link">
+    Docker secrets
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Mounting-Configs/" class="md-nav__link">
+        Mounting Configs
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Running-the-Image/" class="md-nav__link">
+        Running the Image
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Kubernetes/" class="md-nav__link">
+        Kubernetes
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Support-and-credits/" class="md-nav__link">
+        Support and credits
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    Environment Variables
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-installed-plugins" class="md-nav__link">
+    Default installed  plugins
+  </a>
+  
+    <nav class="md-nav" aria-label="Default installed  plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#activate-stable-plugins-during-contain-startup" class="md-nav__link">
+    Activate stable plugins during contain startup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activate-community-plugins-during-contain-startup" class="md-nav__link">
+    Activate community plugins during contain startup
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-sample-data" class="md-nav__link">
+    Using sample data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enable-disk-quota-storage-in-postgresql-backend" class="md-nav__link">
+    Enable disk quota storage in PostgreSQL backend
+  </a>
+  
+    <nav class="md-nav" aria-label="Enable disk quota storage in PostgreSQL backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-ssl-and-default-postgresql-ssl-certificates" class="md-nav__link">
+    Using SSL and Default PostgreSQL ssl certificates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-ssl-certificates-signed-by-a-certificate-authority" class="md-nav__link">
+    Using SSL certificates signed by a certificate authority
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activating-jndi-postgresql-connector" class="md-nav__link">
+    Activating JNDI PostgreSQL connector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-under-ssl" class="md-nav__link">
+    Running under SSL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxy-base-url" class="md-nav__link">
+    Proxy Base URL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removing-tomcat-extras" class="md-nav__link">
+    Removing Tomcat extras
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-image-to-use-a-specific-version" class="md-nav__link">
+    Upgrading image to use a specific version
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-extra-fonts" class="md-nav__link">
+    Installing extra fonts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-environment-variables-supported" class="md-nav__link">
+    Other Environment variables supported
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control-flow-properties" class="md-nav__link">
+    Control flow properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-geoserver-password-and-username" class="md-nav__link">
+    Changing GeoServer password and username
+  </a>
+  
+    <nav class="md-nav" aria-label="Changing GeoServer password and username">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-secrets" class="md-nav__link">
+    Docker secrets
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+
+  <h1>Environment Variables</h1>
+
+<h2 id="environment-variables">Environment Variables</h2>
+<p>A full list of environment variables are specified in the <a href="https://github.com/kartoza/docker-geoserver/blob/master/.env">.env</a> file</p>
+<h3 id="default-installed-plugins">Default installed  plugins</h3>
+<p>The image ships with the following stable plugins:</p>
+<ul>
+<li>vectortiles-plugin</li>
+<li>wps-plugin</li>
+<li>printing-plugin</li>
+<li>libjpeg-turbo-plugin</li>
+<li>control-flow-plugin</li>
+<li>pyramid-plugin</li>
+<li>gdal-plugin</li>
+<li>monitor-plugin</li>
+<li>inspire-plugin</li>
+<li>csw-plugin</li>
+</ul>
+<p><strong>Note:</strong> The plugins listed above are omitted from <a href="https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt">Stable_plugins.txt</a>
+even though they are considered <a href="https://sourceforge.net/projects/geoserver/files/GeoServer/2.22.0/extensions/">stable plugins</a>
+The image activates them on startup.</p>
+<p>The image provides the necessary plugin zip files which are used when activating the
+plugins. Not all the plugins will work out of the box because some plugins have
+extra dependencies which need to be downloaded and installed by users because of
+their licence terms i.e. <a href="https://docs.geoserver.org/stable/en/user/data/database/db2.html">db2</a></p>
+<p>Some  plugins also need extra configuration parameters i.e. community plugin <code>s3-geotiff-plugin</code></p>
+<h4 id="activate-stable-plugins-during-contain-startup">Activate stable plugins during contain startup</h4>
+<p>The environment variable <code>STABLE_EXTENSIONS</code> can be used to activate plugins listed in
+<a href="https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt">Stable_plugins.txt</a></p>
+<p>Example</p>
+<pre><code>ie VERSION=2.22.0
+docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,db2-plugin kartoza/geoserver:${VERSION}
+</code></pre>
+<p>You can pass any comma-separated plugins as defined in the text file <code>stable_plugins.txt</code></p>
+<p><strong>Note</strong> Due to the nature of the plugin ecosystem, there are new plugins that are always
+being upgraded from community extensions to stable extensions. If the <code>stable_plugins.txt</code>
+hasn't been updated with the latest changes you can still pass the environment variable with
+the name of the plugin. The plugin will be downloaded and installed.
+This might slow down the process of starting GeoServer but will ensure all plugins get
+activated</p>
+<h4 id="activate-community-plugins-during-contain-startup">Activate community plugins during contain startup</h4>
+<p>The environment variable <code>COMMUNITY_EXTENSIONS</code> can be used to activate plugins listed in
+<a href="https://github.com/kartoza/docker-geoserver/blob/master/build_data/community_plugins.txt">community_plugins.txt</a></p>
+<p>Example</p>
+<pre><code>ie VERSION=2.22.0
+docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-plugin,ogr-datastore-plugin kartoza/geoserver:${VERSION}
+</code></pre>
+<p>You can also pass the environment variable <code>FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS=true</code> to download
+the latest community plugins during initialisation of the container.</p>
+<p><strong>Note:</strong> Community plugins are always in flux state. There is no guarantee that
+plugins will be accessible between each successive build. You can build the extensions
+following the guidelines from <a href="https://docs.geoserver.org/latest/en/developer/maven-guide/index.html#building-extensions">GeoServer develop guidelines</a></p>
+<h3 id="using-sample-data">Using sample data</h3>
+<p>Geoserver ships with sample data which can be used by users to familiarize them with software.
+This is not activated by default. You can activate it using the environment variable <code>SAMPLE_DATA=true</code></p>
+<pre><code>ie VERSION=2.22.0
+docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserver:${VERSION}
+</code></pre>
+<h3 id="enable-disk-quota-storage-in-postgresql-backend">Enable disk quota storage in PostgreSQL backend</h3>
+<p>GeoServer defaults to using H2 datastore for configuring disk quota. You can alternatively
+use the PostgreSQL backend as a disk quota store.</p>
+<p>You will need to run a PostgreSQL DB and link it to a GeoServer instance.</p>
+<pre><code>docker run -d -p 5432:5432 --name db kartoza/postgis:13.0
+docker run -d -p 8600:8080 --name geoserver --link db:db -e DB_BACKEND=POSTGRES -e HOST=db -e POSTGRES_PORT=5432 -e POSTGRES_DB=gis -e POSTGRES_USER=docker -e POSTGRES_PASS=docker kartoza/geoserver:2.18.0
+</code></pre>
+<p>Some additional environment variables to use when activating the disk quota are:</p>
+<ul>
+<li>DISK_QUOTA_SIZE - Specifies the size of the disk quota you need to use. Defaults to 20Gb</li>
+</ul>
+<p>If you are using the <code>kartoza/docker-postgis</code> image as a database backend you can additionally
+configure communication between the containers to use <a href="https://github.com/kartoza/docker-postgis#postgres-ssl-setup">SSL</a></p>
+<p>If you want to test it locally with docker-compose postgres db you need to specify these env variables:</p>
+<pre><code>    - DB_BACKEND=POSTGRES               
+    - HOST=db                          
+    - POSTGRES_PORT=5432                
+    - POSTGRES_DB=gwc                   
+    - POSTGRES_USER=${POSTGRES_USER}    
+    - POSTGRES_PASS=${POSTGRES_PASS}    
+    - SSL_MODE=allow                    
+    - POSTGRES_SCHEMA=public           
+    - DISK_QUOTA_SIZE=5
+</code></pre>
+<p>NOTE: </p>
+<pre><code>HOST should be your local container name for db
+POSTGRES_SCHEMA works only with 'public' right now
+</code></pre>
+<h4 id="using-ssl-and-default-postgresql-ssl-certificates">Using SSL and Default PostgreSQL ssl certificates</h4>
+<p>When the environment variable <code>FORCE_SSL=TRUE</code> is set for the database container you
+will need to set <code>SSL_MODE=allow</code> in the GeoServer container.</p>
+<h4 id="using-ssl-certificates-signed-by-a-certificate-authority">Using SSL certificates signed by a certificate authority</h4>
+<p>When the environment variable <code>FORCE_SSL=TRUE</code> is set for the database container you
+will need to set <code>SSL_MODE</code> to either <code>verify-full</code> or <code>verify-ca</code>
+for the GeoServer container. You will also need to mount the ssl certificates
+you have done in the DB.</p>
+<p>In the GeoServer container, the certificates need to be mounted to the folder
+specified by the certificate directory ${CERT_DIR}</p>
+<pre><code>SSL_CERT_FILE=/etc/certs/fullchain.pem
+SSL_KEY_FILE=/etc/certs/privkey.pem
+SSL_CA_FILE=/etc/certs/root.crt
+</code></pre>
+<h3 id="activating-jndi-postgresql-connector">Activating JNDI PostgreSQL connector</h3>
+<p>When defining vector stores you can use the JNDI pooling. To set this up you will need to activate the following 
+environment variable <code>POSTGRES_JNDI=TRUE</code>. By default, the environment the variable is set to <code>FALSE</code>
+Additionally, you will need to define parameters to connect to an existing PostgreSQL database</p>
+<pre><code>POSTGRES_JNDI=TRUE
+HOST=${POSTGRES_HOSTNAME}
+POSTGRES_DB=${POSTGRES_DB}
+POSTGRES_USER=${POSTGRES_USER}
+POSTGRES_PASS=${POSTGRES_PASS}
+</code></pre>
+<p>If you are using the <a href="https://github.com/kartoza/docker-postgis">kartoza/postgis image</a>
+with the env variable <code>FORCE_SSL=TRUE</code> you will also need to set the environment
+variable <code>SSL_MODE</code> to correspond to value mentioned in <a href="https://github.com/kartoza/docker-postgis#postgres-ssl-setup">kartoza/postgis ssl</a></p>
+<p>When defining the parameters for the store in GeoServer you will need to set
+<code>jndiReferenceName=java:comp/env/jdbc/postgres</code></p>
+<h3 id="running-under-ssl">Running under SSL</h3>
+<p>You can use the environment variables to specify whether you want to run the GeoServer under SSL.
+Credits to <a href="https://github.com/AtomGraph/letsencrypt-tomcat">letsencrpt</a> for providing the solution to
+run under SSL.</p>
+<p>If you set the environment variable <code>SSL=true</code> but do not provide the pem files (fullchain.pem and privkey.pem)
+the container will generate a self-signed SSL certificates.</p>
+<pre><code>ie VERSION=2.22.0
+docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
+</code></pre>
+<p>If you already have your perm files (fullchain.pem and privkey.pem) you can mount the directory containing your keys as:</p>
+<pre><code>ie VERSION=2.22.0
+docker run -it --name geo -v /etc/certs:/etc/certs  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
+
+</code></pre>
+<p>You can also use a PFX file with this image.
+Rename your PFX file as certificate.pfx and then mount the folder containing
+your pfx file. This will be converted to perm files.</p>
+<p><strong>Note</strong> When using PFX files make sure that the ALIAS_KEY you specify as
+an environment variable matches the ALIAS_KEY that was used when generating
+your PFX key.</p>
+<p>A full list of SSL variables is provided here</p>
+<ul>
+<li>HTTP_PORT</li>
+<li>HTTP_PROXY_NAME</li>
+<li>HTTP_PROXY_PORT</li>
+<li>HTTP_REDIRECT_PORT</li>
+<li>HTTP_CONNECTION_TIMEOUT</li>
+<li>HTTP_COMPRESSION</li>
+<li>HTTP_SCHEME</li>
+<li>HTTP_MAX_HEADER_SIZE</li>
+<li>HTTPS_SCHEME</li>
+<li>HTTPS_PORT</li>
+<li>HTTPS_MAX_THREADS</li>
+<li>HTTPS_CLIENT_AUTH</li>
+<li>HTTPS_PROXY_NAME</li>
+<li>HTTPS_PROXY_PORT</li>
+<li>HTTPS_COMPRESSION</li>
+<li>HTTPS_MAX_HEADER_SIZE</li>
+<li>JKS_FILE</li>
+<li>JKS_KEY_PASSWORD</li>
+<li>KEY_ALIAS</li>
+<li>JKS_STORE_PASSWORD</li>
+<li>P12_FILE</li>
+</ul>
+<h3 id="proxy-base-url">Proxy Base URL</h3>
+<p>For the server to report a full proxy base url, you need to pass
+the following env variable i.e.</p>
+<pre><code>HTTP_PROXY_NAME
+HTTP_PROXY_PORT
+</code></pre>
+<p>If you are running GeoServer under SSL with reverse proxy i.e nginx you will need
+to set the following env variables</p>
+<p>Example below:</p>
+<pre><code class="language-bash">HTTP_PROXY_NAME=foo.org
+HTTP_SCHEME=https
+</code></pre>
+<p>This will prevent the login form from sending insecure http post request as experienced
+in <a href="https://github.com/kartoza/docker-geoserver/issues/293">login issue</a></p>
+<p>For SSL based connections the env variables are:</p>
+<pre><code>HTTPS_PROXY_NAME
+HTTPS_PROXY_PORT
+HTTPS_SCHEME
+</code></pre>
+<h3 id="removing-tomcat-extras">Removing Tomcat extras</h3>
+<p>To include Tomcat extras including docs, examples, and the manager webapp, set the
+<code>TOMCAT_EXTRAS</code> environment variable to <code>true</code>:</p>
+<p><strong>Note:</strong> If <code>TOMCAT_EXTRAS</code> is set to true then you should configure  <code>TOMCAT_PASSWORD</code>
+to use a strong password otherwise the default one is set up.</p>
+<pre><code>ie VERSION=2.22.0
+docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION}
+</code></pre>
+<p><strong>Note:</strong> If <code>TOMCAT_EXTRAS</code> is set to false, requests to the root webapp ("/") will return HTTP status code 404. 
+To issue a redirect to the GeoServer webapp ("/geoserver/web") set <code>ROOT_WEBAPP_REDIRECT=true</code></p>
+<h3 id="upgrading-image-to-use-a-specific-version">Upgrading image to use a specific version</h3>
+<p>During initialization, the image will run a script that updates the passwords. This
+is recommended to change passwords the first time that GeoServer runs. If you are migrating
+your GeoServer instance, from one a lower version to a higher one you will need to set the
+environment variable <code>EXISTING_DATA_DIR</code>; unset it to run the initialization script.</p>
+<p>The environment variable will ensure that the password initialization is skipped
+during the startup procedure.</p>
+<p>If you set the env variable <code>EXISTING_DATA_DIR</code> to any value i.e <code>EXISTING_DATA_DIR=foo</code> or
+<code>EXISTING_DATA_DIR=false</code> it will result in password update being skipped. So if you need to have
+the password being updated do not include the env variable in your configuration (this is the default configuration).</p>
+<h3 id="installing-extra-fonts">Installing extra fonts</h3>
+<p>If you have downloaded extra fonts you can mount the folder to the path
+<code>/opt/fonts</code>. This will ensure that all the .ttf files are copied to the correct
+path during initialisation.</p>
+<pre><code>ie VERSION=2.22.0
+docker run -v fonts:/opt/fonts -p 8080:8080 -t kartoza/geoserver:${VERSION}
+</code></pre>
+<h3 id="other-environment-variables-supported">Other Environment variables supported</h3>
+<p>You can also use the following environment variables to pass arguments to GeoServer:</p>
+<ul>
+<li><code>GEOSERVER_DATA_DIR=&lt;PATH&gt;</code></li>
+<li><code>ENABLE_JSONP=&lt;true or false&gt;</code></li>
+<li><code>MAX_FILTER_RULES=&lt;Any integer&gt;</code></li>
+<li><code>OPTIMIZE_LINE_WIDTH=&lt;false or true&gt;</code></li>
+<li><code>FOOTPRINTS_DATA_DIR=&lt;PATH&gt;</code></li>
+<li><code>GEOWEBCACHE_CACHE_DIR=&lt;PATH&gt;</code></li>
+<li><code>GEOSERVER_ADMIN_PASSWORD=&lt;password&gt;</code></li>
+<li><code>GEOSERVER_ADMIN_USER=&lt;username&gt;</code></li>
+<li><code>GEOSERVER_FILEBROWSER_HIDEFS=&lt;false or true&gt;</code></li>
+<li><code>XFRAME_OPTIONS="true"</code> - In order to prevent clickjacking attacks GeoServer defaults to
+setting the X-Frame-Options HTTP header to SAMEORIGIN. Controls whether the X-Frame-Options
+filter should be set at all. Default is true</li>
+<li>
+<p>Tomcat properties:</p>
+</li>
+<li>
+<p>You can change the variables based on <a href="http://docs.geoserver.org/stable/en/user/production/container.html">geoserver container considerations</a>. 
+  These arguments operate on the <code>-Xms</code> and <code>-Xmx</code> options of the Java Virtual Machine</p>
+</li>
+<li><code>INITIAL_MEMORY=&lt;size&gt;</code> : Initial Memory that Java can allocate, default <code>2G</code></li>
+<li><code>MAXIMUM_MEMORY=&lt;size&gt;</code> : Maximum Memory that Java can allocate, default <code>4G</code></li>
+<li><code>ACTIVATE_ALL_COMMUNITY_EXTENSIONS</code> : Activates all downloaded community plugins</li>
+<li><code>ACTIVATE_ALL_STABLE_EXTENSIONS</code> : Activates all stable plugins previously downloaded</li>
+</ul>
+<p><strong>Note:</strong> Before using <code>ACTIVATE_ALL_STABLE_EXTENSIONS</code> and <code>ACTIVATE_ALL_COMMUNITY_EXTENSIONS</code>
+ensure that all prerequisites for those plugins are matched otherwise the container will not start
+and errors will result</p>
+<h3 id="control-flow-properties">Control flow properties</h3>
+<p>The control flow module manages requests in GeoServer. Instructions on
+what each parameter mean can be read from <a href="http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html">documentation</a>.</p>
+<ul>
+<li>
+<p>Example default values for the environment variables</p>
+<ul>
+<li><code>REQUEST_TIMEOUT=60</code></li>
+<li><code>PARALLEL_REQUEST=100</code></li>
+<li><code>GETMAP=10</code></li>
+<li><code>REQUEST_EXCEL=4</code></li>
+<li><code>SINGLE_USER=6</code></li>
+<li><code>GWC_REQUEST=16</code></li>
+<li><code>WPS_REQUEST=1000/d;30s</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>Note:</strong> You should customise these variables based on the resources available with your GeoServer</p>
+<h3 id="changing-geoserver-password-and-username">Changing GeoServer password and username</h3>
+<p>You can pass the environment variables to change it on runtime.</p>
+<pre><code>GEOSERVER_ADMIN_PASSWORD
+GEOSERVER_ADMIN_USER
+</code></pre>
+<p>The username and password are reinitialized each time the container starts. If you do not pass the env variables
+<code>GEOSERVER_ADMIN_PASSWORD</code> the container will generate a new password which is visible in the
+startup logs.</p>
+<p><strong>Note:</strong> When upgrading the <code>GEOSERVER_ADMIN_PASSWORD</code> and <code>GEOSERVER_ADMIN_USER</code> you will
+need to mount the volume <code>settings:/settings</code> so that the lock-files generated by the <code>update_password.sh</code> are
+persistent during initialization. See the example in <a href="https://github.com/kartoza/docker-geoserver/blob/master/docker-compose-build.yml">docker-compose-build</a></p>
+<pre><code>docker run --name &quot;geoserver&quot; -e GEOSERVER_ADMIN_USER=kartoza  -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -p 8080:8080 -d -t kartoza/geoserver
+</code></pre>
+<p><strong>Note:</strong> The docker-compose recipe uses the password <code>myawesomegeoserver</code>. It is highly
+recommended not to run the container in production using these values.</p>
+<h4 id="docker-secrets">Docker secrets</h4>
+<p>To avoid passing sensitive information in environment variables, <code>_FILE</code> can be appended to
+some variables to read from files present in the container. This is particularly useful
+in conjunction with Docker secrets, as passwords can be loaded from <code>/run/secrets/&lt;secret_name&gt;</code> e.g.:</p>
+<ul>
+<li>-e GEOSERVER_ADMIN_PASSWORD_FILE=/run/secrets/<geoserver_pass_secret></li>
+</ul>
+<p>For more information see <a href="https://docs.docker.com/engine/swarm/secrets/">https://docs.docker.com/engine/swarm/secrets/</a>.</p>
+<p>Currently, the following environment variables</p>
+<pre><code> GEOSERVER_ADMIN_USER
+ GEOSERVER_ADMIN_PASSWORD
+ S3_USERNAME
+ S3_PASSWORD
+ TOMCAT_USER
+ TOMCAT_PASSWORD
+ PKCS12_PASSWORD
+ JKS_KEY_PASSWORD
+ JKS_STORE_PASSWORD
+</code></pre>
+<p>are supported.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.db81ec45.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a00a7c5e.min.js"></script>
+      
+    
+  </body>
+</html>
