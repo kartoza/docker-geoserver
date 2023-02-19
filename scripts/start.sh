@@ -204,8 +204,14 @@ if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
     rm "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-*
   fi
-  cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/lib/ &&
-  envsubst < /build_data/context.xml > "${CATALINA_HOME}"/conf/context.xml
+  cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/lib/
+  if [[ -f ${EXTRA_CONFIG_DIR}/context.xml  ]]; then
+    envsubst < "${EXTRA_CONFIG_DIR}"/context.xml > "${CATALINA_HOME}"/conf/context.xml
+  else
+      # default values
+    envsubst < /build_data/context.xml > "${CATALINA_HOME}"/conf/context.xml
+  fi
+
 else
   cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
 fi
@@ -216,8 +222,12 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     cp -r  /tmp/tomcat_apps/webapps.dist/* "${CATALINA_HOME}"/webapps/ &&
     rm -r /tmp/tomcat_apps
     if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
-      cp /build_data/context.xml "${CATALINA_HOME}"/webapps/manager/META-INF/
-      sed -i -e '19,36d' "${CATALINA_HOME}"/webapps/manager/META-INF/context.xml
+      if [[ -f ${EXTRA_CONFIG_DIR}/context.xml  ]]; then
+        envsubst < ${EXTRA_CONFIG_DIR}/context.xml > "${CATALINA_HOME}"/webapps/manager/META-INF/context.xml
+      else
+        cp /build_data/context.xml "${CATALINA_HOME}"/webapps/manager/META-INF/
+        sed -i -e '19,36d' "${CATALINA_HOME}"/webapps/manager/META-INF/context.xml
+      fi
     fi
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
         generate_random_string 18
