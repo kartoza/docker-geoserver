@@ -365,3 +365,6 @@ if [ -z "${RELINQUISH_LOG4J_CONTROL}" ]; then
   RELINQUISH_LOG4J_CONTROL=false
 fi
 
+if [ -z "${USE_DEFAULT_CREDENTIALS}" ]; then
+  USE_DEFAULT_CREDENTIALS=false
+fi
