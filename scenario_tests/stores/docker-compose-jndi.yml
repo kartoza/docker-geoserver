@@ -1,0 +1,151 @@
+version: '2.1'
+volumes:
+  default-pg-data-dir:
+  new-pg-data-dir:
+  new-pg-data-dir-2:
+  new-pg-data-dir-3:
+  recreate-pg-data-dir:
+  init-waldir:
+services:
+  pg-default:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    volumes:
+      # By default persisted volumes should be in /var/lib/postgresql
+      - default-pg-data-dir:/var/lib/postgresql
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      # Default usage, no datadir location defined
+      TEST_CLASS: TestDefault
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+
+  pg-new:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    volumes:
+      # Mount to new locations where there are no initial data
+      - new-pg-data-dir:/opt/mypostgis/data
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      # Tell the new location
+      TEST_CLASS: TestNew
+      DATADIR: /opt/mypostgis/data
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+
+  pg-recreate:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    volumes:
+      - recreate-pg-data-dir:/var/lib/postgresql
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      # Tell that you are going to perform cluster reinitialization
+      TEST_CLASS: TestRecreate
+      RECREATE_DATADIR: "True"
+      DEFAULT_ENCODING: ${DEFAULT_ENCODING:-UTF-8}
+      DEFAULT_COLLATION: ${DEFAULT_COLLATION:-id_ID.utf8}
+      DEFAULT_CTYPE: ${DEFAULT_COLLATION:-id_ID.utf8}
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+  
+  pg-custom-waldir-wrong:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    volumes:
+      # Mount to a locations where there are initial data
+      - new-pg-data-dir-2:/opt/mypostgis/data
+      # Specify different waldir location
+      - init-waldir:/opt/mypostgis/data/waldir
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      TEST_CLASS: TestCustomWALdir
+      DATADIR: /opt/mypostgis/data
+      POSTGRES_INITDB_WALDIR: /opt/mypostgis/data/waldir
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+
+  pg-custom-waldir-correct:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    volumes:
+      # Mount to new locations where there are no initial data
+      - new-pg-data-dir-3:/opt/mypostgis/data
+      # Specify different waldir location
+      - init-waldir:/opt/mypostgis/waldir
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      TEST_CLASS: TestCustomWALdir
+      DATADIR: /opt/mypostgis/data
+      POSTGRES_INITDB_WALDIR: /opt/mypostgis/waldir
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+  
+  pg-custom-waldir-not-match-1:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    volumes:
+      # Mount to a locations where there are initial data
+      - new-pg-data-dir-3:/opt/mypostgis/data
+      # Specify different waldir location
+      - init-waldir:/opt/mypostgis/waldir
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      TEST_CLASS: TestCustomWALdirNotMatch
+      DATADIR: /opt/mypostgis/data
+      POSTGRES_INITDB_WALDIR: /opt/waldir
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+  
+  pg-custom-waldir-not-match-2:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    volumes:
+      # Mount to a locations where there are initial data
+      - new-pg-data-dir-2:/opt/mypostgis/data
+      # Specify different waldir location
+      - init-waldir:/opt/waldir
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      TEST_CLASS: TestCustomWALdirNotMatch
+      DATADIR: /opt/mypostgis/data
+      POSTGRES_INITDB_WALDIR: /opt/waldir
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+

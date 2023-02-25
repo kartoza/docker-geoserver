@@ -1,0 +1,89 @@
+
+version: '2.1'
+
+services:
+  pg:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    restart: 'always'
+    # You can optionally mount to volume, to play with the persistence and
+    # observe how the node will behave after restarts.
+    volumes:
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      ALLOW_IP_RANGE: '0.0.0.0/0'
+      TEST_CLASS: test_extensions.TestExtensions
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: true
+    ports:
+      - "7777:5432"
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+
+  pg-two-extensions:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    restart: 'always'
+    # You can optionally mount to volume, to play with the persistence and
+    # observe how the node will behave after restarts.
+    volumes:
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      ALLOW_IP_RANGE: '0.0.0.0/0'
+      TEST_CLASS: test_extensions.TestExtensions
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis,pgcrypto:1.3
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: true
+    ports:
+      - "7776:5432"
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+
+  pg-gosu:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    restart: 'always'
+    # You can optionally mount to volume, to play with the persistence and
+    # observe how the node will behave after restarts.
+    volumes:
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      ALLOW_IP_RANGE: '0.0.0.0/0'
+      TEST_CLASS: test_extensions.TestExtensions
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    ports:
+      - "7778:5432"
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+
+  pg-two-extensions-gosu:
+    image: 'kartoza/postgis:${TAG:-manual-build}'
+    restart: 'always'
+    # You can optionally mount to volume, to play with the persistence and
+    # observe how the node will behave after restarts.
+    volumes:
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      ALLOW_IP_RANGE: '0.0.0.0/0'
+      TEST_CLASS: test_extensions.TestExtensions
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis,pgcrypto:1.3
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: false
+    ports:
+      - "7779:5432"
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"

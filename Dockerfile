@@ -1,7 +1,11 @@
+##############################################################################
+# Base stage                                                                 #
+##############################################################################
+
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 ARG IMAGE_VERSION=9.0.71-jdk11-temurin-focal
 ARG JAVA_HOME=/usr/local/openjdk-11
-FROM tomcat:$IMAGE_VERSION
+FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.22.2
@@ -62,3 +66,20 @@ RUN echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
 WORKDIR ${GEOSERVER_HOME}
 
 ENTRYPOINT ["/bin/bash", "/scripts/entrypoint.sh"]
+
+##############################################################################
+# Testing Stage                                                           #
+##############################################################################
+FROM geoserver-prod AS geoserver-test
+
+COPY ./scenario_tests/utils/requirements.txt /lib/utils/requirements.txt
+
+RUN set -eux \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install python3-pip procps \
+    && apt-get -y --purge autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install -r /lib/utils/requirements.txt

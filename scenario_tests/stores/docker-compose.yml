@@ -1,0 +1,42 @@
+
+version: '2.1'
+
+volumes:
+  pg-data-dir:
+  geoserver-data-dir:
+
+
+services:
+  pg:
+    image: 'kartoza/postgis:15-3.3'
+    restart: 'always'
+    volumes:
+      - pg-data-dir:/var/lib/postgresql
+    environment:
+      ALLOW_IP_RANGE: '0.0.0.0/0'
+      POSTGRES_PASS: 'docker'
+      RUN_AS_ROOT: true
+    healthcheck:
+      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
+
+  geoserver:
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
+    restart: 'always'
+    volumes:
+      - geoserver-data-dir:/opt/data/postgis
+      - ./tests:/tests
+      - ../utils:/lib/utils
+    environment:
+      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+      GEOSERVER_ADMIN_USER: admin
+      INITIAL_MEMORY: 2G
+      MAXIMUM_MEMORY: 4G
+    ports:
+      - "8600:8080"
+    healthcheck:
+      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u ${GEOSERVER_ADMIN_USER}:'${GEOSERVER_ADMIN_PASSWORD}' http://localhost:8080/geoserver/rest/about/version.xml"
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+
+
