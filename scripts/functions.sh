@@ -292,9 +292,6 @@ function activate_gwc_global_configs() {
       # default value
       envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
     fi
-  else
-      # default value
-      envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
   fi
 }
 
