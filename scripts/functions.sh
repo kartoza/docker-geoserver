@@ -276,7 +276,7 @@ function jdbc_disk_quota_config() {
   if [[ ! -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml < "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
+      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
     else
       # default value
       envsubst < /build_data/geowebcache-diskquota-jdbc.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
@@ -287,14 +287,11 @@ function jdbc_disk_quota_config() {
 function activate_gwc_global_configs() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/gwc-gs.xml ]]; then
     if [[ -f "${EXTRA_CONFIG_DIR}"/gwc-gs.xml ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/gwc-gs.xml < "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
+      envsubst < "${EXTRA_CONFIG_DIR}"/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
     else
       # default value
       envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
     fi
-  else
-      # default value
-      envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
   fi
 }
 
