@@ -10,7 +10,7 @@ services:
     image: 'kartoza/geoserver:${TAG:-manual-build}'
     restart: 'always'
     volumes:
-      - geoserver-data-dir:/opt/data/postgis
+      - geoserver-data-dir:/opt/geoserver/data_dir
       - ./tests:/tests
     environment:
       GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
