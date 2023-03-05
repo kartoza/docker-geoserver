@@ -1,0 +1,32 @@
+version: '2.1'
+
+volumes:
+  geoserver-data-dir:
+
+services:
+
+  geoserver:
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
+    restart: 'always'
+    volumes:
+      - geoserver-data-dir:/opt/geoserver/data_dir
+      - ./tests:/tests
+    environment:
+      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+      GEOSERVER_ADMIN_USER: admin
+      INITIAL_MEMORY: 2G
+      MAXIMUM_MEMORY: 4G
+      HOST: db
+      POSTGRES_DB: gis
+      POSTGRES_USER: docker
+      POSTGRES_PASS: docker
+      RECREATE_DATADIR: TRUE
+      SAMPLE_DATA: true
+      TEST_CLASS: test_gwc.TestGeoServerGWC
+    healthcheck:
+      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+
+
