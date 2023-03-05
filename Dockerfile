@@ -82,4 +82,4 @@ RUN set -eux \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install -r /lib/utils/requirements.txt
+RUN pip3 install -r /lib/utils/requirements.txt;pip3 install numpy --upgrade
