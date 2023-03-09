@@ -87,7 +87,7 @@ To build yourself with a local checkout using the docker-compose.build.yaml:
 3. Build the container and spin up the services
    ```shell
    cd docker-geoserver
-   docker-compose -f docker-compose-build.yml up -d --build
+   docker-compose -f docker-compose-build.yml up -d geoserver-prod --build
    ```
 
 
