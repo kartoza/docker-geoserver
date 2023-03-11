@@ -1,0 +1,5 @@
+FROM pavics/geoserver:2.22.2-kartoza-build20230226
+
+ADD scripts /scripts
+
+RUN chmod +x /scripts/*.sh
