@@ -29,6 +29,17 @@ mkdir -p  "${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONT
 source /scripts/functions.sh
 source /scripts/env-data.sh
 
+# Rename to match wanted context-root and so that we can unzip plugins to
+# existing directory.
+if [ x"${GEOSERVER_CONTEXT_ROOT}" != xgeoserver ]; then
+  echo "INFO: changing context-root to '${GEOSERVER_CONTEXT_ROOT}'."
+  if [ -e "${CATALINA_HOME}/webapps/geoserver" ]; then
+    mv "${CATALINA_HOME}/webapps/geoserver" "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}"
+  else
+    echo "WARN: '${CATALINA_HOME}/webapps/geoserver' not found, probably already renamed as this is probably a container restart and not first run."
+  fi
+fi
+
 # Credits https://github.com/kartoza/docker-geoserver/pull/371
 set_vars
 export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
