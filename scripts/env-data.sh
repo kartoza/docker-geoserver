@@ -368,3 +368,7 @@ fi
 if [ -z "${USE_DEFAULT_CREDENTIALS}" ]; then
   USE_DEFAULT_CREDENTIALS=false
 fi
+
+if [ -z "${GEOSERVER_CONTEXT_ROOT}" ]; then
+  GEOSERVER_CONTEXT_ROOT=geoserver
+fi

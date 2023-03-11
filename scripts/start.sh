@@ -200,9 +200,9 @@ if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
     POSTGRES_PORT=5432
     export POSTGRES_PORT="${POSTGRES_PORT}"
   fi
-  POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
+  POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
   if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
-    rm "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-*
+    rm "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-*
   fi
   cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/lib/
   if [[ -f ${EXTRA_CONFIG_DIR}/context.xml  ]]; then
@@ -213,7 +213,7 @@ if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   fi
 
 else
-  cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
+  cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
 fi
 
 

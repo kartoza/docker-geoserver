@@ -131,12 +131,12 @@ function validate_geo_install() {
 
 function unzip_geoserver() {
   if [[ -f /tmp/geoserver/geoserver.war ]]; then
-    unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/geoserver &&
-    validate_geo_install "${CATALINA_HOME}"/webapps/geoserver && \
-    cp -r "${CATALINA_HOME}"/webapps/geoserver/data "${CATALINA_HOME}" &&
+    unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT} &&
+    validate_geo_install "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT} && \
+    cp -r "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data "${CATALINA_HOME}" &&
     mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}" &&
-    rm -rf "${CATALINA_HOME}"/webapps/geoserver/data &&
-    mv "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
+    rm -rf "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data &&
+    mv "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
     rm -rf /tmp/geoserver
 else
     cp -r /tmp/geoserver/* "${GEOSERVER_HOME}"/ && \
@@ -247,9 +247,9 @@ function install_plugin() {
      unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
      echo -e "\e[32m Enabling ${EXT} for GeoServer \033[0m"
      if [[ -f /geoserver/start.jar ]]; then
-       cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/geoserver/WEB-INF/lib/
+       cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
      else
-       cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
+       cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
      fi
      rm -rf /tmp/gs_plugin
   else
