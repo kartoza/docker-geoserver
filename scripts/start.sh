@@ -3,6 +3,7 @@
 source /scripts/functions.sh
 source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
+STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
 
 web_cors
 

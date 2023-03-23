@@ -53,7 +53,7 @@ ADD resources /tmp/resources
 ADD build_data /build_data
 ADD scripts /scripts
 
-RUN echo $GS_VERSION > /scripts/geoserver_version.txt ;\
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
