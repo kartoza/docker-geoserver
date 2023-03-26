@@ -340,12 +340,12 @@ function geoserver_logging() {
 }
 
 # Function to read env variables from secrets
-function file_env {
+function file_env() {
 	local var="$1"
 	local fileVar="${var}_FILE"
-	local def="${1:-}"
+	local def="${2:-}"
 	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
-		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+		printf >&2 'error: both %s and %s are set (but are exclusive)\n' "$var" "$fileVar"
 		exit 1
 	fi
 	local val="$def"
@@ -357,7 +357,6 @@ function file_env {
 	export "$var"="$val"
 	unset "$fileVar"
 }
-
 # Credits to https://github.com/korkin25 from https://github.com/kartoza/docker-geoserver/pull/371
 function set_vars() {
   if [ -z "${INSTANCE_STRING}" ];then
