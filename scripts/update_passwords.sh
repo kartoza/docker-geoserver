@@ -36,6 +36,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   fi
 
   # Set random password if none provided
+  file_env 'GEOSERVER_ADMIN_PASSWORD'
   if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
         generate_random_string 15
         GEOSERVER_ADMIN_PASSWORD=${RAND}
