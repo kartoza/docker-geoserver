@@ -3,6 +3,7 @@ authkey-plugin
 cas-plugin
 charts-plugin
 css-plugin
+csw-iso-plugin
 db2-plugin
 dxf-plugin
 excel-plugin
@@ -18,6 +19,7 @@ importer-plugin
 jp2k-plugin
 mapml-plugin
 mbstyle-plugin
+metadata-plugin
 mongodb-plugin
 mysql-plugin
 netcdf-out-plugin
