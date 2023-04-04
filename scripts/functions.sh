@@ -429,3 +429,35 @@ function create_gwc_tile_tables(){
 
 }
 
+function gwc_file_perms() {
+  GEO_USER_PERM=$(stat -c '%U' ${GEOSERVER_DATA_DIR})
+  GEO_GRP_PERM=$(stat -c '%G' ${GEOSERVER_DATA_DIR})
+  GWC_USER_PERM=$(stat -c '%U' ${GEOWEBCACHE_CACHE_DIR})
+  GWC_GRP_PERM=$(stat -c '%G' ${GEOWEBCACHE_CACHE_DIR})
+  case "${GEOWEBCACHE_CACHE_DIR}" in ${GEOSERVER_DATA_DIR}/*)
+    echo "${GEOWEBCACHE_CACHE_DIR} is nested in ${GEOSERVER_DATA_DIR}"
+    if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOSERVER_DATA_DIR}
+      fi
+    fi
+    ;;
+  *)
+    echo "${GEOWEBCACHE_CACHE_DIR} is not nested in ${GEOSERVER_DATA_DIR}"
+    if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOSERVER_DATA_DIR}
+      fi
+    fi
+    if [[ ${CHOWN_GWC_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GWC_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GWC_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOWEBCACHE_CACHE_DIR}
+      fi
+    fi
+   ;;
+esac
+
+}

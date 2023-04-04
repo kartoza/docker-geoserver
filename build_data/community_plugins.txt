@@ -3,7 +3,6 @@ backup-restore-plugin
 cog-plugin
 colormap-plugin
 cov-json-plugin
-csw-iso-plugin
 dds-plugin
 dyndimension-plugin
 elasticsearch-plugin
@@ -28,7 +27,6 @@ jms-cluster-plugin
 libdeflate-plugin
 mbtiles-plugin
 mbtiles-store-plugin
-metadata-plugin
 mongodb-schemaless-plugin
 ncwms-plugin
 netcdf-ghrsst-plugin

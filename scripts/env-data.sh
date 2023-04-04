@@ -365,3 +365,11 @@ fi
 if [ -z "${USE_DEFAULT_CREDENTIALS}" ]; then
   USE_DEFAULT_CREDENTIALS=false
 fi
+
+if [ -z "${CHOWN_DATA_DIR}" ]; then
+  CHOWN_DATA_DIR=true
+fi
+
+if [ -z "${CHOWN_GWC_DATA_DIR}" ]; then
+  CHOWN_GWC_DATA_DIR=true
+fi
