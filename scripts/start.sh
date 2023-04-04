@@ -248,7 +248,7 @@ else
 
     if [[ "${ROOT_WEBAPP_REDIRECT}" =~ [Tt][Rr][Uu][Ee] ]]; then
         mkdir "${CATALINA_HOME}"/webapps/ROOT
-        cp /build_data/index.jsp "${CATALINA_HOME}"/webapps/ROOT/index.jsp
+        cat /build_data/index.jsp | sed "s@/geoserver/@/${GEOSERVER_CONTEXT_ROOT}/@g" > "${CATALINA_HOME}"/webapps/ROOT/index.jsp
     fi
 fi
 
