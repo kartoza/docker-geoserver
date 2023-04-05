@@ -373,3 +373,8 @@ fi
 if [ -z "${CHOWN_GWC_DATA_DIR}" ]; then
   CHOWN_GWC_DATA_DIR=true
 fi
+
+if [ -z "${GEOSERVER_CONTEXT_ROOT}" ]; then
+  # For runtime only, do not change at build-time.
+  GEOSERVER_CONTEXT_ROOT=geoserver
+fi

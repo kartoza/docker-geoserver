@@ -24,6 +24,7 @@
        * [Control flow properties](#control-flow-properties)
        * [Changing GeoServer password and username](#changing-geoserver-password-and-username)
            * [Docker secrets](#docker-secrets)
+       * [Changing GeoServer deployment context-root](#changing-geoserver-deployment-context-root)
    * [Mounting Configs](#mounting-configs)
        * [CORS Support](#cors-support)
    * [Clustering using JMS Plugin](#clustering-using-jms-plugin)
@@ -524,6 +525,20 @@ Currently, the following environment variables
  JKS_STORE_PASSWORD
 ```
 are supported.
+
+### Changing GeoServer deployment context-root
+
+You can pass the environment variable to change the context-root at runtime,
+example:
+```
+GEOSERVER_CONTEXT_ROOT=my-geoserver
+```
+
+The example above will deploy Geoserver at https://host/my-geoserver instead of
+the default location at https://host/geoserver.
+
+This variable is meant for runtime only.  At build-time, do not change this
+value so at runtime it can perform the proper context-root rename.
 
 
 ## Mounting Configs

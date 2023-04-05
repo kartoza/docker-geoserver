@@ -9,11 +9,7 @@ source /scripts/env-data.sh
 source /scripts/functions.sh
 
 # Setup install directory
-if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-   GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
-else
-  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
-fi
+GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
 
 
@@ -47,7 +43,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
   USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
   ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
-  CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/}
+  CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
 
   # users.xml setup
   cp $USERS_XML $USERS_XML.orig
