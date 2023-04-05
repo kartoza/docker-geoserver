@@ -25,7 +25,6 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   else
       if [[ ! -f "${SETUP_LOCKFILE}"  ]]; then
           if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
-            echo -e "\e[32m Copying default security folder \033[0m"
             cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
             sed -i 's/pbePasswordEncoder/strongPbePasswordEncoder/g' ${GEOSERVER_DATA_DIR}/security/config.xml
           fi
@@ -33,13 +32,13 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   fi
 
   # Set random password if none provided
+  file_env 'GEOSERVER_ADMIN_PASSWORD'
   if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
-        echo -e "\e[32m ------------------------------------------ \033[0m"
-        echo -e "\e[32m Set random password because none is provided \033[0m"
         generate_random_string 15
         GEOSERVER_ADMIN_PASSWORD=${RAND}
         echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
-        echo -e "[Entrypoint] GENERATED GeoServer  PASSWORD: \e[1;31m $GEOSERVER_ADMIN_PASSWORD \033[0m"
+        echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
+        echo -e "[Entrypoint] GENERATED GeoServer Random PASSWORD is: \e[1;31m $GEOSERVER_ADMIN_PASSWORD \033[0m"
   fi
 
   USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
@@ -60,14 +59,12 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   if [[ -f "${EXTRA_CONFIG_DIR}"/.default_admin_encrypted_pass.txt ]];then
       export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD=$(cat "${EXTRA_CONFIG_DIR}"/.default_admin_encrypted_pass.txt)
   else
-      export GEOSERVER_ADMIN_DEFAULT_PASSWORD=$(grep -o 'password=\".*\"' ${CATALINA_HOME}/security/usergroup/default/users.xml|awk -F':' '{print $2}')
+      export GEOSERVER_ADMIN_DEFAULT_PASSWORD=$(grep -o 'password=\".*\"' ${USERS_XML}|awk -F':' '{print $2}')
       export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD="digest1:${GEOSERVER_ADMIN_DEFAULT_PASSWORD%?}"
   fi
 
 
   if [[ ! -f "${SETUP_LOCKFILE}"  ]]; then
-      echo -e "\e[32m ----------------------------------------------------- \033[0m"
-      echo -e "\e[32m  Run password encryption once for the first runtime \033[0m"
       export PWD_HASH=$(make_hash $GEOSERVER_ADMIN_PASSWORD $CLASSPATH $HASHING_ALGORITHM)
       cat $USERS_XML.orig | sed -e "s/ name=\"${GEOSERVER_ADMIN_DEFAULT_USER}\" / name=\"${GEOSERVER_ADMIN_USER}\" /" | sed -e "s/ password=\"${GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD//\//\\/}\"/ password=\"${PWD_HASH//\//\\/}\"/" > $USERS_XML
       touch ${SETUP_LOCKFILE}

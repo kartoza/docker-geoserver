@@ -281,7 +281,7 @@ function jdbc_disk_quota_config() {
   if [[ ! -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml < "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
+      envsubst < "${EXTRA_CONFIG_DIR}"/geowebcache-diskquota-jdbc.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
     else
       # default value
       envsubst < /build_data/geowebcache-diskquota-jdbc.xml > "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
@@ -292,14 +292,11 @@ function jdbc_disk_quota_config() {
 function activate_gwc_global_configs() {
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/gwc-gs.xml ]]; then
     if [[ -f "${EXTRA_CONFIG_DIR}"/gwc-gs.xml ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/gwc-gs.xml < "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
+      envsubst < "${EXTRA_CONFIG_DIR}"/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
     else
       # default value
       envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
     fi
-  else
-      # default value
-      envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
   fi
 }
 
@@ -348,12 +345,12 @@ function geoserver_logging() {
 }
 
 # Function to read env variables from secrets
-function file_env {
+function file_env() {
 	local var="$1"
 	local fileVar="${var}_FILE"
-	local def="${1:-}"
+	local def="${2:-}"
 	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
-		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+		printf >&2 'error: both %s and %s are set (but are exclusive)\n' "$var" "$fileVar"
 		exit 1
 	fi
 	local val="$def"
@@ -365,7 +362,6 @@ function file_env {
 	export "$var"="$val"
 	unset "$fileVar"
 }
-
 # Credits to https://github.com/korkin25 from https://github.com/kartoza/docker-geoserver/pull/371
 function set_vars() {
   if [ -z "${INSTANCE_STRING}" ];then
@@ -438,3 +434,35 @@ function create_gwc_tile_tables(){
 
 }
 
+function gwc_file_perms() {
+  GEO_USER_PERM=$(stat -c '%U' ${GEOSERVER_DATA_DIR})
+  GEO_GRP_PERM=$(stat -c '%G' ${GEOSERVER_DATA_DIR})
+  GWC_USER_PERM=$(stat -c '%U' ${GEOWEBCACHE_CACHE_DIR})
+  GWC_GRP_PERM=$(stat -c '%G' ${GEOWEBCACHE_CACHE_DIR})
+  case "${GEOWEBCACHE_CACHE_DIR}" in ${GEOSERVER_DATA_DIR}/*)
+    echo "${GEOWEBCACHE_CACHE_DIR} is nested in ${GEOSERVER_DATA_DIR}"
+    if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOSERVER_DATA_DIR}
+      fi
+    fi
+    ;;
+  *)
+    echo "${GEOWEBCACHE_CACHE_DIR} is not nested in ${GEOSERVER_DATA_DIR}"
+    if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOSERVER_DATA_DIR}
+      fi
+    fi
+    if [[ ${CHOWN_GWC_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GWC_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GWC_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOWEBCACHE_CACHE_DIR}
+      fi
+    fi
+   ;;
+esac
+
+}

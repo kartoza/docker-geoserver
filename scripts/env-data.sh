@@ -305,13 +305,10 @@ if [ -z "${TOMCAT_USER}" ]; then
     TOMCAT_USER='tomcat'
 fi
 
-file_env 'GEOSERVER_ADMIN_USER'
+
 if [ -z "${GEOSERVER_ADMIN_USER}" ]; then
     GEOSERVER_ADMIN_USER='admin'
 fi
-
-file_env 'GEOSERVER_ADMIN_PASSWORD'
-
 
 if [ -z "${CSRF_WHITELIST}" ]; then
     CSRF_WHITELIST=
@@ -367,6 +364,14 @@ fi
 
 if [ -z "${USE_DEFAULT_CREDENTIALS}" ]; then
   USE_DEFAULT_CREDENTIALS=false
+fi
+
+if [ -z "${CHOWN_DATA_DIR}" ]; then
+  CHOWN_DATA_DIR=true
+fi
+
+if [ -z "${CHOWN_GWC_DATA_DIR}" ]; then
+  CHOWN_GWC_DATA_DIR=true
 fi
 
 if [ -z "${GEOSERVER_CONTEXT_ROOT}" ]; then
