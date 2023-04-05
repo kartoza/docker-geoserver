@@ -370,5 +370,6 @@ if [ -z "${USE_DEFAULT_CREDENTIALS}" ]; then
 fi
 
 if [ -z "${GEOSERVER_CONTEXT_ROOT}" ]; then
+  # For runtime only, do not change at build-time.
   GEOSERVER_CONTEXT_ROOT=geoserver
 fi
