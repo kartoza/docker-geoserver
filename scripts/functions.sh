@@ -131,9 +131,9 @@ function validate_geo_install() {
 
 function detect_install_dir() {
   if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-    return "${GEOSERVER_HOME}"
+    echo "${GEOSERVER_HOME}"
   else
-    return "${CATALINA_HOME}"
+    echo "${CATALINA_HOME}"
   fi
 }
 
