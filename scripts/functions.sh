@@ -129,6 +129,14 @@ function validate_geo_install() {
 
 }
 
+function detect_install_dir() {
+  if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+    return "${GEOSERVER_HOME}"
+  else
+    return "${CATALINA_HOME}"
+  fi
+}
+
 function unzip_geoserver() {
   if [[ -f /tmp/geoserver/geoserver.war ]]; then
     unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT} &&
@@ -246,11 +254,8 @@ function install_plugin() {
   if [[ -f "${DATA_PATH}"/"${EXT}".zip ]];then
      unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
      echo -e "\e[32m Enabling ${EXT} for GeoServer \033[0m"
-     if [[ -f /geoserver/start.jar ]]; then
-       cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
-     else
-       cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
-     fi
+     GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
+     cp -r -u -p /tmp/gs_plugin/*.jar ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
      rm -rf /tmp/gs_plugin
   else
     echo -e "\e[32m ${EXT} extension will not be installed because it is not available \033[0m"

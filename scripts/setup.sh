@@ -95,11 +95,7 @@ dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.4_${system_architecture}.deb
 pushd "${CATALINA_HOME}" || exit
 
 # Install GeoServer plugins in correct install dir
-if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
-else
-  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
-fi
+GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
