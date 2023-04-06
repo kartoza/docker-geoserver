@@ -3,8 +3,8 @@
 ##############################################################################
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.71-jdk11-temurin-focal
-ARG JAVA_HOME=/usr/local/openjdk-11
+ARG IMAGE_VERSION=9.0.73-jdk11-temurin-focal
+ARG JAVA_HOME=/opt/java/openjdk
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"

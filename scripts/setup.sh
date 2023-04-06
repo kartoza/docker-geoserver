@@ -133,7 +133,7 @@ fi
 
 # Install jetty-servlets
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  if [[ ! -f ${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT/WEB-INF/lib/jetty-servlets.jar ]]; then
+  if [[ ! -f ${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-servlets.jar ]]; then
     validate_url https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/11.0.9/jetty-servlets-11.0.9.jar \
     '-O "${GEOSERVER_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-servlets.jar'
   fi
