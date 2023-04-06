@@ -11,7 +11,6 @@ flatgeobuf-plugin
 gdal-wcs-plugin
 gdal-wps-plugin
 geopkg-plugin
-geostyler-plugin
 gpx-plugin
 gsr-plugin
 gwc-azure-blobstore-plugin

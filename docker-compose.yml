@@ -37,6 +37,7 @@ services:
         - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
         - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
         - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
+        - GEOSERVER_CONTEXT_ROOT=${GEOSERVER_CONTEXT_ROOT}
       depends_on:
         db:
           condition: service_healthy

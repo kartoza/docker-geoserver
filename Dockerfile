@@ -3,12 +3,12 @@
 ##############################################################################
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.71-jdk11-temurin-focal
-ARG JAVA_HOME=/usr/local/openjdk-11
+ARG IMAGE_VERSION=9.0.73-jdk11-temurin-focal
+ARG JAVA_HOME=/opt/java/openjdk
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.22.2
+ARG GS_VERSION=2.23.0
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
