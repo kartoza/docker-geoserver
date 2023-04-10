@@ -30,38 +30,34 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0-jdk11-openjdk-slim-buster
-            javaHome: /usr/local/openjdk-11
+          - image: 9.0.73-jdk11-temurin-focal
+            javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 16
-            patch: 5
-          - minor: 17
-            patch: 5
-          - minor: 18
-            patch: 5
-          - minor: 19
-            patch: 4
-          - minor: 20
-            patch: 2
+          - minor: 22
+            patch: 0
+          - minor: 22
+            patch: 1
+          - minor: 23
+            patch: 0
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:
           - 1
         stablePluginBaseURL:
-          # empty because it often changes, so it's better
-          # to use the default one described in the Dockerfile
-          # to make it consistent. However we keep this in GH Action
-          # to make it easy to pass overrides in the future.
-          - ""
+          - https://sourceforge.net/projects/geoserver/files/GeoServer
+        scenario:
+          - gwc
+          - login
+          - stores
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Build image for testing
         id: docker_build_testing_image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: Dockerfile
@@ -72,25 +68,24 @@ jobs:
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
             GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
-# We have some issues with cache size causing the build to fail
-#          cache-from: |
-#           type=gha,scope=test
-#           type=gha,scope=prod
-#           type=gha,scope=base
-#          cache-to: type=gha,scope=test
+          cache-from: |
+           type=gha,scope=test
+           type=gha,scope=prod
+          cache-to: type=gha,scope=test
+          target: geoserver-test
 
-# We may have this in the future
-#      - name: Run scenario test ${{ matrix.scenario }}
-#        working-directory: scenario_tests/${{ matrix.scenario }}
-#        env:
-#          COMPOSE_INTERACTIVE_NO_CLI: 1
-#          PRINT_TEST_LOGS: 1
-#        run: |
-#          bash ./test.sh
+
+      - name: Run scenario test ${{ matrix.scenario }}
+        working-directory: scenario_tests/${{ matrix.scenario }}
+        env:
+          COMPOSE_INTERACTIVE_NO_CLI: 1
+          PRINT_TEST_LOGS: 1
+        run: |
+          bash ./test.sh
 
   push-internal-pr-images:
     if: github.event_name == 'pull_request' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
@@ -101,19 +96,15 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0-jdk11-openjdk-slim-buster
-            javaHome: /usr/local/openjdk-11
+          - image: 9.0.73-jdk11-temurin-focal
+            javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 16
-            patch: 5
-          - minor: 17
-            patch: 5
-          - minor: 18
-            patch: 5
-          - minor: 19
-            patch: 4
-          - minor: 20
-            patch: 2
+          - minor: 22
+            patch: 0
+          - minor: 22
+            patch: 1
+          - minor: 23
+            patch: 0
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:
@@ -121,17 +112,17 @@ jobs:
         stablePluginBaseURL:
           # empty because it often changes, so it's better
           # to use the default one described in the Dockerfile
-          # to make it consistent. However we keep this in GH Action
+          # to make it consistent. How-ever we keep this in GH Action
           # to make it easy to pass overrides in the future.
-          - ""
+          - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
@@ -147,7 +138,7 @@ jobs:
 
       - name: Build image for testing
         id: docker_build_testing_image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: Dockerfile
@@ -158,13 +149,12 @@ jobs:
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
             GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            WAR_URL=http://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
-# We have some issues with cache size causing the build to fail
-#          cache-from: |
-#           type=gha,scope=test
-#           type=gha,scope=prod
-#           type=gha,scope=base
-#          cache-to: type=gha,scope=test
+          cache-from: |
+           type=gha,scope=test
+           type=gha,scope=prod
+          cache-to: type=gha,scope=test
+          target: geoserver-test
