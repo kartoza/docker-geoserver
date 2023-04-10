@@ -29,7 +29,7 @@ for service in "${services[@]}"; do
   sleep 60
   ${VERSION} -f docker-compose-gwc.yml ps
   echo "Execute test for $service"
-  ${VERSION} -f docker-compose-gwc.yml -T $service /bin/bash /tests/test.sh
+  ${VERSION} -f docker-compose-gwc.yml exec  $service /bin/bash /tests/test.sh
 
 done
 

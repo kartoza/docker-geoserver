@@ -28,7 +28,7 @@ for service in "${services[@]}"; do
   # Execute tests
   sleep 60
   echo "Execute test for $service"
-  ${VERSION} -f docker-compose-postgis-jndi.yml -T $service /bin/bash /tests/test.sh
+  ${VERSION} -f docker-compose-postgis-jndi.yml  $service /bin/bash /tests/test.sh
 
 done
 
