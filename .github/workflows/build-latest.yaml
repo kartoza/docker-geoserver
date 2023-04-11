@@ -1,0 +1,160 @@
+name: build-latest
+on:
+#  workflow_dispatch:
+#    inputs:
+#      distro:
+#        description: Base image distro
+#        required: true
+#        default: debian
+#      imageVersion:
+#        description: Base distro image version/release
+#        required: true
+#        default: bullseye
+#      imageVariant:
+#        description: Base image variant
+#        required: true
+#        default: slim
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - develop
+  push:
+    branches:
+      - develop
+      - helm-chart
+jobs:
+  run-scenario-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        geoserverMajorVersion:
+          - 2
+        imageVersion:
+          - image: 9.0.73-jdk11-temurin-focal
+            javaHome: /opt/java/openjdk
+        geoserverMinorVersion:
+          - minor: 22
+            patch: 0
+          - minor: 22
+            patch: 1
+          - minor: 23
+            patch: 0
+        downloadAllStableExtensions:
+          - 1
+        downloadAllCommunityExtensions:
+          - 1
+        stablePluginBaseURL:
+          - https://sourceforge.net/projects/geoserver/files/GeoServer
+        scenario:
+          - gwc
+          - login
+          - stores
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build image for testing
+        id: docker_build_testing_image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: true
+          tags: kartoza/geoserver:manual-build
+          build-args: |
+            IMAGE_VERSION=${{ matrix.imageVersion.image }}
+            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
+            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
+            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
+          cache-from: |
+           type=gha,scope=test
+           type=gha,scope=prod
+          cache-to: type=gha,scope=test
+          target: geoserver-test
+
+
+      - name: Run scenario test ${{ matrix.scenario }}
+        working-directory: scenario_tests/${{ matrix.scenario }}
+        env:
+          COMPOSE_INTERACTIVE_NO_CLI: 1
+          PRINT_TEST_LOGS: 1
+        run: |
+          bash ./test.sh
+
+  push-internal-pr-images:
+    if: github.event_name == 'pull_request' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
+    runs-on: ubuntu-latest
+    needs: [ run-scenario-tests ]
+    strategy:
+      matrix:
+        geoserverMajorVersion:
+          - 2
+        imageVersion:
+          - image: 9.0.73-jdk11-temurin-focal
+            javaHome: /opt/java/openjdk
+        geoserverMinorVersion:
+          - minor: 22
+            patch: 0
+          - minor: 22
+            patch: 1
+          - minor: 23
+            patch: 0
+        downloadAllStableExtensions:
+          - 1
+        downloadAllCommunityExtensions:
+          - 1
+        stablePluginBaseURL:
+          # empty because it often changes, so it's better
+          # to use the default one described in the Dockerfile
+          # to make it consistent. How-ever we keep this in GH Action
+          # to make it easy to pass overrides in the future.
+          - https://sourceforge.net/projects/geoserver/files/GeoServer
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ secrets.DOCKERHUB_REPO}}/geoserver
+          tags: |
+            type=semver,pattern=\d.\d.\d
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Build image for testing
+        id: docker_build_testing_image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ steps.docker_meta.outputs.tags }}-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+          build-args: |
+            IMAGE_VERSION=${{ matrix.imageVersion.image }}
+            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
+            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
+            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
+          cache-from: |
+           type=gha,scope=test
+           type=gha,scope=prod
+          cache-to: type=gha,scope=test
+          target: geoserver-test

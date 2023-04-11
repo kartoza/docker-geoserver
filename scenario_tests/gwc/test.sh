@@ -18,7 +18,7 @@ if [[ -n "${PRINT_TEST_LOGS}" ]]; then
   ${VERSION} -f docker-compose-gwc.yml logs -f &
 fi
 
-sleep 30
+sleep 60
 
 
 services=("geoserver")
@@ -27,8 +27,9 @@ for service in "${services[@]}"; do
 
   # Execute tests
   sleep 60
+  ${VERSION} -f docker-compose-gwc.yml ps
   echo "Execute test for $service"
-  ${VERSION} exec -T $service /bin/bash /tests/test.sh
+  ${VERSION} -f docker-compose-gwc.yml exec  $service /bin/bash /tests/test.sh
 
 done
 
