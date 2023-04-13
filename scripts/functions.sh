@@ -162,20 +162,35 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resourc
     if [[ "${WAR_URL}" == *\.zip ]]; then
       if [[ "${WAR_URL}" == *\bin.zip ]];then
         destination=/tmp/resources/geoserver-${GS_VERSION}-bin.zip
-        ${request} "${WAR_URL}" -O "${destination}"
+        if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+          ${request} "${WAR_URL}" -O "${destination}"
+        else
+            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
+            exit 1
+        fi
         unzip /tmp/resources/geoserver-${GS_VERSION}-bin.zip -d /tmp/geoserver && \
         unzip_geoserver
       else
         destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-        ${request} "${WAR_URL}" -O "${destination}"
+        if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+          ${request} "${WAR_URL}" -O "${destination}"
+        else
+            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
+            exit 1
+        fi
         unzip /tmp/resources/geoserver-"${GS_VERSION}".zip -d /tmp/geoserver && \
         unzip_geoserver
       fi
     else
       destination=/tmp/geoserver/geoserver.war
       mkdir -p /tmp/geoserver/ &&
-      ${request} "${WAR_URL}" -O ${destination} && \
-      unzip_geoserver
+      if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+          ${request} "${WAR_URL}" -O ${destination} && \
+          unzip_geoserver
+        else
+            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
+            exit 1
+      fi
     fi
 else
   if [[  -f /tmp/resources/geoserver-${GS_VERSION}.zip ]];then

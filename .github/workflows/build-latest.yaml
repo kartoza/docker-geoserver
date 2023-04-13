@@ -21,7 +21,6 @@ on:
   push:
     branches:
       - develop
-      - helm-chart
 jobs:
   run-scenario-tests:
     runs-on: ubuntu-latest

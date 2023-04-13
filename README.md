@@ -84,8 +84,29 @@ To build yourself with a local checkout using the docker-compose.build.yaml:
    GEOSERVER_UID=Specifies the uid to use for the user used to run GeoServer in the container
    GEOSERVER_GID=Specifies the gid to use for the group used to run GeoServer in the container
    ```
+3. In the `build_data` directory, two helper files are provided that generates a list of plugins
+for `stable_plugins.txt` and `community_plugins.txt`. Before running the scripts you need to install the
+following python packages
+    ```bash
+        pip3 install beautifulsoup4
+        pip3 install requests
+    ```
+Then execute the scripts as below:
 
-3. Build the container and spin up the services
+For community plugins run the command below:
+
+```bash
+    cd ./build_data
+    python3 community_plugins.py 2.23.x
+```
+For stable plugins run the command below:
+```bash
+cd ./build_data
+python3 stable_plugins.py 2.23.0 https://sourceforge.net/projects/geoserver/files/GeoServer
+    
+```
+
+4. Build the container and spin up the services
    ```shell
    cd docker-geoserver
    docker-compose -f docker-compose-build.yml up -d geoserver-prod --build
