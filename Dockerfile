@@ -1,10 +1,14 @@
+##############################################################################
+# Production stage                                                           #
+##############################################################################
+
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.71-jdk11-temurin-focal
-ARG JAVA_HOME=/usr/local/openjdk-11
-FROM tomcat:$IMAGE_VERSION
+ARG IMAGE_VERSION=9.0.73-jdk11-temurin-focal
+ARG JAVA_HOME=/opt/java/openjdk
+FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.22.2
+ARG GS_VERSION=2.23.0
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
@@ -49,7 +53,7 @@ ADD resources /tmp/resources
 ADD build_data /build_data
 ADD scripts /scripts
 
-RUN echo $GS_VERSION > /scripts/geoserver_version.txt ;\
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -62,3 +66,20 @@ RUN echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
 WORKDIR ${GEOSERVER_HOME}
 
 ENTRYPOINT ["/bin/bash", "/scripts/entrypoint.sh"]
+
+##############################################################################
+# Testing Stage                                                           #
+##############################################################################
+FROM geoserver-prod AS geoserver-test
+
+COPY ./scenario_tests/utils/requirements.txt /lib/utils/requirements.txt
+
+RUN set -eux \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install python3-pip procps \
+    && apt-get -y --purge autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install -r /lib/utils/requirements.txt;pip3 install numpy --upgrade

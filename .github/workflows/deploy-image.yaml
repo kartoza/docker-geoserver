@@ -1,0 +1,98 @@
+name: deploy-image
+on:
+  workflow_dispatch:
+#    inputs:
+#      distro:
+#        description: Base image distro
+#        required: true
+#        default: debian
+#      imageVersion:
+#        description: Base distro image version/release
+#        required: true
+#        default: bullseye
+#      imageVariant:
+#        description: Base image variant
+#        required: true
+#        default: slim
+  workflow_run:
+    workflows:
+      - build-latest
+    branches:
+      - develop
+    types:
+      - completed
+jobs:
+  deploy-image:
+    runs-on: ubuntu-latest
+    env:
+      latest-ref: refs/heads/develop
+    strategy:
+      matrix:
+        geoserverMajorVersion:
+          - 2
+        imageVersion:
+          - image: 9.0.73-jdk11-temurin-focal
+            javaHome: /opt/java/openjdk
+        geoserverMinorVersion:
+          - minor: 22
+            patch: 0
+          - minor: 22
+            patch: 1
+          - minor: 23
+            patch: 0
+        downloadAllStableExtensions:
+          - 1
+        downloadAllCommunityExtensions:
+          - 1
+        stablePluginBaseURL:
+          # empty because it often changes, so it's better
+          # to use the default one described in the Dockerfile
+          # to make it consistent. How-ever we keep this in GH Action
+          # to make it easy to pass overrides in the future.
+          - https://sourceforge.net/projects/geoserver/files/GeoServer
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      
+      - name: Get Current Date
+        id: current_date
+        shell: python
+        run: |
+          import datetime
+          now = datetime.datetime.utcnow()
+          print(f'::set-output name=formatted::{now:%Y.%m.%d}')
+
+      - name: Build prod image
+        id: docker_build_prod
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}--v${{ steps.current_date.outputs.formatted }}
+          build-args: |
+            IMAGE_VERSION=${{ matrix.imageVersion.image }}
+            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
+            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
+            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
+          cache-from: |
+            type=gha,scope=test
+            type=gha,scope=prod
+          cache-to: type=gha,scope=prod

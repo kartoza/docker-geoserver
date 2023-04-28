@@ -129,14 +129,22 @@ function validate_geo_install() {
 
 }
 
+function detect_install_dir() {
+  if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+    echo "${GEOSERVER_HOME}"
+  else
+    echo "${CATALINA_HOME}"
+  fi
+}
+
 function unzip_geoserver() {
   if [[ -f /tmp/geoserver/geoserver.war ]]; then
-    unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/geoserver &&
-    validate_geo_install "${CATALINA_HOME}"/webapps/geoserver && \
-    cp -r "${CATALINA_HOME}"/webapps/geoserver/data "${CATALINA_HOME}" &&
+    unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT} &&
+    validate_geo_install "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT} && \
+    cp -r "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data "${CATALINA_HOME}" &&
     mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}" &&
-    rm -rf "${CATALINA_HOME}"/webapps/geoserver/data &&
-    mv "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
+    rm -rf "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data &&
+    mv "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
     rm -rf /tmp/geoserver
 else
     cp -r /tmp/geoserver/* "${GEOSERVER_HOME}"/ && \
@@ -154,20 +162,35 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resourc
     if [[ "${WAR_URL}" == *\.zip ]]; then
       if [[ "${WAR_URL}" == *\bin.zip ]];then
         destination=/tmp/resources/geoserver-${GS_VERSION}-bin.zip
-        ${request} "${WAR_URL}" -O "${destination}"
+        if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+          ${request} "${WAR_URL}" -O "${destination}"
+        else
+            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
+            exit 1
+        fi
         unzip /tmp/resources/geoserver-${GS_VERSION}-bin.zip -d /tmp/geoserver && \
         unzip_geoserver
       else
         destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-        ${request} "${WAR_URL}" -O "${destination}"
+        if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+          ${request} "${WAR_URL}" -O "${destination}"
+        else
+            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
+            exit 1
+        fi
         unzip /tmp/resources/geoserver-"${GS_VERSION}".zip -d /tmp/geoserver && \
         unzip_geoserver
       fi
     else
       destination=/tmp/geoserver/geoserver.war
       mkdir -p /tmp/geoserver/ &&
-      ${request} "${WAR_URL}" -O ${destination} && \
-      unzip_geoserver
+      if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+          ${request} "${WAR_URL}" -O ${destination} && \
+          unzip_geoserver
+        else
+            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
+            exit 1
+      fi
     fi
 else
   if [[  -f /tmp/resources/geoserver-${GS_VERSION}.zip ]];then
@@ -246,11 +269,8 @@ function install_plugin() {
   if [[ -f "${DATA_PATH}"/"${EXT}".zip ]];then
      unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
      echo -e "\e[32m Enabling ${EXT} for GeoServer \033[0m"
-     if [[ -f /geoserver/start.jar ]]; then
-       cp -r -u -p /tmp/gs_plugin/*.jar /geoserver/webapps/geoserver/WEB-INF/lib/
-     else
-       cp -r -u -p /tmp/gs_plugin/*.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/
-     fi
+     GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
+     cp -r -u -p /tmp/gs_plugin/*.jar ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
      rm -rf /tmp/gs_plugin
   else
     echo -e "\e[32m ${EXT} extension will not be installed because it is not available \033[0m"
@@ -340,12 +360,12 @@ function geoserver_logging() {
 }
 
 # Function to read env variables from secrets
-function file_env {
+function file_env() {
 	local var="$1"
 	local fileVar="${var}_FILE"
-	local def="${1:-}"
+	local def="${2:-}"
 	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
-		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+		printf >&2 'error: both %s and %s are set (but are exclusive)\n' "$var" "$fileVar"
 		exit 1
 	fi
 	local val="$def"
@@ -357,7 +377,6 @@ function file_env {
 	export "$var"="$val"
 	unset "$fileVar"
 }
-
 # Credits to https://github.com/korkin25 from https://github.com/kartoza/docker-geoserver/pull/371
 function set_vars() {
   if [ -z "${INSTANCE_STRING}" ];then
@@ -430,3 +449,35 @@ function create_gwc_tile_tables(){
 
 }
 
+function gwc_file_perms() {
+  GEO_USER_PERM=$(stat -c '%U' ${GEOSERVER_DATA_DIR})
+  GEO_GRP_PERM=$(stat -c '%G' ${GEOSERVER_DATA_DIR})
+  GWC_USER_PERM=$(stat -c '%U' ${GEOWEBCACHE_CACHE_DIR})
+  GWC_GRP_PERM=$(stat -c '%G' ${GEOWEBCACHE_CACHE_DIR})
+  case "${GEOWEBCACHE_CACHE_DIR}" in ${GEOSERVER_DATA_DIR}/*)
+    echo "${GEOWEBCACHE_CACHE_DIR} is nested in ${GEOSERVER_DATA_DIR}"
+    if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOSERVER_DATA_DIR}
+      fi
+    fi
+    ;;
+  *)
+    echo "${GEOWEBCACHE_CACHE_DIR} is not nested in ${GEOSERVER_DATA_DIR}"
+    if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOSERVER_DATA_DIR}
+      fi
+    fi
+    if [[ ${CHOWN_GWC_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+      if [[ ${GWC_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GWC_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
+        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m"
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOWEBCACHE_CACHE_DIR}
+      fi
+    fi
+   ;;
+esac
+
+}

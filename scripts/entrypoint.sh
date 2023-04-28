@@ -29,6 +29,18 @@ mkdir -p  "${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONT
 source /scripts/functions.sh
 source /scripts/env-data.sh
 
+# Rename to match wanted context-root and so that we can unzip plugins to
+# existing directory.
+if [ x"${GEOSERVER_CONTEXT_ROOT}" != xgeoserver ]; then
+  echo "INFO: changing context-root to '${GEOSERVER_CONTEXT_ROOT}'."
+  GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
+  if [ -e "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" ]; then
+    mv "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}"
+  else
+    echo "WARN: '${GEOSERVER_INSTALL_DIR}/webapps/geoserver' not found, probably already renamed as this is probably a container restart and not first run."
+  fi
+fi
+
 # Credits https://github.com/kartoza/docker-geoserver/pull/371
 set_vars
 export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
@@ -82,10 +94,21 @@ export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
 
 # Chown again - seems to fix issue with resolving all created directories
-chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CATALINA_HOME}" "${FOOTPRINTS_DATA_DIR}" "${GEOSERVER_DATA_DIR}" \
-"${CERT_DIR}" "${FONTS_DIR}"  /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}" "${STABLE_PLUGINS_DIR}" \
-"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}"  /usr/share/fonts/ /scripts /tomcat_apps.zip \
-/tmp/ "${GEOWEBCACHE_CACHE_DIR}";chmod o+rw "${CERT_DIR}";chmod 400 ${CATALINA_HOME}/conf/*
+CHOWN_LOCKFILE=/scripts/.permission_file.lock
+if [[ $(stat -c '%U' ${CATALINA_HOME}) != "${USER_NAME}" ]] && [[ $(stat -c '%G' ${CATALINA_HOME}) != "${GEO_GROUP_NAME}" ]];then
+  if [[ -f ${CHOWN_LOCKFILE} ]];then
+    rm ${CHOWN_LOCKFILE}
+  fi
+  if [[ ! -f ${CHOWN_LOCKFILE} ]];then
+    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CATALINA_HOME}"   \
+    /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}" "${STABLE_PLUGINS_DIR}" \
+    "${GEOSERVER_HOME}" /usr/share/fonts/ /scripts /tomcat_apps.zip /tmp/
+    touch ${CHOWN_LOCKFILE}
+  fi
+fi
+
+chown -R "${USER_NAME}":"${GEO_GROUP_NAME}"  "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}"  \
+   "${EXTRA_CONFIG_DIR}" ;chmod o+rw "${CERT_DIR}";gwc_file_perms ;chmod 400 ${CATALINA_HOME}/conf/*
 
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   exec gosu ${USER_NAME} ${GEOSERVER_HOME}/bin/startup.sh

@@ -1,46 +1,50 @@
-version: '3'
-
+version: '3.9'
 volumes:
    geoserver-data:
    settings:
-
 services:
+  geoserver-prod:
+    image: kartoza/geoserver:${GS_VERSION}
+    volumes:
+      - geoserver-data:/opt/geoserver/data_dir
+      - settings:/settings
+    ports:
+      - ${GEOSERVER_PORT}:8080
+    restart: on-failure
+    environment:
+      - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+      - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
+      - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+      - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
+      - INITIAL_MEMORY=${INITIAL_MEMORY}
+      - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+      - RECREATE_DATADIR=${RECREATE_DATADIR}
+      - HTTP_PROXY_NAME
+      - HTTP_PROXY_PORT
+      - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
+      - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
+    healthcheck:
+      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u ${GEOSERVER_ADMIN_USER}:'${GEOSERVER_ADMIN_PASSWORD}' http://localhost:8080/geoserver/rest/about/version.xml"
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    build:
+      context: .
+      # Use yaml anchor for reusability
+      args: &build-args-anchor
+        IMAGE_VERSION: ${IMAGE_VERSION}
+        JAVA_HOME: ${JAVA_HOME}
+        GS_VERSION: ${GS_VERSION}
+        WAR_URL: ${WAR_URL}
+        DOWNLOAD_ALL_STABLE_EXTENSIONS: ${DOWNLOAD_ALL_STABLE_EXTENSIONS}
+        DOWNLOAD_ALL_COMMUNITY_EXTENSIONS: ${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}
+        STABLE_PLUGIN_BASE_URL: ${STABLE_PLUGIN_BASE_URL}
+      target: geoserver-prod
 
-   geoserver:
-      image: kartoza/geoserver:${GS_VERSION}
-      build:
-        context: .
-        args:
-          IMAGE_VERSION: ${IMAGE_VERSION}
-          JAVA_HOME: ${JAVA_HOME}
-          GS_VERSION: ${GS_VERSION}
-          WAR_URL: ${WAR_URL}
-          DOWNLOAD_ALL_STABLE_EXTENSIONS: ${DOWNLOAD_ALL_STABLE_EXTENSIONS}
-          DOWNLOAD_ALL_COMMUNITY_EXTENSIONS: ${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}
-          STABLE_PLUGIN_BASE_URL: ${STABLE_PLUGIN_BASE_URL}
-      volumes:
-        - geoserver-data:/opt/geoserver/data_dir
-        - settings:/settings
-      ports:
-        - ${GEOSERVER_PORT}:8080
-      restart: on-failure
-      environment:
-        - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
-        - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
-        - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
-        - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
-        - INITIAL_MEMORY=${INITIAL_MEMORY}
-        - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
-        - RECREATE_DATADIR=${RECREATE_DATADIR}
-        - HTTP_PROXY_NAME
-        - HTTP_PROXY_PORT
-        - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
-        - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
-      healthcheck:
-        test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u ${GEOSERVER_ADMIN_USER}:'${GEOSERVER_ADMIN_PASSWORD}' http://localhost:8080/geoserver/rest/about/version.xml"
-        interval: 1m
-        timeout: 10s
-        retries: 3
-
-
-
+  geoserver-test:
+    image: kartoza/geoserver:manual-build
+    build:
+      context: .
+      args:
+        <<: *build-args-anchor
+      target: geoserver-test
