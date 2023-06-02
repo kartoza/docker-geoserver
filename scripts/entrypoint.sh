@@ -110,6 +110,10 @@ fi
 chown -R "${USER_NAME}":"${GEO_GROUP_NAME}"  "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}"  \
    "${EXTRA_CONFIG_DIR}" ;chmod o+rw "${CERT_DIR}";gwc_file_perms ;chmod 400 ${CATALINA_HOME}/conf/*
 
+if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
+  chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
+fi
+
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   exec gosu ${USER_NAME} ${GEOSERVER_HOME}/bin/startup.sh
 else

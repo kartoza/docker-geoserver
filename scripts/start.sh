@@ -106,6 +106,8 @@ fi
 
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
+# Pass an additional startup argument i.e -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties
+s3_config
 
 
 # Install community modules plugins
@@ -433,9 +435,7 @@ else
   # default value
   eval "$transform"
   # Add x-forwarded headers
-  sed -r '/\<\Host\>/ i\ \t<Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="x-forwarded-for" remoteIpProxiesHeader="x-forwarded-by" protocolHeader="x-forwarded-proto" protocolHeaderHttpsValue="https"/>' ${CATALINA_HOME}/conf/server.xml > ${CATALINA_HOME}/conf/server.xml.tmp
-  cp ${CATALINA_HOME}/conf/server.xml ${CATALINA_HOME}/conf/server.xml.orig
-  cp ${CATALINA_HOME}/conf/server.xml.tmp ${CATALINA_HOME}/conf/server.xml
+  sed -i.bak -r '/\<\Host\>/ i\ \t<Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="x-forwarded-for" remoteIpProxiesHeader="x-forwarded-by" protocolHeader="x-forwarded-proto" protocolHeaderHttpsValue="https"/>' ${CATALINA_HOME}/conf/server.xml
 fi
 
 
