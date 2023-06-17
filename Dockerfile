@@ -1,21 +1,24 @@
-##############################################################################
-# Production stage                                                           #
-##############################################################################
-
-#--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 ARG IMAGE_VERSION=9.0.73-jdk11-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
-FROM tomcat:$IMAGE_VERSION AS geoserver-prod
+FROM tomcat:$IMAGE_VERSION
+LABEL GeoNode Development Team
 
-LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.23.1
-ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
 ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
 ARG HTTPS_PORT=8443
+ARG GEOSERVER_CORS_ENABLED=False
+ARG GEOSERVER_CORS_ALLOWED_ORIGINS=*
+ARG GEOSERVER_CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,HEAD,OPTIONS
+ARG GEOSERVER_CORS_ALLOWED_HEADERS=*
 ENV DEBIAN_FRONTEND=noninteractive
-#Install extra fonts to use with sld font markers
+#
+# Set GeoServer version and data directory
+#
+#
+# Download and install GeoServer
+#
 RUN set -eux; \
     apt-get update; \
     apt-get -y --no-install-recommends install \
@@ -30,11 +33,10 @@ RUN set -eux; \
       # verify that the binary works
 	  gosu nobody true
 
-
 ENV \
     JAVA_HOME=${JAVA_HOME} \
     DEBIAN_FRONTEND=noninteractive \
-    GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
+    GEOSERVER_DATA_DIR=/geoserver_data/data \
     GDAL_DATA=/usr/share/gdal \
     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
@@ -45,11 +47,73 @@ ENV \
     GEOSERVER_HOME=/geoserver \
     EXTRA_CONFIG_DIR=/settings \
     COMMUNITY_PLUGINS_DIR=/community_plugins  \
-    STABLE_PLUGINS_DIR=/stable_plugins
+    STABLE_PLUGINS_DIR=/stable_plugins \
+    GEOSERVER_CORS_ENABLED=$GEOSERVER_CORS_ENABLED \
+    GEOSERVER_CORS_ALLOWED_ORIGINS=$GEOSERVER_CORS_ALLOWED_ORIGINS \
+    GEOSERVER_CORS_ALLOWED_METHODS=$GEOSERVER_CORS_ALLOWED_METHODS \
+    GEOSERVER_CORS_ALLOWED_HEADERS=$GEOSERVER_CORS_ALLOWED_HEADERS \
+    PRINT_BASE_URL=http://geoserver:8080/geoserver/pdf
 
+RUN cd /usr/local/tomcat/webapps \
+    && wget --no-check-certificate --progress=bar:force:noscroll https://artifacts.geonode.org/geoserver/${GS_VERSION}/geoserver.war -O geoserver.war \
+    && unzip -q geoserver.war -d geoserver \
+    && rm geoserver.war
 
-WORKDIR /scripts
-ADD resources /tmp/resources
+# added by simonelanucara https://github.com/simonelanucara
+# Optionally add JAI, ImageIO and Marlin Render for improved Geoserver performance
+WORKDIR /tmp
+
+RUN wget --no-check-certificate https://repo1.maven.org/maven2/org/postgis/postgis-jdbc/1.3.3/postgis-jdbc-1.3.3.jar -O postgis-jdbc-1.3.3.jar && \
+    wget --no-check-certificate https://maven.geo-solutions.it/org/hibernatespatial/hibernate-spatial-postgis/1.1.3.2/hibernate-spatial-postgis-1.1.3.2.jar -O hibernate-spatial-postgis-1.1.3.2.jar && \
+    rm /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/hibernate-spatial-h2-geodb-1.1.3.2.jar && \
+    mv hibernate-spatial-postgis-1.1.3.2.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/ && \
+    mv postgis-jdbc-1.3.3.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/
+
+###########docker host###############
+# Set DOCKERHOST variable if DOCKER_HOST exists
+ARG DOCKERHOST=${DOCKERHOST}
+# for debugging
+RUN echo -n #1===>DOCKERHOST=${DOCKERHOST}
+#
+ENV DOCKERHOST ${DOCKERHOST}
+# for debugging
+RUN echo -n #2===>DOCKERHOST=${DOCKERHOST}
+
+###########docker host ip#############
+# Set GEONODE_HOST_IP address if it exists
+ARG GEONODE_HOST_IP=${GEONODE_HOST_IP}
+# for debugging
+RUN echo -n #1===>GEONODE_HOST_IP=${GEONODE_HOST_IP}
+#
+ENV GEONODE_HOST_IP ${GEONODE_HOST_IP}
+# for debugging
+RUN echo -n #2===>GEONODE_HOST_IP=${GEONODE_HOST_IP}
+# If empty set DOCKER_HOST_IP to GEONODE_HOST_IP
+ENV DOCKER_HOST_IP=${DOCKER_HOST_IP:-${GEONODE_HOST_IP}}
+# for debugging
+RUN echo -n #1===>DOCKER_HOST_IP=${DOCKER_HOST_IP}
+# Trying to set the value of DOCKER_HOST_IP from DOCKER_HOST
+RUN if ! [ -z ${DOCKER_HOST_IP} ]; \
+    then echo export DOCKER_HOST_IP=${DOCKERHOST} | \
+    sed 's/tcp:\/\/\([^:]*\).*/\1/' >> /root/.bashrc; \
+    else echo "DOCKER_HOST_IP is already set!"; fi
+# for debugging
+RUN echo -n #2===>DOCKER_HOST_IP=${DOCKER_HOST_IP}
+
+# Set WEBSERVER public port
+ARG PUBLIC_PORT=${PUBLIC_PORT}
+# for debugging
+RUN echo -n #1===>PUBLIC_PORT=${PUBLIC_PORT}
+#
+ENV PUBLIC_PORT=${PUBLIC_PORT}
+# for debugging
+RUN echo -n #2===>PUBLIC_PORT=${PUBLIC_PORT}
+
+# set nginx base url for geoserver
+RUN echo export NGINX_BASE_URL=http://${NGINX_HOST}:${NGINX_PORT}/ | \
+    sed 's/tcp:\/\/\([^:]*\).*/\1/' >> /root/.bashrc
+
+# copy the script and perform the run of scripts from entrypoint.sh
 ADD build_data /build_data
 ADD scripts /scripts
 
@@ -58,28 +122,19 @@ RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BAS
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
-EXPOSE  $HTTPS_PORT
+ADD  geonode_scripts /usr/local/tomcat/tmp
+WORKDIR /usr/local/tomcat/tmp
+COPY ./templates /templates
+
+RUN apt-get update \
+    && apt-get install -y procps less \
+    && apt-get install -y python3 python3-pip python3-dev \
+    && chmod +x /usr/local/tomcat/tmp/*.sh  \
+    && pip3 install pip --upgrade \
+    && pip3 install -r requirements.txt \
+    && chmod +x /usr/local/tomcat/tmp/*.py
+
+RUN pip install j2cli
 
 
-RUN echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
-
-WORKDIR ${GEOSERVER_HOME}
-
-ENTRYPOINT ["/bin/bash", "/scripts/entrypoint.sh"]
-
-##############################################################################
-# Testing Stage                                                           #
-##############################################################################
-FROM geoserver-prod AS geoserver-test
-
-COPY ./scenario_tests/utils/requirements.txt /lib/utils/requirements.txt
-
-RUN set -eux \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get update \
-    && apt-get -y --no-install-recommends install python3-pip procps \
-    && apt-get -y --purge autoremove \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip3 install -r /lib/utils/requirements.txt;pip3 install numpy --upgrade
+ENTRYPOINT ["/bin/bash", "/usr/local/tomcat/tmp/entrypoint.sh"]
