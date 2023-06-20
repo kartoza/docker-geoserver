@@ -13,6 +13,7 @@ create_dir "${CATALINA_HOME}"/postgres_config
 create_dir "${STABLE_PLUGINS_DIR}"
 create_dir "${COMMUNITY_PLUGINS_DIR}"
 create_dir "${GEOSERVER_HOME}"
+create_dir "${GEOSERVER_DATA_DIR}"
 
 pushd "${CATALINA_HOME}" || exit
 
@@ -113,12 +114,14 @@ fi
 artifact_url="https://artifacts.geonode.org/geoserver/$GS_VERSION/geonode-geoserver-ext-web-app-data.zip"
 curl  -k -L "$artifact_url" --output data.zip && unzip -x -d ${resources_dir} data.zip
 
+
 cp -r ${resources_dir}/data "${CATALINA_HOME}"/
+cp -r ${resources_dir}/data/* "${GEOSERVER_DATA_DIR}"
 
 
 # Delete resources after installation
 rm -rf /tmp/resources
 
 delete_file "${CATALINA_HOME}"/conf/tomcat-users.xml
-delete_file "${CATALINA_HOME}"/conf/web.xml
+#delete_file "${CATALINA_HOME}"/conf/web.xml
 

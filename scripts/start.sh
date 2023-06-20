@@ -5,7 +5,12 @@ source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
 
-web_cors
+#web_cors
+SETUP_LOCKFILE_DATA_INIT="${EXTRA_CONFIG_DIR}/.data_dir.lock"
+if [[ ! -f "${SETUP_LOCKFILE_DATA_INIT}"  ]]; then
+  cp -r /usr/local/tomcat/data/* ${GEOSERVER_DATA_DIR}
+  touch ${SETUP_LOCKFILE_DATA_INIT}
+fi
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -34,7 +39,11 @@ geoserver_logging
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
-  cp -r "${CATALINA_HOME}"/data/* "${GEOSERVER_DATA_DIR}"
+  if [[ "$(ls -A $GEOSERVER_DATA_DIR)" ]];then
+    echo "Data Dir "${GEOSERVER_DATA_DIR}" is already loaded"
+  else
+    cp -r "${CATALINA_HOME}"/data/* "${GEOSERVER_DATA_DIR}"
+  fi
 fi
 
 # Recreate DISK QUOTA config, useful to change between H2 and jdbc and change connection or schema
@@ -225,5 +234,21 @@ else
         mkdir "${CATALINA_HOME}"/webapps/ROOT
         cat /build_data/index.jsp | sed "s@/geoserver/@/${GEOSERVER_CONTEXT_ROOT}/@g" > "${CATALINA_HOME}"/webapps/ROOT/index.jsp
     fi
+fi
+
+SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.first_time_hash.lock"
+if [[ -z "${EXISTING_DATA_DIR}" ]]; then
+  if [[ ! -f "${SETUP_LOCKFILE}"  ]]; then
+cat > ${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<userRegistry version="1.0" xmlns="http://www.geoserver.org/security/users">
+    <users>
+        <user enabled="true" name="admin" password="digest1:D9miJH/hVgfxZJscMafEtbtliG0ROxhLfsznyWfG38X2pda2JOSV4POi55PQI4tw"/>
+    </users>
+    <groups/>
+</userRegistry>
+EOF
+  fi
+  /scripts/update_passwords.sh
 fi
 
