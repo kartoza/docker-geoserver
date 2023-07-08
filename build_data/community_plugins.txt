@@ -36,6 +36,7 @@ ogr-datastore-plugin
 opensearch-eo-plugin
 ows-simulate-plugin
 pgraster-plugin
+s3-geotiff-plugin
 saml-plugin
 sec-keycloak-plugin
 sec-oauth2-geonode-plugin
@@ -44,11 +45,14 @@ sec-oauth2-google-plugin
 sec-oauth2-openid-connect-plugin
 smart-data-loader-plugin
 solr-plugin
+spatialjson-plugin
+stac-datastore-plugin
 taskmanager-core-plugin
 taskmanager-s3-plugin
 teradata-plugin
+vector-mosaic-plugin
 vsi-plugin
+webp-plugin
 wms-eo-plugin
 wmts-styles-plugin
 wps-remote-plugin
-stac-datastore-plugin

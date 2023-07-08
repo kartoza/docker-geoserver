@@ -33,15 +33,7 @@ jobs:
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 22
-            patch: 0
-          - minor: 22
-            patch: 1
-          - minor: 22
-            patch: 2
-          - minor: 22
-            patch: 3
-          - minor: 23
-            patch: 0
+            patch: 4
           - minor: 23
             patch: 1
         downloadAllStableExtensions:
@@ -105,11 +97,9 @@ jobs:
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 22
-            patch: 0
-          - minor: 22
-            patch: 1
+            patch: 4
           - minor: 23
-            patch: 0
+            patch: 1
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:
