@@ -381,5 +381,5 @@ fi
 
 if [ -z "${SHOW_PASSWORD}" ]; then
   # For runtime only, do not change at build-time.
-  SHOW_PASSWORDS=true
+  SHOW_PASSWORD=true
 fi
