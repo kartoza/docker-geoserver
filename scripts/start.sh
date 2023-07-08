@@ -235,7 +235,10 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
-        echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
+        echo $TOMCAT_PASSWORD >${GEOSERVER_DATA_DIR}/security/tomcat_pass.txt
+        if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
+          echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
+        fi
     else
        export TOMCAT_PASSWORD=${TOMCAT_PASSWORD}
     fi
