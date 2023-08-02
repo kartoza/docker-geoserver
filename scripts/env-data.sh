@@ -14,39 +14,8 @@ if [ -z "${OPTIMIZE_LINE_WIDTH}" ]; then
   OPTIMIZE_LINE_WIDTH=false
 fi
 
-if [ -z "${WMS_DIR_INTEGRATION}" ]; then
-  WMS_DIR_INTEGRATION=false
-fi
-
-if [ -z "${REQUIRE_TILED_PARAMETER}" ]; then
-  REQUIRE_TILED_PARAMETER=true
-fi
-
-
-if [ -z "${WMSC_ENABLED}" ]; then
-  WMSC_ENABLED=true
-fi
-
-
-if [ -z "${TMS_ENABLED}" ]; then
-  TMS_ENABLED=true
-fi
-
-
-if [ -z "${SECURITY_ENABLED}" ]; then
-  SECURITY_ENABLED=false
-fi
-
 if [ -z "${DISK_QUOTA_SIZE}" ]; then
   DISK_QUOTA_SIZE=20
-fi
-
-if [ -z "${DISK_QUOTA_FREQUENCY}" ]; then
-  DISK_QUOTA_FREQUENCY=5
-fi
-
-if [ -z "${POSTGRES_SCHEMA}" ]; then
-    POSTGRES_SCHEMA=public
 fi
 
 if [ -z "${SSL}" ]; then
@@ -214,10 +183,6 @@ if [ -z "${RECREATE_DATADIR}" ]; then
     RECREATE_DATADIR=false
 fi
 
-if [ -z "${RECREATE_DISKQUOTA}" ]; then
-    RECREATE_DISKQUOTA=false
-fi
-
 if [ -z "${RESET_ADMIN_CREDENTIALS}" ]; then
   RESET_ADMIN_CREDENTIALS=false
 fi
@@ -277,7 +242,7 @@ if [ -z "${S3_PASSWORD}" ]; then
 fi
 
 if [ -z "${SAMPLE_DATA}" ]; then
-    SAMPLE_DATA=false
+    SAMPLE_DATA=true
 fi
 
 if [ -z "${GEOSERVER_FILEBROWSER_HIDEFS}" ]; then
@@ -301,14 +266,21 @@ if [ -z "${ACTIVATE_ALL_STABLE_EXTENSIONS}" ]; then
     ACTIVATE_ALL_STABLE_EXTENSIONS=false
 fi
 
+file_env 'TOMCAT_PASSWORD'
+
+
+file_env 'TOMCAT_USER'
 if [ -z "${TOMCAT_USER}" ]; then
     TOMCAT_USER='tomcat'
 fi
 
-
+file_env 'GEOSERVER_ADMIN_USER'
 if [ -z "${GEOSERVER_ADMIN_USER}" ]; then
     GEOSERVER_ADMIN_USER='admin'
 fi
+
+file_env 'GEOSERVER_ADMIN_PASSWORD'
+
 
 if [ -z "${CSRF_WHITELIST}" ]; then
     CSRF_WHITELIST=
@@ -354,27 +326,6 @@ if [ -z "${DISABLE_CORS}" ]; then
   DISABLE_CORS=false
 fi
 
-if [ -z "${UPDATE_LOGGING_PROFILES}" ]; then
-  UPDATE_LOGGING_PROFILES=false
-fi
-
-if [ -z "${RELINQUISH_LOG4J_CONTROL}" ]; then
-  RELINQUISH_LOG4J_CONTROL=false
-fi
-
-if [ -z "${USE_DEFAULT_CREDENTIALS}" ]; then
-  USE_DEFAULT_CREDENTIALS=false
-fi
-
-if [ -z "${CHOWN_DATA_DIR}" ]; then
-  CHOWN_DATA_DIR=true
-fi
-
-if [ -z "${CHOWN_GWC_DATA_DIR}" ]; then
-  CHOWN_GWC_DATA_DIR=true
-fi
-
-if [ -z "${GEOSERVER_CONTEXT_ROOT}" ]; then
-  # For runtime only, do not change at build-time.
-  GEOSERVER_CONTEXT_ROOT=geoserver
+if [ -z "${PRINT_BASE_URL}" ]; then
+  PRINT_BASE_URL=http://geoserver:8080/geoserver/pdf
 fi

@@ -3,6 +3,7 @@ backup-restore-plugin
 cog-plugin
 colormap-plugin
 cov-json-plugin
+csw-iso-plugin
 dds-plugin
 dyndimension-plugin
 elasticsearch-plugin
@@ -11,6 +12,7 @@ flatgeobuf-plugin
 gdal-wcs-plugin
 gdal-wps-plugin
 geopkg-plugin
+geostyler-plugin
 gpx-plugin
 gsr-plugin
 gwc-azure-blobstore-plugin
@@ -26,6 +28,7 @@ jms-cluster-plugin
 libdeflate-plugin
 mbtiles-plugin
 mbtiles-store-plugin
+metadata-plugin
 mongodb-schemaless-plugin
 ncwms-plugin
 netcdf-ghrsst-plugin
@@ -37,7 +40,6 @@ opensearch-eo-plugin
 ows-simulate-plugin
 pgraster-plugin
 saml-plugin
-sec-keycloak-plugin
 sec-oauth2-geonode-plugin
 sec-oauth2-github-plugin
 sec-oauth2-google-plugin
@@ -51,4 +53,3 @@ vsi-plugin
 wms-eo-plugin
 wmts-styles-plugin
 wps-remote-plugin
-stac-datastore-plugin

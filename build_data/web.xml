@@ -603,10 +603,6 @@
             <param-value>*</param-value>
         </init-param>
         <init-param>
-            <param-name>cors.allowed.methods</param-name>
-            <param-value>GET,POST,HEAD,OPTIONS,PUT</param-value>
-        </init-param>
-        <init-param>
             <param-name>cors.allowed.headers</param-name>
             <param-value>Content-Type,X-Requested-With,accept,Access-Control-Request-Method,Access-Control-Request-Headers,If-Modified-Since,Range,Origin,Authorization</param-value>
         </init-param>
@@ -614,18 +610,6 @@
             <param-name>cors.exposed.headers</param-name>
             <param-value>Access-Control-Allow-Origin,Access-Control-Allow-Credentials</param-value>
         </init-param>
-        
-        <init-param>
-            <param-name>cors.support.credentials</param-name>
-            <param-value>false</param-value>
-        </init-param>
-
-
-        <init-param>
-            <param-name>cors.preflight.maxage</param-name>
-            <param-value>10</param-value>
-        </init-param>
-
     </filter>
 
     <filter-mapping>

@@ -3,8 +3,12 @@ ARG JAVA_HOME=/opt/java/openjdk
 FROM tomcat:$IMAGE_VERSION
 LABEL GeoNode Development Team
 
+#
+# Set GeoServer version and data directory
+#
 ARG GS_VERSION=2.23.1
-ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
+ARG WAR_URL=https://artifacts.geonode.org/geoserver/${GS_VERSION}/geoserver.war
+ARG STABLE_PLUGIN_BASE_URL=https://sonik.dl.sourceforge.net
 ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
 ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
 ARG HTTPS_PORT=8443
@@ -13,12 +17,10 @@ ARG GEOSERVER_CORS_ALLOWED_ORIGINS=*
 ARG GEOSERVER_CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,HEAD,OPTIONS
 ARG GEOSERVER_CORS_ALLOWED_HEADERS=*
 ENV DEBIAN_FRONTEND=noninteractive
-#
-# Set GeoServer version and data directory
-#
-#
-# Download and install GeoServer
-#
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+#Install extra fonts to use with sld font markers
 RUN set -eux; \
     apt-get update; \
     apt-get -y --no-install-recommends install \
@@ -33,6 +35,9 @@ RUN set -eux; \
       # verify that the binary works
 	  gosu nobody true
 
+#
+# Set GeoServer version and data directory
+#
 ENV \
     JAVA_HOME=${JAVA_HOME} \
     DEBIAN_FRONTEND=noninteractive \
@@ -54,10 +59,17 @@ ENV \
     GEOSERVER_CORS_ALLOWED_HEADERS=$GEOSERVER_CORS_ALLOWED_HEADERS \
     PRINT_BASE_URL=http://geoserver:8080/geoserver/pdf
 
+
+# Download and install GeoServer
+#
+RUN apt-get update -y && apt-get install curl wget unzip -y
 RUN cd /usr/local/tomcat/webapps \
     && wget --no-check-certificate --progress=bar:force:noscroll https://artifacts.geonode.org/geoserver/${GS_VERSION}/geoserver.war -O geoserver.war \
     && unzip -q geoserver.war -d geoserver \
-    && rm geoserver.war
+    && rm geoserver.war \
+    && mkdir -p $GEOSERVER_DATA_DIR
+
+VOLUME $GEOSERVER_DATA_DIR
 
 # added by simonelanucara https://github.com/simonelanucara
 # Optionally add JAI, ImageIO and Marlin Render for improved Geoserver performance
@@ -68,6 +80,14 @@ RUN wget --no-check-certificate https://repo1.maven.org/maven2/org/postgis/postg
     rm /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/hibernate-spatial-h2-geodb-1.1.3.2.jar && \
     mv hibernate-spatial-postgis-1.1.3.2.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/ && \
     mv postgis-jdbc-1.3.3.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/
+
+ADD build_data /build_data
+ADD scripts /scripts
+
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt ;\
+    chmod +x /scripts/*.sh;/scripts/setup.sh \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 
 ###########docker host###############
 # Set DOCKERHOST variable if DOCKER_HOST exists
@@ -114,26 +134,20 @@ RUN echo export NGINX_BASE_URL=http://${NGINX_HOST}:${NGINX_PORT}/ | \
     sed 's/tcp:\/\/\([^:]*\).*/\1/' >> /root/.bashrc
 
 # copy the script and perform the run of scripts from entrypoint.sh
-ADD build_data /build_data
-ADD scripts /scripts
-
 ADD  geonode_scripts /usr/local/tomcat/tmp
 WORKDIR /usr/local/tomcat/tmp
 COPY ./templates /templates
 
-RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
-    chmod +x /scripts/*.sh;/scripts/setup.sh \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 RUN apt-get update \
     && apt-get install -y procps less \
     && apt-get install -y python3 python3-pip python3-dev \
-    && chmod +x /usr/local/tomcat/tmp/*.sh  \
+    && chmod +x /usr/local/tomcat/tmp/*.sh \
     && pip3 install pip --upgrade \
     && pip3 install -r requirements.txt \
     && chmod +x /usr/local/tomcat/tmp/*.py
 
 RUN pip install j2cli
 
+#ENV JAVA_OPTS="-Djava.awt.headless=true -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=/var/log/jvm.log -XX:MaxPermSize=512m -XX:PermSize=256m -Xms512m -Xmx2048m -XX:+UseConcMarkSweepGC -XX:ParallelGCThreads=4 -Dfile.encoding=UTF8 -Djavax.servlet.request.encoding=UTF-8 -Djavax.servlet.response.encoding=UTF-8 -Duser.timezone=GMT -Dorg.geotools.shapefile.datetime=false -DGEOSERVER_CSRF_DISABLED=true -DPRINT_BASE_URL=http://geoserver:8080/geoserver/pdf -Xbootclasspath/a:/usr/local/tomcat/webapps/geoserver/WEB-INF/lib/marlin-render.jar -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine"
 
-ENTRYPOINT ["/bin/bash", "/usr/local/tomcat/tmp/entrypoint.sh"]
+CMD ["/usr/local/tomcat/tmp/entrypoint.sh"]

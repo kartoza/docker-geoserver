@@ -1,6 +1,6 @@
 <gwcQuotaConfiguration>
   <enabled>true</enabled>
-  <cacheCleanUpFrequency>${DISK_QUOTA_FREQUENCY}</cacheCleanUpFrequency>
+  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
   <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
   <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
   <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
