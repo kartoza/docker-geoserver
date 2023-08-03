@@ -3,22 +3,15 @@ ARG JAVA_HOME=/opt/java/openjdk
 FROM tomcat:$IMAGE_VERSION
 LABEL GeoNode Development Team
 
-#
-# Set GeoServer version and data directory
-#
+
 ARG GS_VERSION=2.23.1
 ARG WAR_URL=https://artifacts.geonode.org/geoserver/${GS_VERSION}/geoserver.war
-ARG STABLE_PLUGIN_BASE_URL=https://sonik.dl.sourceforge.net
+ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
 ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
 ARG HTTPS_PORT=8443
-ARG GEOSERVER_CORS_ENABLED=False
-ARG GEOSERVER_CORS_ALLOWED_ORIGINS=*
-ARG GEOSERVER_CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,HEAD,OPTIONS
-ARG GEOSERVER_CORS_ALLOWED_HEADERS=*
 ENV DEBIAN_FRONTEND=noninteractive
 
-ENV DEBIAN_FRONTEND=noninteractive
 
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
@@ -34,18 +27,17 @@ RUN set -eux; \
       && rm -rf /var/lib/apt/lists/*; \
       # verify that the binary works
 	  gosu nobody true
-
 #
 # Set GeoServer version and data directory
 #
 ENV \
     JAVA_HOME=${JAVA_HOME} \
     DEBIAN_FRONTEND=noninteractive \
-    GEOSERVER_DATA_DIR=/geoserver_data/data \
+    GEOSERVER_DATA_DIR="/geoserver_data/data" \
+    GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     GDAL_DATA=/usr/share/gdal \
     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
-    GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     CERT_DIR=/etc/certs \
     RANDFILE=/etc/certs/.rnd \
     FONTS_DIR=/opt/fonts \
@@ -53,18 +45,13 @@ ENV \
     EXTRA_CONFIG_DIR=/settings \
     COMMUNITY_PLUGINS_DIR=/community_plugins  \
     STABLE_PLUGINS_DIR=/stable_plugins \
-    GEOSERVER_CORS_ENABLED=$GEOSERVER_CORS_ENABLED \
-    GEOSERVER_CORS_ALLOWED_ORIGINS=$GEOSERVER_CORS_ALLOWED_ORIGINS \
-    GEOSERVER_CORS_ALLOWED_METHODS=$GEOSERVER_CORS_ALLOWED_METHODS \
-    GEOSERVER_CORS_ALLOWED_HEADERS=$GEOSERVER_CORS_ALLOWED_HEADERS \
     PRINT_BASE_URL=http://geoserver:8080/geoserver/pdf
-
-
+#
 # Download and install GeoServer
 #
-RUN apt-get update -y && apt-get install curl wget unzip -y
+
 RUN cd /usr/local/tomcat/webapps \
-    && wget --no-check-certificate --progress=bar:force:noscroll https://artifacts.geonode.org/geoserver/${GS_VERSION}/geoserver.war -O geoserver.war \
+    && wget --no-check-certificate --progress=bar:force:noscroll ${WAR_URL} -O geoserver.war \
     && unzip -q geoserver.war -d geoserver \
     && rm geoserver.war \
     && mkdir -p $GEOSERVER_DATA_DIR
@@ -81,13 +68,13 @@ RUN wget --no-check-certificate https://repo1.maven.org/maven2/org/postgis/postg
     mv hibernate-spatial-postgis-1.1.3.2.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/ && \
     mv postgis-jdbc-1.3.3.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/
 
+ADD resources /tmp/resources
 ADD build_data /build_data
 ADD scripts /scripts
 
-RUN echo $GS_VERSION > /scripts/geoserver_version.txt ;\
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 
 ###########docker host###############
 # Set DOCKERHOST variable if DOCKER_HOST exists
@@ -148,6 +135,5 @@ RUN apt-get update \
 
 RUN pip install j2cli
 
-#ENV JAVA_OPTS="-Djava.awt.headless=true -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=/var/log/jvm.log -XX:MaxPermSize=512m -XX:PermSize=256m -Xms512m -Xmx2048m -XX:+UseConcMarkSweepGC -XX:ParallelGCThreads=4 -Dfile.encoding=UTF8 -Djavax.servlet.request.encoding=UTF-8 -Djavax.servlet.response.encoding=UTF-8 -Duser.timezone=GMT -Dorg.geotools.shapefile.datetime=false -DGEOSERVER_CSRF_DISABLED=true -DPRINT_BASE_URL=http://geoserver:8080/geoserver/pdf -Xbootclasspath/a:/usr/local/tomcat/webapps/geoserver/WEB-INF/lib/marlin-render.jar -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine"
 
-CMD ["/usr/local/tomcat/tmp/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/usr/local/tomcat/tmp/entrypoint.sh"]

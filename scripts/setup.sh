@@ -17,12 +17,15 @@ create_dir "${GEOSERVER_HOME}"
 pushd "${CATALINA_HOME}" || exit
 
 
+# Download geoserver and install it
+#package_geoserver
+
 # Copy config files
 cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
 cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
-validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
- dpkg -i ttf-mscorefonts-installer_3.8_all.deb && rm ttf-mscorefonts-installer_3.8_all.deb
+validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8.1_all.deb && \
+ dpkg -i ttf-mscorefonts-installer_3.8.1_all.deb && rm ttf-mscorefonts-installer_3.8.1_all.deb
 
 
 pushd "${STABLE_PLUGINS_DIR}" || exit
@@ -42,11 +45,11 @@ fi
 
 if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" -eq 0 ]; then
   plugin=$(head -n 1 /stable_plugins/stable_plugins.txt)
-  approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+  approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
   download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
 else
   for plugin in $(cat /stable_plugins/stable_plugins.txt); do
-    approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+    approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
     download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
   done
 fi
@@ -69,10 +72,10 @@ fi
 #Install some mandatory stable extensions
 pushd ${resources_dir}/plugins || exit
 
-array=(geoserver-${GS_VERSION}-vectortiles-plugin.zip geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip 
+array=(geoserver-${GS_VERSION}-vectortiles-plugin.zip geoserver-${GS_VERSION}-libjpeg-turbo-plugin.zip
   geoserver-${GS_VERSION}-pyramid-plugin.zip geoserver-${GS_VERSION}-csw-plugin.zip geoserver-${GS_VERSION}-csw-iso-plugin.zip)
 for i in "${array[@]}"; do
-  url="${STABLE_PLUGIN_BASE_URL}/project/geoserver/GeoServer/${GS_VERSION}/extensions/${i}"
+  url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/${i}"
   download_extension "${url}" "${i%.*}" ${resources_dir}/plugins
 done
 
@@ -89,34 +92,32 @@ dpkg -i ${resources_dir}/libjpeg-turbo-official_2.1.4_${system_architecture}.deb
 pushd "${CATALINA_HOME}" || exit
 
 # Install GeoServer plugins in correct install dir
-if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  GEOSERVER_INSTALL_DIR=${GEOSERVER_HOME}
-else
-  GEOSERVER_INSTALL_DIR=${CATALINA_HOME}
-fi
+GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
 # Install any plugin zip files in resources/plugins
 if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
   for p in /tmp/resources/plugins/*.zip; do
     unzip "$p" -d /tmp/gs_plugin &&
-      mv /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/ &&
+      mv /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/ &&
       rm -rf /tmp/gs_plugin
   done
 fi
 
+
 # Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
 if [[ ${JAVA_VERSION} > 10 ]];then
-    if [[  -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      mv ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-* ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-render.jar
+    if [[  -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
+      mv ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/marlin-* ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/marlin-render.jar
     fi
 else
-    if [[ -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      rm "${GEOSERVER_INSTALL_DIR}"/webapps/geoserver/WEB-INF/lib/marlin-* \
+    if [[ -f $(find ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
+      rm "${GEOSERVER_INSTALL_DIR}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/marlin-* \
       validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar && \
-      mv marlin-0.9.4.2-Unsafe-OpenJDK9.jar ${GEOSERVER_INSTALL_DIR}/webapps/geoserver/WEB-INF/lib/marlin-render.jar
+      mv marlin-0.9.4.2-Unsafe-OpenJDK9.jar ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/marlin-render.jar
     fi
 fi
+
 
 # Overlay files and directories in resources/overlays if they exist
 rm -f /tmp/resources/overlays/README.txt &&
@@ -139,17 +140,17 @@ else
 fi
 
 artifact_url="https://artifacts.geonode.org/geoserver/${GS_VERSION}/geonode-geoserver-ext-web-app-data.zip"
-curl  -k -L "$artifact_url" --output data.zip 
+curl  -k -L "$artifact_url" --output data.zip
 unzip -x -d ${resources_dir} data.zip
 cp -r ${resources_dir}/data "${CATALINA_HOME}"/
 
-
 # Copy GeoServer security for passwords
 cp -r "${CATALINA_HOME}"/webapps/geoserver/data/security "${CATALINA_HOME}"
+
 # Delete resources after installation
 rm -rf /tmp/resources
 
 # Delete resources which will be setup on first run
 
-delete_file "${CATALINA_HOME}"/conf/tomcat-users.xml
-#delete_file "${CATALINA_HOME}"/conf/web.xml
+#delete_file "${CATALINA_HOME}"/conf/tomcat-users.xml
+delete_file "${CATALINA_HOME}"/conf/web.xml
