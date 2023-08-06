@@ -461,7 +461,7 @@
   <!--   blockContentTypeSniffingEnabled                                    -->
   <!--                       Should the header that blocks content type     -->
   <!--                       sniffing be added to every response? [true]    -->
-
+    <!-- SECURITY_START -->
     <filter>
         <filter-name>httpHeaderSecurity</filter-name>
         <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
@@ -471,6 +471,7 @@
             <param-value>SAMEORIGIN</param-value>
         </init-param>
     </filter>
+    <!-- SECURITY_END -->
 
   <!-- A filter that sets character encoding that is used to decode -->
   <!-- parameters in a POST request -->
@@ -561,12 +562,13 @@
   <!-- ==================== Built In Filter Mappings ====================== -->
 
   <!-- The mapping for the HTTP header security Filter -->
-
+    <!-- SECURITY_START -->
     <filter-mapping>
         <filter-name>httpHeaderSecurity</filter-name>
         <url-pattern>/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
+    <!-- SECURITY_END -->
 
   <!-- The mapping for the Set Character Encoding Filter -->
 <!--
