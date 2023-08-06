@@ -143,12 +143,12 @@ function detect_install_dir() {
 
 function unzip_geoserver() {
   if [[ -f /tmp/geoserver/geoserver.war ]]; then
-    unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT} &&
-    validate_geo_install "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT} && \
-    cp -r "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data "${CATALINA_HOME}" &&
-    mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}" &&
-    rm -rf "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data &&
-    mv "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/ &&
+    unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}
+    validate_geo_install "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}
+    cp -r "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data "${CATALINA_HOME}"
+    mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}"
+    rm -rf "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data
+    mv "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/
     rm -rf /tmp/geoserver
 else
     cp -r /tmp/geoserver/* "${GEOSERVER_HOME}"/ && \
