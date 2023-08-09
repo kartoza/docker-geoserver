@@ -162,7 +162,7 @@ fi
 # A little logic that will fetch the geoserver war zip file if it is not available locally in the resources dir
 function package_geoserver() {
 
-if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resources/geoserver-${GS_VERSION}-bin.zip ]]; then
+if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] && [[ ! -f /tmp/resources/geoserver-${GS_VERSION}-bin.zip ]]; then
     if [[ "${WAR_URL}" == *\.zip ]]; then
       if [[ "${WAR_URL}" == *\bin.zip ]];then
         destination=/tmp/resources/geoserver-${GS_VERSION}-bin.zip
