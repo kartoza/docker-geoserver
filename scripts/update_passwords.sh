@@ -8,14 +8,17 @@
 source /scripts/env-data.sh
 source /scripts/functions.sh
 
+# constants
+USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
+ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
+CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
+SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.first_time_hash.lock"
+
 # Setup install directory
 GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
-
-
 if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
-  SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.first_time_hash.lock"
   if [[ ${RECREATE_DATADIR} =~ [Tt][Rr][Uu][Ee] ]];then
       cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
       delete_file ${SETUP_LOCKFILE} && \
@@ -34,8 +37,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   # Set random password if none provided
   file_env 'GEOSERVER_ADMIN_PASSWORD'
   if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
-        generate_random_string 15
-        GEOSERVER_ADMIN_PASSWORD=${RAND}
+        GEOSERVER_ADMIN_PASSWORD="${GEOSERVER_ADMIN_PASSWORD:-$(generate_random_string 15)}"
         echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
         if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
           echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
@@ -43,9 +45,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
         fi
   fi
 
-  USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
-  ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
-  CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
+
 
   # users.xml setup
   cp $USERS_XML $USERS_XML.orig
@@ -61,8 +61,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   if [[ -f "${EXTRA_CONFIG_DIR}"/.default_admin_encrypted_pass.txt ]];then
       export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD=$(cat "${EXTRA_CONFIG_DIR}"/.default_admin_encrypted_pass.txt)
   else
-      export GEOSERVER_ADMIN_DEFAULT_PASSWORD=$(grep -o 'password=\".*\"' ${USERS_XML}|awk -F':' '{print $2}')
-      export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD="digest1:${GEOSERVER_ADMIN_DEFAULT_PASSWORD%?}"
+      export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD=$(grep -o 'password="[^"]*"' ${USERS_XML} | sed 's/password="//;s/"$//')
   fi
 
 

@@ -78,7 +78,7 @@ function web_cors() {
       cp -f "${EXTRA_CONFIG_DIR}"/web.xml  "${CATALINA_HOME}"/conf/
     else
       # default values
-      cp /build_data/web.xml "${CATALINA_HOME}"/conf/
+      envsubst < /build_data/web.xml > "${CATALINA_HOME}"/conf/
       ###
       # Deactivate CORS filter in web.xml if DISABLE_CORS=true
       # Useful if CORS is handled outside of Tomcat (e.g. in a proxying webserver like nginx)
@@ -87,6 +87,10 @@ function web_cors() {
         sed -i 's/<!-- CORS_START.*/<!-- CORS DEACTIVATED BY DISABLE_CORS -->\n<!--/; s/^.*<!-- CORS_END -->/-->/' \
           ${CATALINA_HOME}/conf/web.xml
       fi
+      ###
+      # Deactivate security filter in web.xml if DISABLE_SECURITY_FILTER=true
+      # https://github.com/kartoza/docker-geoserver/issues/549
+      ###
       if [[ "${DISABLE_SECURITY_FILTER}" =~ [Tt][Rr][Uu][Ee] ]]; then
         sed -i 's/<!-- SECURITY_START.*/<!-- SECURITY FILTER DEACTIVATED BY DISABLE_SECURITY_FILTER -->\n<!--/; s/^.*<!-- SECURITY_END -->/-->/' \
           ${CATALINA_HOME}/conf/web.xml
@@ -357,7 +361,6 @@ function setup_logging() {
 
 function geoserver_logging() {
 
-  if [[ ! -f ${GEOSERVER_DATA_DIR}/logging.xml ]];then
     echo "
 <logging>
   <level>${GEOSERVER_LOG_LEVEL}</level>
@@ -366,7 +369,6 @@ function geoserver_logging() {
 </logging>
 " > "${GEOSERVER_DATA_DIR}"/logging.xml
 
-  fi
   if [[ ! -f ${GEOSERVER_DATA_DIR}/logs/geoserver.log ]];then
     touch "${GEOSERVER_DATA_DIR}"/logs/geoserver.log
   fi
