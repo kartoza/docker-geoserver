@@ -35,6 +35,7 @@ if [ x"${GEOSERVER_CONTEXT_ROOT}" != xgeoserver ]; then
   echo "INFO: changing context-root to '${GEOSERVER_CONTEXT_ROOT}'."
   GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
   if [ -e "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" ]; then
+    mkdir -p "$(dirname -- "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}")"
     mv "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}"
   else
     echo "WARN: '${GEOSERVER_INSTALL_DIR}/webapps/geoserver' not found, probably already renamed as this is probably a container restart and not first run."
