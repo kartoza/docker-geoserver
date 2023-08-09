@@ -8,17 +8,14 @@
 source /scripts/env-data.sh
 source /scripts/functions.sh
 
-# constants
-USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
-ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
-CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
-SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.first_time_hash.lock"
-
 # Setup install directory
 GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
+
+
 if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
+  SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.first_time_hash.lock"
   if [[ ${RECREATE_DATADIR} =~ [Tt][Rr][Uu][Ee] ]];then
       cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
       delete_file ${SETUP_LOCKFILE} && \
@@ -45,7 +42,9 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
         fi
   fi
 
-
+  USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
+  ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
+  CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
 
   # users.xml setup
   cp $USERS_XML $USERS_XML.orig
