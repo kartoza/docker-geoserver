@@ -34,7 +34,8 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   # Set random password if none provided
   file_env 'GEOSERVER_ADMIN_PASSWORD'
   if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
-        GEOSERVER_ADMIN_PASSWORD="${GEOSERVER_ADMIN_PASSWORD:-$(generate_random_string 15)}"
+        generate_random_string 15
+        GEOSERVER_ADMIN_PASSWORD=${RAND}
         echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
         if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
           echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
@@ -60,7 +61,8 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   if [[ -f "${EXTRA_CONFIG_DIR}"/.default_admin_encrypted_pass.txt ]];then
       export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD=$(cat "${EXTRA_CONFIG_DIR}"/.default_admin_encrypted_pass.txt)
   else
-      export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD=$(grep -o 'password="[^"]*"' ${USERS_XML} | sed 's/password="//;s/"$//')
+      export GEOSERVER_ADMIN_DEFAULT_PASSWORD=$(grep -o 'password=\".*\"' ${USERS_XML}|awk -F':' '{print $2}')
+      export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD="digest1:${GEOSERVER_ADMIN_DEFAULT_PASSWORD%?}"
   fi
 
 
