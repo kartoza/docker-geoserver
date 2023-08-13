@@ -78,7 +78,7 @@ function web_cors() {
       cp -f "${EXTRA_CONFIG_DIR}"/web.xml  "${CATALINA_HOME}"/conf/
     else
       # default values
-      envsubst < /build_data/web.xml > "${CATALINA_HOME}"/conf/
+      envsubst < /build_data/web.xml > "${CATALINA_HOME}"/conf/web.xml
       ###
       # Deactivate CORS filter in web.xml if DISABLE_CORS=true
       # Useful if CORS is handled outside of Tomcat (e.g. in a proxying webserver like nginx)
