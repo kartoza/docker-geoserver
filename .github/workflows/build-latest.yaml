@@ -46,6 +46,8 @@ jobs:
           - gwc
           - login
           - stores
+          - context
+          - disk-quota
     steps:
       - uses: actions/checkout@v3
       - name: Set up QEMU

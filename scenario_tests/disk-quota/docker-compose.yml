@@ -1,0 +1,57 @@
+
+version: '2.1'
+
+volumes:
+  geoserver-data-dir:
+  postgis-data:
+
+
+services:
+  db:
+    image: kartoza/postgis:15-3.3
+    volumes:
+      - postgis-data:/var/lib/postgresql
+    environment:
+      - POSTGRES_DB=gis,gwc
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - ALLOW_IP_RANGE=0.0.0.0/0
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting
+      - RUN_AS_ROOT=true
+      - FORCE_SSL=TRUE
+    restart: on-failure
+    healthcheck:
+      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
+
+  geoserver:
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
+    restart: 'always'
+    volumes:
+      - geoserver-data-dir:/opt/geoserver/data_dir
+      - ./tests:/tests
+    environment:
+      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+      GEOSERVER_ADMIN_USER: admin
+      INITIAL_MEMORY: 2G
+      MAXIMUM_MEMORY: 4G
+      HOST: db
+      POSTGRES_DB: gwc
+      POSTGRES_USER: docker
+      POSTGRES_PASS: docker
+      POSTGRES_PORT: 5432
+      SSL_MODE: allow
+      POSTGRES_SCHEMA: public
+      DISK_QUOTA_SIZE: 5
+      DB_BACKEND: POSTGRES
+      SAMPLE_DATA: true
+      TEST_CLASS: test_disk_quota.TestGeoServerDISKQUOTA
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+
+
