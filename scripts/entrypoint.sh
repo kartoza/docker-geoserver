@@ -98,7 +98,7 @@ export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 # Chown again - seems to fix issue with resolving all created directories
 dir_ownership=(${CATALINA_HOME} /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}"
   "${STABLE_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/ /tomcat_apps.zip
-  /tmp/ "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}"
+  /tmp/ "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}" /scripts/
   "${EXTRA_CONFIG_DIR}")
 for directory in "${dir_ownership[@]}"; do
   if [[ $(stat -c '%U' ${directory}) != "${USER_NAME}" ]] && [[ $(stat -c '%G' ${directory}) != "${GEO_GROUP_NAME}" ]];then
