@@ -35,6 +35,7 @@ if [ x"${GEOSERVER_CONTEXT_ROOT}" != xgeoserver ]; then
   echo "INFO: changing context-root to '${GEOSERVER_CONTEXT_ROOT}'."
   GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
   if [ -e "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" ]; then
+    mkdir -p "$(dirname -- "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}")"
     mv "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}"
   else
     echo "WARN: '${GEOSERVER_INSTALL_DIR}/webapps/geoserver' not found, probably already renamed as this is probably a container restart and not first run."
@@ -45,6 +46,7 @@ fi
 set_vars
 export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
 export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
+
 
 /bin/bash /scripts/start.sh
 
@@ -94,21 +96,18 @@ export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
 
 # Chown again - seems to fix issue with resolving all created directories
-CHOWN_LOCKFILE=/scripts/.permission_file.lock
-if [[ $(stat -c '%U' ${CATALINA_HOME}) != "${USER_NAME}" ]] && [[ $(stat -c '%G' ${CATALINA_HOME}) != "${GEO_GROUP_NAME}" ]];then
-  if [[ -f ${CHOWN_LOCKFILE} ]];then
-    rm ${CHOWN_LOCKFILE}
+dir_ownership=(${CATALINA_HOME} /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}"
+  "${STABLE_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/ /tomcat_apps.zip
+  /tmp/ "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}" /scripts/
+  "${EXTRA_CONFIG_DIR}")
+for directory in "${dir_ownership[@]}"; do
+  if [[ $(stat -c '%U' ${directory}) != "${USER_NAME}" ]] && [[ $(stat -c '%G' ${directory}) != "${GEO_GROUP_NAME}" ]];then
+    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${directory}
   fi
-  if [[ ! -f ${CHOWN_LOCKFILE} ]];then
-    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CATALINA_HOME}"   \
-    /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}" "${STABLE_PLUGINS_DIR}" \
-    "${GEOSERVER_HOME}" /usr/share/fonts/ /scripts /tomcat_apps.zip /tmp/
-    touch ${CHOWN_LOCKFILE}
-  fi
-fi
+done
 
-chown -R "${USER_NAME}":"${GEO_GROUP_NAME}"  "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}"  \
-   "${EXTRA_CONFIG_DIR}" ;chmod o+rw "${CERT_DIR}";gwc_file_perms ;chmod 400 ${CATALINA_HOME}/conf/*
+
+chmod o+rw "${CERT_DIR}";gwc_file_perms ;chmod 400 ${CATALINA_HOME}/conf/*
 
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
