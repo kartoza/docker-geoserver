@@ -60,7 +60,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      
+
       - name: Get Current Date
         id: current_date
         shell: python
@@ -79,9 +79,9 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion }}.${{ matrix.geoserverPatchVersion }}--v${{ steps.current_date.outputs.formatted }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
