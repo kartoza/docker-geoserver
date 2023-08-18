@@ -58,15 +58,22 @@ function delete_folder() {
 # Function to add custom crs in geoserver data directory
 # https://docs.geoserver.org/latest/en/user/configuration/crshandling/customcrs.html
 function setup_custom_crs() {
-  if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties ]]; then
-    # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
+    # If it exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/epsg.properties ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/epsg.properties "${GEOSERVER_DATA_DIR}"/user_projections/
+       cp -f "${EXTRA_CONFIG_DIR}"/epsg.properties "${GEOSERVER_DATA_DIR}"/user_projections/
     else
       # default values
-      cp -r "${CATALINA_HOME}"/data/user_projections/epsg.properties "${GEOSERVER_DATA_DIR}"/user_projections/epsg.properties
+      if [[ ! -f ${GEOSERVER_DATA_DIR}/user_projections/epsg.properties ]]; then
+        cp -r "${CATALINA_HOME}"/data/user_projections/epsg.properties "${GEOSERVER_DATA_DIR}"/user_projections/epsg.properties
+      fi
     fi
-  fi
+}
+
+function setup_custom_override_crs() {
+    # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
+    if [[ -f ${EXTRA_CONFIG_DIR}/epsg_overrides.properties ]]; then
+      cp -f "${EXTRA_CONFIG_DIR}"/epsg_overrides.properties"${GEOSERVER_DATA_DIR}"/user_projections/
+    fi
 }
 
 # Function to enable cors support thought tomcat

@@ -27,6 +27,7 @@ create_dir "${GEOSERVER_DATA_DIR}"/user_projections
 create_dir "${GEOWEBCACHE_CACHE_DIR}"
 
 setup_custom_crs
+setup_custom_override_crs
 
 create_dir "${GEOSERVER_DATA_DIR}"/logs
 export GEOSERVER_LOG_LEVEL
@@ -53,13 +54,16 @@ if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
   postgres_ssl_setup
   export DISK_QUOTA_BACKEND=JDBC
   export SSL_PARAMETERS=${PARAMS}
+  export POSTGRES_SCHEMA=${POSTGRES_SCHEMA}
   default_disk_quota_config
   jdbc_disk_quota_config
 
   echo -e "[Entrypoint] Checking PostgreSQL connection to see if diskquota tables are loaded: \033[0m"
-  export PGPASSWORD="${POSTGRES_PASS}"
-  postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
-  create_gwc_tile_tables ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB $POSTGRES_SCHEMA
+  if [[  ${POSTGRES_SCHEMA} != 'public' ]]; then
+    export PGPASSWORD="${POSTGRES_PASS}"
+    postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
+    create_gwc_tile_tables ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB $POSTGRES_SCHEMA
+  fi
 else
   export DISK_QUOTA_BACKEND=H2
   default_disk_quota_config
