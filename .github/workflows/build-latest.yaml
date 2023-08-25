@@ -35,7 +35,7 @@ jobs:
           - minor: 22
             patch: 4
           - minor: 23
-            patch: 1
+            patch: 2
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:
@@ -101,7 +101,7 @@ jobs:
           - minor: 22
             patch: 4
           - minor: 23
-            patch: 1
+            patch: 2
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:

@@ -37,7 +37,7 @@ jobs:
           - minor: 22
             patch: 4
           - minor: 23
-            patch: 1
+            patch: 2
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:
@@ -78,8 +78,6 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
           build-args: |
