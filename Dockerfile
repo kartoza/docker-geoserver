@@ -1,62 +1,28 @@
-ARG IMAGE_VERSION=9.0.73-jdk11-temurin-focal
-ARG JAVA_HOME=/opt/java/openjdk
-FROM tomcat:$IMAGE_VERSION
+ARG IMAGE_VERSION=2.23.0
+FROM kartoza/geoserver:$IMAGE_VERSION
 LABEL GeoNode Development Team
 
-
-ARG GS_VERSION=2.23.1
-ARG WAR_URL=https://artifacts.geonode.org/geoserver/${GS_VERSION}/geoserver.war
-ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
-ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
-ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
-ARG HTTPS_PORT=8443
-ENV DEBIAN_FRONTEND=noninteractive
-
-
-#Install extra fonts to use with sld font markers
-RUN set -eux; \
-    apt-get update; \
-    apt-get -y --no-install-recommends install \
-        locales gnupg2 wget ca-certificates rpl pwgen software-properties-common  iputils-ping \
-        apt-transport-https curl gettext fonts-cantarell lmodern ttf-aenigma \
-        ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev  \
-        wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin libgdal-java; \
-      dpkg-divert --local --rename --add /sbin/initctl \
-      && (echo "Yes, do as I say!" | apt-get remove --force-yes login) \
-      && apt-get clean \
-      && rm -rf /var/lib/apt/lists/*; \
-      # verify that the binary works
-	  gosu nobody true
 #
 # Set GeoServer version and data directory
 #
 ENV \
-    JAVA_HOME=${JAVA_HOME} \
-    DEBIAN_FRONTEND=noninteractive \
+    GEOSERVER_VERSION=2.23.0 \
     GEOSERVER_DATA_DIR="/geoserver_data/data" \
-    GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
-    GDAL_DATA=/usr/share/gdal \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
-    FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
-    CERT_DIR=/etc/certs \
-    RANDFILE=/etc/certs/.rnd \
-    FONTS_DIR=/opt/fonts \
-    GEOSERVER_HOME=/geoserver \
-    EXTRA_CONFIG_DIR=/settings \
-    COMMUNITY_PLUGINS_DIR=/community_plugins  \
-    STABLE_PLUGINS_DIR=/stable_plugins \
-    PRINT_BASE_URL=http://geoserver:8080/geoserver/pdf
+    DISABLE_SECURITY_FILTER=TRUE \
+    PRINT_BASE_URL=http://localhost:8080/geoserver/pdf \
+    TOMCAT_EXTRAS=False \
+    GEONODE_PROXY_HEADERS=TRUE \
+    SAMPLE_DATA=TRUE \
+    RUN_AS_ROOT=TRUE
+
 #
 # Download and install GeoServer
 #
-
-RUN cd /usr/local/tomcat/webapps \
-    && wget --no-check-certificate --progress=bar:force:noscroll ${WAR_URL} -O geoserver.war \
+RUN rm -rf /usr/local/tomcat/webapps/geoserver ;\
+    cd /usr/local/tomcat/webapps \
+    && wget --no-check-certificate --progress=bar:force:noscroll https://artifacts.geonode.org/geoserver/${GEOSERVER_VERSION}/geoserver.war -O geoserver.war \
     && unzip -q geoserver.war -d geoserver \
-    && rm geoserver.war \
-    && mkdir -p $GEOSERVER_DATA_DIR
-
-VOLUME $GEOSERVER_DATA_DIR
+    && rm geoserver.war
 
 # added by simonelanucara https://github.com/simonelanucara
 # Optionally add JAI, ImageIO and Marlin Render for improved Geoserver performance
@@ -66,16 +32,17 @@ RUN wget --no-check-certificate https://repo1.maven.org/maven2/org/postgis/postg
     wget --no-check-certificate https://maven.geo-solutions.it/org/hibernatespatial/hibernate-spatial-postgis/1.1.3.2/hibernate-spatial-postgis-1.1.3.2.jar -O hibernate-spatial-postgis-1.1.3.2.jar && \
     rm /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/hibernate-spatial-h2-geodb-1.1.3.2.jar && \
     mv hibernate-spatial-postgis-1.1.3.2.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/ && \
-    mv postgis-jdbc-1.3.3.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/
+    mv postgis-jdbc-1.3.3.jar /usr/local/tomcat/webapps/geoserver/WEB-INF/lib/&& \
+    mv "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/marlin-0.9.3.jar "${CATALINA_HOME}"/webapps/geoserver/WEB-INF/lib/marlin-render.jar
 
-ADD resources /tmp/resources
-ADD build_data /build_data
-ADD scripts /scripts
-
-RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
-    chmod +x /scripts/*.sh;/scripts/setup.sh \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+RUN rm -rf "${CATALINA_HOME}"/data && \
+    rm -rf "${CATALINA_HOME}"/security && \
+    curl  -k -L "https://artifacts.geonode.org/geoserver/${GEOSERVER_VERSION}/geonode-geoserver-ext-web-app-data.zip" --output data.zip && \
+    mkdir -p /tmp/resources && \
+    unzip -x -d /tmp/resources data.zip && \
+    cp -r /tmp/resources/data "${CATALINA_HOME}"/ && \
+    cp -r "${CATALINA_HOME}"/webapps/geoserver/data/security "${CATALINA_HOME}" && \
+    rm -rf /tmp/resources
 ###########docker host###############
 # Set DOCKERHOST variable if DOCKER_HOST exists
 ARG DOCKERHOST=${DOCKERHOST}

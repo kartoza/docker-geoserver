@@ -12,8 +12,6 @@ source /scripts/functions.sh
 export GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
 
-
-
 if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
   SETUP_LOCKFILE="${EXTRA_CONFIG_DIR}/.first_time_hash.lock"
@@ -103,6 +101,7 @@ echo
   if [[ -f ${EXTRA_CONFIG_DIR}/roles.xml ]]; then
       cp ${EXTRA_CONFIG_DIR}/roles.xml ${GEOSERVER_DATA_DIR}/security/role/default/roles.xml
   fi
+  sed -i 's/pbePasswordEncoder/strongPbePasswordEncoder/g' ${GEOSERVER_DATA_DIR}/security/config.xml
 else
   cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
 

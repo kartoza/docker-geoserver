@@ -7,11 +7,6 @@ STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
 
 web_cors
 
-# Useful for development - We need a clean state of data directory
-if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
-  rm -rf "${GEOSERVER_DATA_DIR}"/*
-fi
-
 # install Font files in resources/fonts if they exists
 if ls "${FONTS_DIR}"/*.ttf >/dev/null 2>&1; then
   cp -rf "${FONTS_DIR}"/*.ttf /usr/share/fonts/truetype/
@@ -22,17 +17,6 @@ if ls "${FONTS_DIR}"/*.otf >/dev/null 2>&1; then
   cp -rf "${FONTS_DIR}"/*.otf /usr/share/fonts/opentype/
 fi
 
-# Add custom espg properties file or the default one
-create_dir "${GEOSERVER_DATA_DIR}"/user_projections
-create_dir "${GEOWEBCACHE_CACHE_DIR}"
-
-setup_custom_crs
-
-create_dir "${GEOSERVER_DATA_DIR}"/logs
-export GEOSERVER_LOG_LEVEL
-geoserver_logging
-
-# Activate sample data
 # Activate sample data
 DATA_INIT_LOCK=${EXTRA_CONFIG_DIR}/.init_data.lock
 if [[ ! -f ${DATA_INIT_LOCK} ]];then
@@ -99,15 +83,6 @@ if [[ ! -z "${STABLE_EXTENSIONS}" ]]; then
   fi
 fi
 
-if [[ ${ACTIVATE_ALL_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-  pushd /stable_plugins/ || exit
-  for val in *.zip; do
-      ext=${val%.*}
-      install_plugin /stable_plugins/ "${ext}"
-  done
-  pushd "${GEOSERVER_HOME}" || exit
-fi
-
 
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
@@ -137,63 +112,6 @@ if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
         fi
     done
   fi
-fi
-
-
-if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-   pushd /community_plugins/ || exit
-    for val in *.zip; do
-        ext=${val%.*}
-        install_plugin /community_plugins "${ext}"
-    done
-    pushd "${GEOSERVER_HOME}" || exit
-fi
-
-# Setup clustering
-set_vars
-export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
-export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
-create_dir "${MONITOR_AUDIT_PATH}"
-
-if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  ext=jms-cluster-plugin
-  if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-    if [[  -f /community_plugins/${ext}.zip ]]; then
-      rm -rf /community_plugins/${ext}.zip
-    fi
-    community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-    download_extension "${community_plugins_url}" ${ext} /community_plugins
-    install_plugin /community_plugins ${ext}
-  else
-    if [[ ! -f /community_plugins/${ext}.zip ]]; then
-      community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-      download_extension "${community_plugins_url}" ${ext} /community_plugins
-      install_plugin /community_plugins ${ext}
-    else
-      install_plugin /community_plugins ${ext}
-    fi
-
-  fi
-
-  if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-      if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-          create_dir "${CLUSTER_CONFIG_DIR}"
-      fi
-
-      if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
-        postgres_ssl_setup
-        export SSL_PARAMETERS=${PARAMS}
-      fi
-      broker_xml_config
-      touch "${CLUSTER_LOCKFILE}"
-  fi
-  # setup clustering if it's not already defined in an existing data directory
-  if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-      cluster_config
-      broker_config
-  fi
-
-
 fi
 
 export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
@@ -238,8 +156,7 @@ else
         cat /build_data/index.jsp | sed "s@/geoserver/@/${GEOSERVER_CONTEXT_ROOT}/@g" > "${CATALINA_HOME}"/webapps/ROOT/index.jsp
     fi
 fi
-# Checking
-if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-  /scripts/update_passwords.sh
-fi
 
+if [[ -z "${EXISTING_DATA_DIR}" ]]; then
+  /usr/local/tomcat/tmp/update_passwords.sh
+fi

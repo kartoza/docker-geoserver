@@ -2,6 +2,7 @@
 set -e
 
 source /root/.bashrc
+# Customised entrypoint
 
 figlet -t "Kartoza Docker GeoServer for GeoNode"
 
@@ -22,37 +23,19 @@ if ! id -u "${USER_NAME}" >/dev/null 2>&1; then
 fi
 
 # Create directories
-mkdir -p  "${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}" \
-"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}"
-
-
-
 source /scripts/functions.sh
 source /scripts/env-data.sh
 
-# Rename to match wanted context-root and so that we can unzip plugins to
-# existing directory.
-if [ x"${GEOSERVER_CONTEXT_ROOT}" != xgeoserver ]; then
-  echo "INFO: changing context-root to '${GEOSERVER_CONTEXT_ROOT}'."
-  GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
-  if [ -e "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" ]; then
-    mv "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}"
-  else
-    echo "WARN: '${GEOSERVER_INSTALL_DIR}/webapps/geoserver' not found, probably already renamed as this is probably a container restart and not first run."
-  fi
-fi
-
-# Credits https://github.com/kartoza/docker-geoserver/pull/371
-set_vars
-export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
-export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
-
-/bin/bash /scripts/start.sh
+path_envs=("${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}" "${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}")
+for dir_names in "${path_envs[@]}";do
+  create_dir "${dir_names}"
+done
 
 
+# Run start logic
+/bin/bash /usr/local/tomcat/tmp/start.sh
 
-log CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR}"
-log MONITOR_AUDIT_PATH="${MONITOR_AUDIT_PATH}"
+# end customised entrypoint
 
 # control the value of DOCKER_HOST_IP variable
 if [ -z ${DOCKER_HOST_IP} ]
@@ -85,13 +68,7 @@ then
 
 fi
 
-#if [ ! -z "${GEOSERVER_JAVA_OPTS}" ]
-#then
-#
-#    echo "GEOSERVER_JAVA_OPTS is filled so I replace the value of '$JAVA_OPTS' with '$GEOSERVER_JAVA_OPTS' \n"
-#    JAVA_OPTS=${GEOSERVER_JAVA_OPTS}
-#
-#fi
+
 
 # control the value of NGINX_BASE_URL variable
 if [ -z `echo ${NGINX_BASE_URL} | sed 's/http:\/\/\([^:]*\).*/\1/'` ]
@@ -129,20 +106,32 @@ cp "${GEOSERVER_DATA_DIR}/security/role/geonode REST role service/config.xml" "$
 /usr/local/tomcat/tmp/set_geoserver_auth.sh "${GEOSERVER_DATA_DIR}/security/role/geonode REST role service/config.xml" "${GEOSERVER_DATA_DIR}/security/role/geonode REST role service/" ${TAGNAME} > /dev/null 2>&1
 
 # set oauth2 filter tagname
-TAGNAME=( "accessTokenUri" "userAuthorizationUri" "redirectUri" "checkTokenEndpointUrl" "logoutUri" )
+#TAGNAME=( "accessTokenUri" "userAuthorizationUri" "redirectUri" "checkTokenEndpointUrl" "logoutUri" )
 
 # backup geonode-oauth2 config.xml
 cp ${GEOSERVER_DATA_DIR}/security/filter/geonode-oauth2/config.xml ${GEOSERVER_DATA_DIR}/security/filter/geonode-oauth2/config.xml.orig
 # run the setting script for geonode-oauth2
-/usr/local/tomcat/tmp/set_geoserver_auth.sh ${GEOSERVER_DATA_DIR}/security/filter/geonode-oauth2/config.xml ${GEOSERVER_DATA_DIR}/security/filter/geonode-oauth2/ "${TAGNAME[@]}" > /dev/null 2>&1
-
-# set global tagname
-TAGNAME=( "proxyBaseUrl" )
+# If it doesn't exists, copy from /settings directory if exists
+if [[ "${GEONODE_PROXY_HEADERS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+  if [[ -f ${EXTRA_CONFIG_DIR}/config.xml  ]]; then
+    envsubst < "${EXTRA_CONFIG_DIR}"/config.xml > ${GEOSERVER_DATA_DIR}/security/filter/geonode-oauth2/config.xml
+  else
+    # Auth config
+    oauth_config="${GEOSERVER_DATA_DIR}/security/filter/geonode-oauth2/config.xml"
+    sed -E -i "s/<cliendId>[^<]*<\/cliendId>/<cliendId>${OAUTH2_CLIENT_ID}<\/cliendId>/; s/<clientSecret>[^<]*<\/clientSecret>/<clientSecret>${OAUTH2_CLIENT_SECRET}<\/clientSecret>/" ${oauth_config}
+    SITE_URL=$(echo "${SITEURL}" | sed 's#/$##')
+    sed -i "s#<accessTokenUri>http://localhost:8000/o/token/#<accessTokenUri>${NGINX_BASE_URL}/o/token/#" ${oauth_config}
+    sed -i "s#<userAuthorizationUri>http://localhost:8000/o/authorize/#<userAuthorizationUri>${SITE_URL}/o/authorize/#" ${oauth_config}
+    sed -i "s#<redirectUri>http://localhost:8080/geoserver/index.html#<redirectUri>${SITE_URL}/geoserver/index.html#" ${oauth_config}
+    sed -i "s#<checkTokenEndpointUrl>http://localhost:8000/api/o/v4/tokeninfo/#<checkTokenEndpointUrl>${SITE_URL}/api/o/v4/tokeninfo/#" ${oauth_config}
+    sed -i "s#<logoutUri>http://localhost:8000/account/logout/#<logoutUri>${SITE_URL}/account/logout/#" ${oauth_config}
+  fi
+fi
 
 # backup global.xml
 cp ${GEOSERVER_DATA_DIR}/global.xml ${GEOSERVER_DATA_DIR}/global.xml.orig
 # run the setting script for global configuration
-/usr/local/tomcat/tmp/set_geoserver_auth.sh ${GEOSERVER_DATA_DIR}/global.xml ${GEOSERVER_DATA_DIR}/ ${TAGNAME} > /dev/null 2>&1
+sed -i "s#<proxyBaseUrl>http://localhost:8080/geoserver#<proxyBaseUrl>${SITE_URL}/geoserver#" ${GEOSERVER_DATA_DIR}/global.xml
 
 # set correct amqp broker url
 sed -i -e 's/localhost/rabbitmq/g' ${GEOSERVER_DATA_DIR}/notifier/notifier.xml
@@ -169,73 +158,70 @@ for template in in ${geoserver_datadir_template_dirs[*]}; do
 done
 
 
-
 # start tomcat
-#exec env JAVA_OPTS="${JAVA_OPTS}" catalina.sh run
-export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
-       -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
-       -XX:SoftRefLRUPolicyMSPerMB=36000  -XX:NewRatio=2 \
-       -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 \
-       -XX:InitiatingHeapOccupancyPercent=${INITIAL_HEAP_OCCUPANCY_PERCENT} -XX:+CMSClassUnloadingEnabled \
-       -Djts.overlay=ng \
-       -Dfile.encoding=${ENCODING} \
-       -Duser.timezone=${TIMEZONE} \
-       -Duser.language=${LANGUAGE} \
-       -Duser.region=${REGION} \
-       -Duser.country=${COUNTRY} \
-       -DENABLE_JSONP=${ENABLE_JSONP} \
-       -DMAX_FILTER_RULES=${MAX_FILTER_RULES} \
-       -DOPTIMIZE_LINE_WIDTH=${OPTIMIZE_LINE_WIDTH} \
-       -DALLOW_ENV_PARAMETRIZATION=${PROXY_BASE_URL_PARAMETRIZATION} \
-       -Djavax.servlet.request.encoding=${CHARACTER_ENCODING} \
-       -Djavax.servlet.response.encoding=${CHARACTER_ENCODING} \
-       -DCLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR} \
-       -DGEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR} \
-       -DGEOSERVER_FILEBROWSER_HIDEFS=${GEOSERVER_FILEBROWSER_HIDEFS} \
-       -DGEOSERVER_AUDIT_PATH=${MONITOR_AUDIT_PATH} \
-       -Dorg.geotools.shapefile.datetime=${USE_DATETIME_IN_SHAPEFILE} \
-       -Dorg.geotools.localDateTimeHandling=true \
-       -Dsun.java2d.renderer.useThreadLocal=false \
-       -Dsun.java2d.renderer.pixelsize=8192 -server -XX:NewSize=300m \
-       --patch-module java.desktop=${CATALINA_HOME}/marlin-render.jar  \
-       -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
-       -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
-       -DUPDATE_BUILT_IN_LOGGING_PROFILES=${UPDATE_LOGGING_PROFILES} \
-       -DRELINQUISH_LOG4J_CONTROL=${RELINQUISH_LOG4J_CONTROL} \
-       -DGEOSERVER_CONSOLE_DISABLED=${DISABLE_WEB_INTERFACE} \
-       -DGEOSERVER_CSRF_WHITELIST=${CSRF_WHITELIST} \
-       -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} \
-       -Dgwc.context.suffix=gwc \
-       -Dgeofence-ovr=${GEOSERVER_DATA_DIR}/geofence/geofence-datasource-ovr.properties \
-       -DPRINT_BASE_URL=${PRINT_BASE_URL} \
-       ${ADDITIONAL_JAVA_STARTUP_OPTIONS} "
-
+export GEOSERVER_OPTS="-Djava.awt.headless=true -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
+                    -Dgwc.context.suffix=gwc -XX:+UnlockDiagnosticVMOptions \
+                    -XX:+LogVMOutput -XX:LogFile=/var/log/jvm.log \
+                    -XX:PerfDataSamplingInterval=500 \
+                    -XX:SoftRefLRUPolicyMSPerMB=36000 \
+                    -XX:-UseGCOverheadLimit -XX:+UseConcMarkSweepGC \
+                    -XX:ParallelGCThreads=20 \
+                    -Dfile.encoding=${ENCODING} \
+                    -Djavax.servlet.request.encoding=${CHARACTER_ENCODING} \
+                    -Djavax.servlet.response.encoding=${CHARACTER_ENCODING} \
+                    -Duser.timezone=${TIMEZONE} \
+                    -Dorg.geotools.shapefile.datetime=${USE_DATETIME_IN_SHAPEFILE} \
+                    -DGS-SHAPEFILE-CHARSET=UTF-8 \
+                    -DGEOSERVER_CSRF_DISABLED=true \
+                    -DPRINT_BASE_URL=${PRINT_BASE_URL} \
+                    -DALLOW_ENV_PARAMETRIZATION=${PROXY_BASE_URL_PARAMETRIZATION} \
+                    -Xbootclasspath/a:/usr/local/tomcat/webapps/geoserver/WEB-INF/lib/marlin-render.jar \
+                    -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine \
+                    -Duser.language=${LANGUAGE} \
+                    -Duser.region=${REGION} \
+                    -Duser.country=${COUNTRY} \
+                    -DENABLE_JSONP=${ENABLE_JSONP} \
+                    -DMAX_FILTER_RULES=${MAX_FILTER_RULES} \
+                    -DOPTIMIZE_LINE_WIDTH=${OPTIMIZE_LINE_WIDTH} \
+                    -DGEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR} \
+                    -DGEOSERVER_FILEBROWSER_HIDEFS=${GEOSERVER_FILEBROWSER_HIDEFS} \
+                    -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
+                    -DUPDATE_BUILT_IN_LOGGING_PROFILES=${UPDATE_LOGGING_PROFILES} \
+                    -DRELINQUISH_LOG4J_CONTROL=${RELINQUISH_LOG4J_CONTROL} \
+                    -DGEOSERVER_CONSOLE_DISABLED=${DISABLE_WEB_INTERFACE} \
+                    -DGEOSERVER_CSRF_WHITELIST=${CSRF_WHITELIST} \
+                    -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} \
+                    ${ADDITIONAL_JAVA_STARTUP_OPTIONS}"
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
-# Chown again - seems to fix issue with resolving all created directories
-CHOWN_LOCKFILE=/scripts/.permission_file.lock
-if [[ $(stat -c '%U' ${CATALINA_HOME}) != "${USER_NAME}" ]] && [[ $(stat -c '%G' ${CATALINA_HOME}) != "${GEO_GROUP_NAME}" ]];then
-  if [[ -f ${CHOWN_LOCKFILE} ]];then
-    rm ${CHOWN_LOCKFILE}
+function directory_checker() {
+  DATA_PATH=$1
+  if [ -d "$DATA_PATH" ];then
+    DB_USER_PERM=$(stat -c '%U' "${DATA_PATH}")
+    DB_GRP_PERM=$(stat -c '%G' "${DATA_PATH}")
+    if [[ ${DB_USER_PERM} != "${USER}" ]] &&  [[ ${DB_GRP_PERM} != "${GROUP}"  ]];then
+      chown -R "${USER}":"${GROUP}" "${DATA_PATH}"
+    fi
   fi
-  if [[ ! -f ${CHOWN_LOCKFILE} ]];then
-    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CATALINA_HOME}"   \
-    /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}" "${STABLE_PLUGINS_DIR}" \
-    "${GEOSERVER_HOME}" /usr/share/fonts/ /scripts /tomcat_apps.zip /tmp/
-    touch ${CHOWN_LOCKFILE}
-  fi
-fi
 
-chown -R "${USER_NAME}":"${GEO_GROUP_NAME}"  "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}"  \
-   "${EXTRA_CONFIG_DIR}" ;chmod o+rw "${CERT_DIR}";gwc_file_perms ;chmod 400 ${CATALINA_HOME}/conf/*
+}
 
-if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
-  chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
-fi
+function non_root_permission() {
+  USER="$1"
+  GROUP="$2"
+  path_envs=("${CATALINA_HOME}" /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}" "${STABLE_PLUGINS_DIR}" "${GEOSERVER_HOME}" "/usr/share/fonts/" "/scripts" "/tmp/" "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}" "${EXTRA_CONFIG_DIR}")
+  for dir_names in "${path_envs[@]}";do
+	    directory_checker "${dir_names}"
+  done
+  chmod o+rw "${CERT_DIR}"
+  gwc_file_perms
+  chmod 400 ${CATALINA_HOME}/conf/*
+}
+if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
+  non_root_permission "${USER_NAME}" "${GEO_GROUP_NAME}"
 
-if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  exec gosu ${USER_NAME} ${GEOSERVER_HOME}/bin/startup.sh
-else
   exec gosu ${USER_NAME} /usr/local/tomcat/bin/catalina.sh run
+else
+  exec  /usr/local/tomcat/bin/catalina.sh run
 fi
