@@ -360,6 +360,11 @@ function setup_logging() {
       envsubst < "${EXTRA_CONFIG_DIR}"/log4j.properties > "${CATALINA_HOME}"/log4j.properties
     else
       # default value
+      if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
+        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver.log
+      else
+        export LOG_PATH=${GEOSERVER_DATA_DIR}/geoserver.log
+      fi
       envsubst < /build_data/log4j.properties > "${CATALINA_HOME}"/log4j.properties
     fi
   fi
