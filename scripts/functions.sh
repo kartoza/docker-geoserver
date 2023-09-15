@@ -414,8 +414,17 @@ function set_vars() {
     RANDOM_STRING=${RANDOMSTRING}
   fi
 
-  INSTANCE_STRING="${RANDOM_STRING}"
-
+  # Search if cluster folder already exists
+  if [[ -d ${GEOSERVER_DATA_DIR}/cluster ]];then
+    # Search if cluster instance already exists
+    folder_path=$(find "${GEOSERVER_DATA_DIR}/cluster" -type d -name "instance_*" -print -quit)
+    if [ -n "$folder_path" ]; then
+        RANDOM_STRING=$(basename "$folder_path" | sed 's/^instance_//')
+        INSTANCE_STRING=${RANDOM_STRING}
+    fi
+  else
+     INSTANCE_STRING="${RANDOM_STRING}"
+  fi
 
   CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOM_STRING}"
   MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"

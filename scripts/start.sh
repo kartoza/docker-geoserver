@@ -175,10 +175,7 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   fi
 
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-      if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-          create_dir "${CLUSTER_CONFIG_DIR}"
-      fi
-
+      create_dir "${CLUSTER_CONFIG_DIR}"
       if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
         postgres_ssl_setup
         export SSL_PARAMETERS=${PARAMS}
@@ -186,8 +183,10 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
       broker_xml_config
       touch "${CLUSTER_LOCKFILE}"
   fi
-  # setup clustering if it's not already defined in an existing data directory
-  if [[ -z "${EXISTING_DATA_DIR}" ]]; then
+   # setup clustering if it's not already defined in an existing data directory
+  if find "$GEOSERVER_DATA_DIR" -type f \( -name "cluster.properties" -o -name "embedded-broker.properties" \); then
+      echo "Either cluster.properties or embedded-broker.properties is already defined in the data dir."
+  else
       cluster_config
       broker_config
   fi
