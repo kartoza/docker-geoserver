@@ -96,16 +96,17 @@ export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
 
 # Chown again - seems to fix issue with resolving all created directories
-dir_ownership=(${CATALINA_HOME} /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}"
-  "${STABLE_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/ /tomcat_apps.zip
-  /tmp/ "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}" /scripts/
-  "${EXTRA_CONFIG_DIR}")
-for directory in "${dir_ownership[@]}"; do
-  if [[ $(stat -c '%U' ${directory}) != "${USER_NAME}" ]] && [[ $(stat -c '%G' ${directory}) != "${GEO_GROUP_NAME}" ]];then
-    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${directory}
-  fi
-done
-
+if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
+  dir_ownership=(${CATALINA_HOME} /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}"
+    "${STABLE_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/ /tomcat_apps.zip
+    /tmp/ "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}" /scripts/
+    "${EXTRA_CONFIG_DIR}")
+  for directory in "${dir_ownership[@]}"; do
+    if [[ $(stat -c '%U' ${directory}) != "${USER_NAME}" ]] && [[ $(stat -c '%G' ${directory}) != "${GEO_GROUP_NAME}" ]];then
+      chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${directory}
+    fi
+  done
+fi
 
 chmod o+rw "${CERT_DIR}";gwc_file_perms ;chmod 400 ${CATALINA_HOME}/conf/*
 
@@ -113,8 +114,16 @@ if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
 fi
 
-if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  exec gosu ${USER_NAME} ${GEOSERVER_HOME}/bin/startup.sh
+if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
+  if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+    exec gosu ${USER_NAME} ${GEOSERVER_HOME}/bin/startup.sh
+  else
+    exec gosu ${USER_NAME} /usr/local/tomcat/bin/catalina.sh run
+  fi
 else
-  exec gosu ${USER_NAME} /usr/local/tomcat/bin/catalina.sh run
+  if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+    exec  ${GEOSERVER_HOME}/bin/startup.sh
+  else
+    exec  /usr/local/tomcat/bin/catalina.sh run
+  fi
 fi
