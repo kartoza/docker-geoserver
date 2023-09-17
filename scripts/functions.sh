@@ -13,7 +13,7 @@ function validate_url(){
     EXTRA_PARAMS=$2
   fi
   if [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
-    ${request} $1 $2
+    ${request} "${1}" "${2}"
   else
     echo -e "URL : \e[1;31m $1 does not exists \033[0m"
   fi
@@ -26,7 +26,8 @@ function generate_random_string() {
   if [[ ! -f ${EXTRA_CONFIG_DIR}/.pass_${STRING_LENGTH}.txt ]]; then
     echo "${random_pass_string}" > "${EXTRA_CONFIG_DIR}"/.pass_"${STRING_LENGTH}".txt
   fi
-  export RAND=$(cat "${EXTRA_CONFIG_DIR}"/.pass_"${STRING_LENGTH}".txt)
+  RAND=$(cat "${EXTRA_CONFIG_DIR}"/.pass_"${STRING_LENGTH}".txt)
+  export RAND
 }
 
 
@@ -72,7 +73,7 @@ function setup_custom_crs() {
 function setup_custom_override_crs() {
     # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/epsg_overrides.properties ]]; then
-      cp -f "${EXTRA_CONFIG_DIR}"/epsg_overrides.properties"${GEOSERVER_DATA_DIR}"/user_projections/
+      cp -f "${EXTRA_CONFIG_DIR}"/epsg_overrides.properties "${GEOSERVER_DATA_DIR}"/user_projections/
     fi
 }
 
@@ -92,7 +93,7 @@ function web_cors() {
       ###
       if [[ "${DISABLE_CORS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         sed -i 's/<!-- CORS_START.*/<!-- CORS DEACTIVATED BY DISABLE_CORS -->\n<!--/; s/^.*<!-- CORS_END -->/-->/' \
-          ${CATALINA_HOME}/conf/web.xml
+          "${CATALINA_HOME}"/conf/web.xml
       fi
       ###
       # Deactivate security filter in web.xml if DISABLE_SECURITY_FILTER=true
@@ -100,7 +101,7 @@ function web_cors() {
       ###
       if [[ "${DISABLE_SECURITY_FILTER}" =~ [Tt][Rr][Uu][Ee] ]]; then
         sed -i 's/<!-- SECURITY_START.*/<!-- SECURITY FILTER DEACTIVATED BY DISABLE_SECURITY_FILTER -->\n<!--/; s/^.*<!-- SECURITY_END -->/-->/' \
-          ${CATALINA_HOME}/conf/web.xml
+          "${CATALINA_HOME}"/conf/web.xml
       fi
     fi
   fi
@@ -136,7 +137,7 @@ function download_extension() {
 function validate_geo_install() {
   DATA_PATH=$1
   # Check if geoserver is installed early so that we can fail early on
-  if [[ $(ls -A ${DATA_PATH})  ]]; then
+  if [[ $(ls -A "${DATA_PATH}")  ]]; then
      echo -e "\e[32m  GeoServer install dir exist proceed with install \033[0m"
   else
     exit 1
@@ -154,12 +155,12 @@ function detect_install_dir() {
 
 function unzip_geoserver() {
   if [[ -f /tmp/geoserver/geoserver.war ]]; then
-    unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}
-    validate_geo_install "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}
-    cp -r "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data "${CATALINA_HOME}"
+    unzip /tmp/geoserver/geoserver.war -d "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"
+    validate_geo_install "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"
+    cp -r "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/data "${CATALINA_HOME}"
     mv "${CATALINA_HOME}"/data/security "${CATALINA_HOME}"
-    rm -rf "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/data
-    mv "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/
+    rm -rf "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/data
+    mv "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/postgresql-* "${CATALINA_HOME}"/postgres_config/
     rm -rf /tmp/geoserver
 else
     cp -r /tmp/geoserver/* "${GEOSERVER_HOME}"/ && \
@@ -183,7 +184,7 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resourc
             echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
             exit 1
         fi
-        unzip /tmp/resources/geoserver-${GS_VERSION}-bin.zip -d /tmp/geoserver && \
+        unzip /tmp/resources/geoserver-"${GS_VERSION}"-bin.zip -d /tmp/geoserver && \
         unzip_geoserver
       else
         destination=/tmp/resources/geoserver-${GS_VERSION}.zip
@@ -262,7 +263,7 @@ function broker_xml_config() {
         sed -i -e '11,13d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       else
         envsubst < /build_data/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
-        sed -i -e '15,26d' ${CLUSTER_CONFIG_DIR}/broker.xml
+        sed -i -e '15,26d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       fi
     fi
   fi
@@ -294,7 +295,7 @@ function install_plugin() {
      unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
      echo -e "\e[32m Enabling ${EXT} for GeoServer \033[0m"
      GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
-     cp -r -u -p /tmp/gs_plugin/*.jar ${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
+     cp -r -u -p /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
      rm -rf /tmp/gs_plugin
   else
     echo -e "\e[32m ${EXT} extension will not be installed because it is not available \033[0m"
@@ -360,6 +361,11 @@ function setup_logging() {
       envsubst < "${EXTRA_CONFIG_DIR}"/log4j.properties > "${CATALINA_HOME}"/log4j.properties
     else
       # default value
+      if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
+        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver.log
+      else
+        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver.log
+      fi
       envsubst < /build_data/log4j.properties > "${CATALINA_HOME}"/log4j.properties
     fi
   fi
@@ -367,17 +373,22 @@ function setup_logging() {
 }
 
 function geoserver_logging() {
+    if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
+        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver.log
+      else
+        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver.log
+    fi
 
     echo "
 <logging>
   <level>${GEOSERVER_LOG_LEVEL}</level>
-  <location>logs/geoserver.log</location>
+  <location>${LOG_PATH}</location>
   <stdOutLogging>true</stdOutLogging>
 </logging>
 " > "${GEOSERVER_DATA_DIR}"/logging.xml
 
-  if [[ ! -f ${GEOSERVER_DATA_DIR}/logs/geoserver.log ]];then
-    touch "${GEOSERVER_DATA_DIR}"/logs/geoserver.log
+  if [[ ! -f ${LOG_PATH} ]];then
+    touch "${LOG_PATH}"
   fi
 }
 
@@ -452,7 +463,7 @@ function make_hash(){
     NEW_PASSWORD=$1
     GEO_INSTALL_PATH=$2
     ALGO_TYPE=$3
-    (echo "digest1:" && java -classpath $(find $GEO_INSTALL_PATH -regex ".*jasypt-[0-9]\.[0-9]\.[0-9].*jar") org.jasypt.intf.cli.JasyptStringDigestCLI digest.sh algorithm=$ALGO_TYPE saltSizeBytes=16 iterations=100000 input="$NEW_PASSWORD" verbose=0) | tr -d '\n'
+    (echo "digest1:" && java -classpath $(find "${GEO_INSTALL_PATH}" -regex ".*jasypt-[0-9]\.[0-9]\.[0-9].*jar") org.jasypt.intf.cli.JasyptStringDigestCLI digest.sh algorithm=$ALGO_TYPE saltSizeBytes=16 iterations=100000 input="$NEW_PASSWORD" verbose=0) | tr -d '\n'
 }
 
 function postgres_ready_status() {
@@ -472,7 +483,7 @@ function create_gwc_tile_tables(){
   USER="$3"
   DB="$4"
   POSTGRES_SCHEMA="$5"
-  if [ ${POSTGRES_SCHEMA} != 'public' ]; then
+  if [ "${POSTGRES_SCHEMA}" != 'public' ]; then
    psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE SCHEMA IF NOT EXISTS ${POSTGRES_SCHEMA}"
    psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE TABLE IF NOT EXISTS ${POSTGRES_SCHEMA}.tileset(key character varying(320) NOT NULL,layer_name character varying(128),gridset_id character varying(32) ,blob_format character varying(64) ,parameters_id character varying(41) ,bytes numeric(21,0) NOT NULL DEFAULT 0,CONSTRAINT tileset_pkey PRIMARY KEY (key))"
    psql -d "$DB" -p "$PORT" -U "$USER" -h "$HOST" -c "CREATE TABLE IF NOT EXISTS $POSTGRES_SCHEMA.tilepage(key character varying(320) NOT NULL,tileset_id character varying(320),page_z smallint,page_x integer,page_y integer,creation_time_minutes integer,frequency_of_use double precision,last_access_time_minutes integer,fill_factor double precision,num_hits numeric(64,0),CONSTRAINT tilepage_pkey PRIMARY KEY (key),CONSTRAINT tilepage_tileset_id_fkey FOREIGN KEY (tileset_id) REFERENCES $POSTGRES_SCHEMA.tileset (key) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE CASCADE)"
@@ -481,16 +492,16 @@ function create_gwc_tile_tables(){
 }
 
 function gwc_file_perms() {
-  GEO_USER_PERM=$(stat -c '%U' ${GEOSERVER_DATA_DIR})
-  GEO_GRP_PERM=$(stat -c '%G' ${GEOSERVER_DATA_DIR})
-  GWC_USER_PERM=$(stat -c '%U' ${GEOWEBCACHE_CACHE_DIR})
-  GWC_GRP_PERM=$(stat -c '%G' ${GEOWEBCACHE_CACHE_DIR})
+  GEO_USER_PERM=$(stat -c '%U' "${GEOSERVER_DATA_DIR}")
+  GEO_GRP_PERM=$(stat -c '%G' "${GEOSERVER_DATA_DIR}")
+  GWC_USER_PERM=$(stat -c '%U' "${GEOWEBCACHE_CACHE_DIR}")
+  GWC_GRP_PERM=$(stat -c '%G' "${GEOWEBCACHE_CACHE_DIR}")
   case "${GEOWEBCACHE_CACHE_DIR}" in ${GEOSERVER_DATA_DIR}/*)
     echo "${GEOWEBCACHE_CACHE_DIR} is nested in ${GEOSERVER_DATA_DIR}"
     if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
       if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
         echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
-        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOSERVER_DATA_DIR}
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
       fi
     fi
     ;;
@@ -499,13 +510,13 @@ function gwc_file_perms() {
     if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
       if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
         echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
-        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOSERVER_DATA_DIR}
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
       fi
     fi
     if [[ ${CHOWN_GWC_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
       if [[ ${GWC_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GWC_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
         echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m"
-        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" ${GEOWEBCACHE_CACHE_DIR}
+        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOWEBCACHE_CACHE_DIR}"
       fi
     fi
    ;;

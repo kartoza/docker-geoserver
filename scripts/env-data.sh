@@ -387,3 +387,7 @@ if [ -z "${SHOW_PASSWORD}" ]; then
   # For runtime only, do not change at build-time.
   SHOW_PASSWORD=true
 fi
+
+if [ -z "${RUN_AS_ROOT}" ]; then
+  RUN_AS_ROOT=false
+fi
