@@ -186,7 +186,10 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   broker_xml_config
   cluster_config
   broker_config
-
+  # Download Clustering module, temporary fixes https://github.com/kartoza/docker-geoserver/issues/514
+  ${request} https://download.jar-download.com/cache_jars/org.jdom/jdom2/2.0.6.1/jar_files.zip
+  unzip jar_files.zip -d  "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
+  rm jar_files.zip
 fi
 
 export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
