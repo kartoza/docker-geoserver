@@ -172,20 +172,49 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
 
   fi
 
+  if [[ -z "${EXISTING_DATA_DIR}" ]];then
+    if [[ ! -d "${CLUSTER_CONFIG_DIR}" ]];then
+        create_dir "${CLUSTER_CONFIG_DIR}"
+    fi
+    if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
+      postgres_ssl_setup
+      export SSL_PARAMETERS=${PARAMS}
+    fi
+    # Setup configs
+    broker_xml_config
+    cluster_config
+    broker_config
+  else
+    if [[ -z "${CLUSTER_CONFIG_DIR}" ]];then
+      echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
+      echo -e "[Entrypoint] You are using an existing data directory but you haven't set : \e[1;31m $CLUSTER_CONFIG_DIR \033[0m"
+      exit 1
+    else
+      # Variable to count files if found
+      count=0
 
-  if [[ ! -d "${CLUSTER_CONFIG_DIR}" ]];then
-      create_dir "${CLUSTER_CONFIG_DIR}"
+      # Check if cluster.properties exists and increment the count if found
+      if find "${CLUSTER_CONFIG_DIR}" -type f -name "cluster.properties" -exec test -f {} \; ; then
+         count=$((count + 1))
+      fi
+
+      # Check if embedded-broker.properties exists and increment the count if found
+      if find "${CLUSTER_CONFIG_DIR}" -type f -name "embedded-broker.properties" -exec test -f {} \; ; then
+         count=$((count + 1))
+      fi
+
+      # Check if broker.xml exists and increment the count if found
+      if find "${CLUSTER_CONFIG_DIR}" -type f -name "broker.xml" -exec test -f {} \; ; then
+        count=$((count + 1))
+      fi
+
+      # Check if all three files were found
+      if [ $count -ne 3 ]; then
+          echo "cluster.properties,embedded-broker.properties and broker.xml were not found in ${CLUSTER_CONFIG_DIR} exiting."
+          exit 1
+      fi
+    fi
   fi
-
-
-  if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
-    postgres_ssl_setup
-    export SSL_PARAMETERS=${PARAMS}
-  fi
-  # Setup configs
-  broker_xml_config
-  cluster_config
-  broker_config
   # Download Clustering module, temporary fixes https://github.com/kartoza/docker-geoserver/issues/514
   ${request} https://download.jar-download.com/cache_jars/org.jdom/jdom2/2.0.6.1/jar_files.zip
   unzip jar_files.zip -d  "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/

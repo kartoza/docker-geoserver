@@ -20,14 +20,16 @@ if ! id -u "${USER_NAME}" >/dev/null 2>&1; then
     useradd -l -m -d /home/"${USER_NAME}"/ -u "${USER_ID}" --gid "${GROUP_ID}" -s /bin/bash -G "${GEO_GROUP_NAME}" "${USER_NAME}"
 fi
 
-# Create directories
-mkdir -p  "${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}" \
-"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}"
-
-
-
+# Import env and functions
 source /scripts/functions.sh
 source /scripts/env-data.sh
+
+# Create directories
+dir_creation=("${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}"
+"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}")
+for directory in "${dir_creation[@]}"; do
+  create_dir "${directory}"
+done
 
 # Rename to match wanted context-root and so that we can unzip plugins to
 # existing directory.
