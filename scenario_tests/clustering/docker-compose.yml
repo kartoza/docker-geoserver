@@ -6,24 +6,24 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:15-3.3
+      image: kartoza/postgis:15-3.4
       volumes:
         - geo-db-data:/var/lib/postgresql
+        - ./tests/init.sql:/docker-entrypoint-initdb.d/init.sql
       environment:
         - POSTGRES_DB=gis
         - POSTGRES_USER=docker
         - POSTGRES_PASS=docker
         - ALLOW_IP_RANGE=0.0.0.0/0
-        - FORCE_SSL=TRUE
+        - FORCE_SSL=FALSE
       restart: on-failure
       healthcheck:
         test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
    master:
-      image: kartoza/geoserver:2.23.2
+      image: 'kartoza/geoserver:${TAG:-manual-build}'
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
-      ports:
-        - "8081:8080"
+         - ./tests:/tests
       environment:
         - BROKER_URL=tcp://0.0.0.0:61661
         - READONLY=disabled
@@ -40,6 +40,7 @@ services:
         - SSL_MODE=allow
         - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
         - GEOSERVER_ADMIN_USER=admin
+        - TEST_CLASS=test_clustering_master.GeoServerClusteringMaster
       restart: on-failure
       depends_on:
         db:
@@ -50,11 +51,10 @@ services:
         timeout: 10s
         retries: 3
    node:
-      image: kartoza/geoserver:2.23.2
+      image: 'kartoza/geoserver:${TAG:-manual-build}'
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
-      ports:
-        - "8082:8080"
+         - ./tests:/tests
       environment:
         - BROKER_URL=tcp://master:61661
         - READONLY=disabled
@@ -71,6 +71,7 @@ services:
         - SSL_MODE=allow
         - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
         - GEOSERVER_ADMIN_USER=admin
+        - TEST_CLASS=test_clustering_node.GeoServerClusteringNode
       restart: on-failure
       depends_on:
         master:

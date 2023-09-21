@@ -48,6 +48,7 @@ jobs:
           - stores
           - context
           - disk-quota
+          - clustering
     steps:
       - uses: actions/checkout@v3
       - name: Set up QEMU

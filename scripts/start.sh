@@ -9,7 +9,7 @@ web_cors
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
-  rm -rf "${GEOSERVER_DATA_DIR}"/*
+  rm -rf "${GEOSERVER_DATA_DIR:?}/"*
 fi
 
 # install Font files in resources/fonts if they exists
@@ -29,9 +29,6 @@ create_dir "${GEOWEBCACHE_CACHE_DIR}"
 setup_custom_crs
 setup_custom_override_crs
 
-create_dir "${GEOSERVER_DATA_DIR}"/logs
-export GEOSERVER_LOG_LEVEL
-geoserver_logging
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -60,9 +57,10 @@ if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
 
   echo -e "[Entrypoint] Checking PostgreSQL connection to see if diskquota tables are loaded: \033[0m"
   if [[  ${POSTGRES_SCHEMA} != 'public' ]]; then
-    export PGPASSWORD="${POSTGRES_PASS}"
-    postgres_ready_status ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB
-    create_gwc_tile_tables ${HOST} ${POSTGRES_PORT} ${POSTGRES_USER} $POSTGRES_DB $POSTGRES_SCHEMA
+    PGPASSWORD="${POSTGRES_PASS}"
+    export PGPASSWORD
+    postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB"
+    create_gwc_tile_tables "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB" "$POSTGRES_SCHEMA"
   fi
 else
   export DISK_QUOTA_BACKEND=H2
@@ -151,7 +149,7 @@ fi
 # Setup clustering
 set_vars
 export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
-export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH CLUSTER_LOCKFILE INSTANCE_STRING
+export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING
 create_dir "${MONITOR_AUDIT_PATH}"
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -174,31 +172,62 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
 
   fi
 
-  if [[ ! -f $CLUSTER_LOCKFILE ]]; then
-      if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-          create_dir "${CLUSTER_CONFIG_DIR}"
+  if [[ -z "${EXISTING_DATA_DIR}" ]];then
+    if [[ ! -d "${CLUSTER_CONFIG_DIR}" ]];then
+        create_dir "${CLUSTER_CONFIG_DIR}"
+    fi
+    if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
+      postgres_ssl_setup
+      export SSL_PARAMETERS=${PARAMS}
+    fi
+    # Setup configs
+    broker_xml_config
+    cluster_config
+    broker_config
+  else
+    if [[ -z "${CLUSTER_CONFIG_DIR}" ]];then
+      echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
+      echo -e "[Entrypoint] You are using an existing data directory but you haven't set : \e[1;31m $CLUSTER_CONFIG_DIR \033[0m"
+      exit 1
+    else
+      # Variable to count files if found
+      count=0
+
+      # Check if cluster.properties exists and increment the count if found
+      if find "${CLUSTER_CONFIG_DIR}" -type f -name "cluster.properties" -exec test -f {} \; ; then
+         count=$((count + 1))
       fi
 
-      if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
-        postgres_ssl_setup
-        export SSL_PARAMETERS=${PARAMS}
+      # Check if embedded-broker.properties exists and increment the count if found
+      if find "${CLUSTER_CONFIG_DIR}" -type f -name "embedded-broker.properties" -exec test -f {} \; ; then
+         count=$((count + 1))
       fi
-      broker_xml_config
-      touch "${CLUSTER_LOCKFILE}"
-  fi
-  # setup clustering if it's not already defined in an existing data directory
-  if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-      cluster_config
-      broker_config
-  fi
 
+      # Check if broker.xml exists and increment the count if found
+      if find "${CLUSTER_CONFIG_DIR}" -type f -name "broker.xml" -exec test -f {} \; ; then
+        count=$((count + 1))
+      fi
 
+      # Check if all three files were found
+      if [ $count -ne 3 ]; then
+          echo "cluster.properties,embedded-broker.properties and broker.xml were not found in ${CLUSTER_CONFIG_DIR} exiting."
+          exit 1
+      fi
+    fi
+  fi
+  # Download Clustering module, temporary fixes https://github.com/kartoza/docker-geoserver/issues/514
+  ${request} https://download.jar-download.com/cache_jars/org.jdom/jdom2/2.0.6.1/jar_files.zip
+  unzip jar_files.zip -d  "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
+  rm jar_files.zip
 fi
 
 export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
 # Setup control flow properties
 setup_control_flow
 
+create_dir "${GEOSERVER_DATA_DIR}"/logs
+export GEOSERVER_LOG_LEVEL
+geoserver_logging
 
 if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   postgres_ssl_setup
@@ -209,7 +238,7 @@ if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   fi
   POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
   if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
-    rm "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-*
+    rm "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/postgresql-*
   fi
   cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/lib/
   if [[ -f ${EXTRA_CONFIG_DIR}/context.xml  ]]; then
@@ -220,7 +249,7 @@ if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   fi
 
 else
-  cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/
+  cp "${CATALINA_HOME}"/postgres_config/postgresql-* "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
 fi
 
 
@@ -230,7 +259,7 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     rm -r /tmp/tomcat_apps
     if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       if [[ -f ${EXTRA_CONFIG_DIR}/context.xml  ]]; then
-        envsubst < ${EXTRA_CONFIG_DIR}/context.xml > "${CATALINA_HOME}"/webapps/manager/META-INF/context.xml
+        envsubst < "${EXTRA_CONFIG_DIR}"/context.xml > "${CATALINA_HOME}"/webapps/manager/META-INF/context.xml
       else
         cp /build_data/context.xml "${CATALINA_HOME}"/webapps/manager/META-INF/
         sed -i -e '19,36d' "${CATALINA_HOME}"/webapps/manager/META-INF/context.xml
@@ -239,7 +268,7 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
-        echo $TOMCAT_PASSWORD >${GEOSERVER_DATA_DIR}/security/tomcat_pass.txt
+        echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
         if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
           echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
         fi
@@ -268,7 +297,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   # convert LetsEncrypt certificates
   # https://community.letsencrypt.org/t/cry-for-help-windows-tomcat-ssl-lets-encrypt/22902/4
 
-  # remove existing keystores
+  # remove existing key-stores
 
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
@@ -443,13 +472,13 @@ else
   eval "$transform"
   # Add x-forwarded headers
   if [[ "${ACTIVATE_PROXY_HEADERS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    sed -i.bak -r '/\<\Host\>/ i\ \t<Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="x-forwarded-for" remoteIpProxiesHeader="x-forwarded-by" protocolHeader="x-forwarded-proto" protocolHeaderHttpsValue="https"/>' ${CATALINA_HOME}/conf/server.xml
+    sed -i.bak -r '/\<\Host\>/ i\ \t<Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="x-forwarded-for" remoteIpProxiesHeader="x-forwarded-by" protocolHeader="x-forwarded-proto" protocolHeaderHttpsValue="https"/>' "${CATALINA_HOME}"/conf/server.xml
   fi
 fi
 
 
 # Cleanup temp file
-delete_file ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+delete_file "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
 
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then

@@ -12,7 +12,7 @@ function validate_url(){
   if [ -n "$2" ]; then
     EXTRA_PARAMS=$2
   fi
-  if [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
+  if [[ $(wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
     ${request} "${1}" "${2}"
   else
     echo -e "URL : \e[1;31m $1 does not exists \033[0m"
@@ -225,6 +225,10 @@ fi
 # Helper function to setup cluster config for the clustering plugin
 # https://docs.geoserver.org/stable/en/user/community/jms-cluster/index.html
 function cluster_config() {
+  # Remove default config
+  if [ -f "${CLUSTER_CONFIG_DIR}"/cluster.properties ];then
+    rm "${CLUSTER_CONFIG_DIR}"/cluster.properties
+  fi
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/cluster.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/cluster.properties ]]; then
@@ -240,6 +244,11 @@ function cluster_config() {
 # https://docs.geoserver.org/stable/en/user/community/jms-cluster/index.html
 
 function broker_config() {
+  # Delete default config
+  if [ -f "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties ];then
+    rm "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
+  fi
+
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/embedded-broker.properties ]]; then
@@ -252,6 +261,10 @@ function broker_config() {
 }
 
 function broker_xml_config() {
+  # Delete default config
+  if [ -f "${CLUSTER_CONFIG_DIR}"/broker.xml ];then
+    rm "${CLUSTER_CONFIG_DIR}"/broker.xml
+  fi
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/broker.xml ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f ${EXTRA_CONFIG_DIR}/broker.xml ]]; then
@@ -426,13 +439,9 @@ function set_vars() {
   fi
 
   INSTANCE_STRING="${RANDOM_STRING}"
-
-
   CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOM_STRING}"
   MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"
-  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
 }
-
 
 
 

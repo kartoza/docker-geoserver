@@ -18,3 +18,6 @@ This value will be different for (Master-Node)
 * `EMBEDDED_BROKER=disabled` - Should be disabled for the Node
 * `CLUSTER_CONNECTION_RETRY_COUNT=10` - How many times try to connect to broker
 * `CLUSTER_CONNECTION_MAX_WAIT=500` - Wait time between connection to broker retry (in milliseconds)
+* `EXISTING_DATA_DIR` - If you are using an existing data directory, you need to set `CLUSTER_CONFIG_DIR`
+otherwise the container is will hang and not start. Additionally, it will check if all the files
+needed for clustering exists, otherwise it will fail.
