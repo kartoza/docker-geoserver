@@ -26,7 +26,7 @@ source /scripts/env-data.sh
 
 # Create directories
 dir_creation=("${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}"
-"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}")
+"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}" "/docker-entrypoint-geoserver.d")
 for directory in "${dir_creation[@]}"; do
   create_dir "${directory}"
 done
@@ -102,7 +102,7 @@ if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
   dir_ownership=("${CATALINA_HOME}" /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}"
     "${STABLE_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/ /tomcat_apps.zip
     /tmp/ "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}" /scripts/
-    "${EXTRA_CONFIG_DIR}")
+    "${EXTRA_CONFIG_DIR}" "/docker-entrypoint-geoserver.d")
   for directory in "${dir_ownership[@]}"; do
     if [[ $(stat -c '%U' "${directory}") != "${USER_NAME}" ]] && [[ $(stat -c '%G' "${directory}") != "${GEO_GROUP_NAME}" ]];then
       chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${directory}"

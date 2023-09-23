@@ -485,5 +485,8 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
   /scripts/update_passwords.sh
 fi
 
+# Run some extra bash script to fix issues i.e missing dependencies in lib caused by community extensions
+entry_point_script
+
 setup_logging
 
