@@ -17,7 +17,7 @@ services:
       GEOSERVER_ADMIN_USER: admin
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
-      GEOSERVER_CONTEXT_ROOT: foobar/geoserver
+      GEOSERVER_CONTEXT_ROOT: foobar#geoserver
       CONTAINER_NAME: geoserver
       TEST_CLASS: test_login.TestGeoServerREST
     healthcheck:
