@@ -591,6 +591,14 @@ Example
 
 **Note:** The files `users.xml` and `roles.xml` should be mounted together to prevent errors
 during container start. Mounting these two files will overwrite `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER`
+
+You can additionally run some bash script to correct some missing dependency i.e. in 
+community extension like [cluster issue](https://github.com/kartoza/docker-geoserver/issues/514)
+
+```bash
+-v ./run.sh:/docker-entrypoint-geoserver.d/run.sh
+```
+
 ### CORS Support
 
 The image ships with CORS support. If you however need to modify the web.xml you
@@ -681,19 +689,6 @@ After these changes, the image can be built as instructed.
 To run the just-built local image with your docker-compose file, the platform option in the docker-compose file 
 needs to be specified as ```linux/arm64/v8```. Otherwise, it will try to pull the docker image from the docker hub 
 instead of using the local image.
-
-### Reverse Proxy using NGINX
-
-You can also put nginx in front of geoserver to receive http request and translate it to uwsgi.
-
-A sample `docker-compose-nginx.yml` is provided for running geoserver and nginx
-
-```shell
-docker-compose -f docker-compose-nginx.yml  up -d
-```
-Once the services are running GeoServer will be available from
-
-http://localhost/geoserver/web/
 
 ## Kubernetes (Helm Charts)
 
