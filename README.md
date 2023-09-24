@@ -558,6 +558,14 @@ GEOSERVER_CONTEXT_ROOT=my-geoserver
 The example above will deploy Geoserver at https://host/my-geoserver instead of
 the default location at https://host/geoserver.
 
+It is also possible to do a nested context-root. [Apache Tomcat nested 
+context-roots are specified via #](https://octopus.com/blog/defining-tomcat-context-paths#conclusion).
+```
+GEOSERVER_CONTEXT_ROOT=foo#my-geoserver
+```
+The example above will deploy Geoserver at https://host/foo/my-geoserver 
+instead of the default location at https://host/geoserver.
+
 This variable is meant for runtime only.  At build-time, do not change this
 value so at runtime it can perform the proper context-root rename.
 
