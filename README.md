@@ -591,6 +591,14 @@ Example
 
 **Note:** The files `users.xml` and `roles.xml` should be mounted together to prevent errors
 during container start. Mounting these two files will overwrite `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER`
+
+You can additionally run some bash script to correct some missing dependency i.e. in 
+community extension like [cluster issue](https://github.com/kartoza/docker-geoserver/issues/514)
+
+```bash
+-v ./run.sh:/docker-entrypoint-geoserver.d/run.sh
+```
+
 ### CORS Support
 
 The image ships with CORS support. If you however need to modify the web.xml you

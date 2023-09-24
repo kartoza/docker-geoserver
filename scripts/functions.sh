@@ -523,3 +523,16 @@ function gwc_file_perms() {
 esac
 
 }
+
+function entry_point_script {
+
+  if find "/docker-entrypoint-geoserver.d" -mindepth 1 -print -quit 2>/dev/null | grep -q .; then
+    for f in /docker-entrypoint-geoserver.d/*; do
+      case "$f" in
+            *.sh)     echo "$0: running $f"; . "$f" || true;;
+            *)        echo "$0: ignoring $f" ;;
+        esac
+        echo
+    done
+  fi
+}
