@@ -47,6 +47,7 @@ jobs:
           - login
           - stores
           - context
+          - contexts
           - disk-quota
           - clustering
     steps:
