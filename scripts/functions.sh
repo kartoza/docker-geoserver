@@ -545,7 +545,6 @@ else
 
 cat > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties <<EOF
 audit.enabled=true
-audit.path=${MONITOR_AUDIT_PATH}
 audit.roll_limit=40
 storage=memory
 mode=history
