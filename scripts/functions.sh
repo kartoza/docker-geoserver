@@ -536,3 +536,23 @@ function entry_point_script {
     done
   fi
 }
+
+function setup_monitoring() {
+
+if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}"/monitor.properties > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
+else
+
+cat > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties <<EOF
+audit.enabled=true
+audit.roll_limit=40
+storage=memory
+mode=history
+sync=async
+maxBodySize=1024
+bboxLogCrs=EPSG:4326
+bboxLogLevel=no_wfs
+EOF
+fi
+
+}
