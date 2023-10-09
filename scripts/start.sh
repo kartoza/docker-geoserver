@@ -150,7 +150,13 @@ fi
 set_vars
 export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
 export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING
+# Cleanup existing monitoring files
+if [[ ${CLUSTERING} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+find "${GEOSERVER_DATA_DIR}"/monitoring -type d -name 'monitor_*' -exec rm -r {} +
+fi
 create_dir "${MONITOR_AUDIT_PATH}"
+setup_monitoring
+
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   ext=jms-cluster-plugin
