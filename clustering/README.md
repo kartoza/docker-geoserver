@@ -1,6 +1,7 @@
 # Clustering using JMS Plugin
 GeoServer supports clustering using JMS cluster plugin or using the ActiveMQ-broker. 
 
+## JMS cluster plugin
 This setup uses the JMS cluster plugin which uses an embedded broker. A docker-compose.yml
 is provided in the clustering folder which simulates the replication using 
 a shared data directory.
@@ -21,3 +22,17 @@ This value will be different for (Master-Node)
 * `EXISTING_DATA_DIR` - If you are using an existing data directory, you need to set `CLUSTER_CONFIG_DIR`
 otherwise the container is will hang and not start. Additionally, it will check if all the files
 needed for clustering exists, otherwise it will fail.
+
+## ActiveMQ-broker
+
+You can additionally run the clustering using an external broker. To run this
+you will need to build the image locally and run the stack:
+
+```bash
+```
+
+or run in a single step
+
+```bash
+docker compose -f docker-compose-external.yml 
+```
