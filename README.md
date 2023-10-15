@@ -132,6 +132,10 @@ docker build --build-arg IMAGE_VERSION=9-jdk11-openjdk-slim --build-arg JAVA_HOM
 **Note:** Please check the [GeoServer documentation](https://docs.geoserver.org/stable/en/user/production/index.html) 
 to see which tomcat versions are supported.
 
+We currently build the image using `tomcat:9.0.73-jdk11-temurin-focal` because
+`libgdal-java` is no longer being built and support in base images > focal will not
+have the java bindings for the [GDAL plugin](https://osgeo-org.atlassian.net/browse/GEOT-7412?focusedCommentId=84733).
+
 ### Building on Windows
 
 These instructions detail the recommended process for reliably building this on Windows.
@@ -674,28 +678,19 @@ http://localhost/geoserver/web/
 
 To run the docker image with MacOS M1 Chip, the image needs to be built locally.
 
-- JDK version of “9-jdk17-openjdk-slim-buster “ can work with M1 Chip as it is instructed on "Local build using 
-repository checkout" section, the parameters below needs to be changed in [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) file and [Dockerfile](https://github.com/kartoza/docker-geoserver/blob/master/Dockerfile)
+- JDK version of `9-jdk17-openjdk-slim-buster` can work with M1 Chip as it is instructed on [Local build using 
+repository checkout](https://github.com/kartoza/docker-geoserver/#local-build-using-repository-checkout) section, the parameters below needs to be changed in [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) file
 
 ```
 IMAGE_VERSION=9-jdk17-openjdk-slim-buster
 JAVA_HOME=/usr/local/openjdk-17
 ```
 
- - The change above also requires the removal of some command-line options in 
-[entrypoint.sh](https://github.com/kartoza/docker-geoserver/blob/master/scripts/entrypoint.sh) file. 
-(Since they generate ```Unrecognized VM option 'CMSClassUnloadingEnabled' ``` error and these options are related to 
-JDK10 and lower)
-
-```
--XX:+CMSClassUnloadingEnabled
--XX:+UseG1GC
-```
 
 After these changes, the image can be built as instructed.
 
 To run the just-built local image with your docker-compose file, the platform option in the docker-compose file 
-needs to be specified as ```linux/arm64/v8```. Otherwise, it will try to pull the docker image from the docker hub 
+needs to be specified as `linux/arm64/v8`. Otherwise, it will try to pull the docker image from the docker hub 
 instead of using the local image.
 
 ## Kubernetes (Helm Charts)
