@@ -109,6 +109,23 @@ if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
   done
 fi
 
+lib_dir="${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib"
+
+# Search for gdal-<version>.jar files in the lib directory
+for jar_file in "$lib_dir"/gdal-*.jar; do
+    if [[ -f "$jar_file" ]]; then
+        # Extract the version number
+        version=$(basename "$jar_file" | sed 's/gdal-\(.*\)\.jar/\1/')
+        break
+    fi
+done
+
+GDAL_VERSION=$(gdalinfo --version | head -n1 | cut -d" " -f2 | tr -d ,,)
+
+if [[ ${GDAL_VERSION} != ${version} ]];then
+  rm ${lib_dir}/gdal-${version}.jar
+  wget https://repo1.maven.org/maven2/org/gdal/gdal/${GDAL_VERSION:0:3}.0/gdal-${GDAL_VERSION:0:3}.0.jar -O ${lib_dir}/gdal-${GDAL_VERSION:0:3}.0.jar
+fi
 
 # Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
