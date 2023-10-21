@@ -1,9 +1,10 @@
 import unittest
-from os import environ
+from os import environ, chown
 from subprocess import check_call
 from requests import get, post, exceptions
 from requests.auth import HTTPBasicAuth
 from geo.Geoserver import Geoserver
+
 
 class TestGeoServerGDAL(unittest.TestCase):
 
@@ -21,6 +22,7 @@ class TestGeoServerGDAL(unittest.TestCase):
         built_vrt = f'gdalbuildvrt {self.geo_data_dir}/sfdem.vrt {self.geo_data_dir}/sfdem.tif'
         check_call(built_vrt, shell=True)
         vrt_path = f'{self.geo_data_dir}/sfdem.vrt'
+        chown(vrt_path, 1000, 1000)
 
         geo = Geoserver(self.gs_url, username=self.geo_username, password=self.geo_password)
 
@@ -57,6 +59,7 @@ class TestGeoServerGDAL(unittest.TestCase):
         data_store_url = f'{self.gs_url}/rest/workspaces/{self.geo_workspace_name}/datastores/{self.store_name}.json'
         response = get(data_store_url, auth=auth)
         self.assertEqual(response.status_code, 200)
+
 
 if __name__ == '__main__':
     unittest.main()
