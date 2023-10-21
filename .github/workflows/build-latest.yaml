@@ -76,7 +76,7 @@ jobs:
           PRINT_TEST_LOGS: 1
         run: |
           # Use the built Docker image to run scenario tests
-          docker run -it kartoza/geoserver:manual-build bash ./test.sh
+          bash ./test.sh
 
   push-internal-pr-images:
     if: github.event_name == 'pull_request' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
