@@ -6,7 +6,7 @@ volumes:
 services:
 
   geoserver:
-    image: 'docker.io/kartoza/geoserver:manual-build'
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
     restart: 'always'
     volumes:
       - geoserver-data-dir:/opt/geoserver/data_dir
