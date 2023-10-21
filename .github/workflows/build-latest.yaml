@@ -58,7 +58,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: kartoza/geoserver:manual-build
+          name: kartoza-geoserver
           path: /tmp/geoserver.tar
 
   run-scenario-tests:
@@ -78,7 +78,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          name: kartoza/geoserver:manual-build
+          name: kartoza-geoserver
           path: /tmp
       - name: Load image
         run: |
