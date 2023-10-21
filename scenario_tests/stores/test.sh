@@ -12,6 +12,7 @@ if [[ $(dpkg -l | grep "docker-compose") > /dev/null ]];then
     VERSION='docker compose'
 fi
 
+# JNDI store
 ${VERSION} -f docker-compose-postgis-jndi.yml up -d
 
 if [[ -n "${PRINT_TEST_LOGS}" ]]; then
@@ -33,3 +34,26 @@ for service in "${services[@]}"; do
 done
 
 ${VERSION} -f docker-compose-postgis-jndi.yml down -v
+
+# Run GDAL
+${VERSION} -f docker-compose-gdal.yml up -d
+
+if [[ -n "${PRINT_TEST_LOGS}" ]]; then
+  ${VERSION} -f docker-compose-gdal.yml logs -f &
+fi
+
+sleep 60
+
+
+services=("geoserver")
+
+for service in "${services[@]}"; do
+
+  # Execute tests
+  sleep 60
+  echo "Execute test for $service"
+  ${VERSION} -f docker-compose-gdal.yml exec $service /bin/bash /tests/test.sh
+
+done
+
+${VERSION} -f docker-compose-gdal.yml down -v
