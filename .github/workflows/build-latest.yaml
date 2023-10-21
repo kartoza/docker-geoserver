@@ -8,7 +8,7 @@ on:
     branches:
       - develop
 jobs:
-  run-scenario-tests:
+  build-docker-image:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,21 +20,12 @@ jobs:
         geoserverMinorVersion:
           - minor: 24
             patch: 0
-          #- minor: 23
-            #patch: 2
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:
           - 1
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
-        scenario:
-          - gwc
-          - login
-          - stores
-          - context
-          - disk-quota
-          - clustering
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
@@ -64,19 +55,33 @@ jobs:
           cache-to: type=gha,scope=test
           target: geoserver-test
 
-
+  run-scenario-tests:
+    runs-on: ubuntu-latest
+    needs: build-docker-image
+    strategy:
+      matrix:
+        scenario:
+          - gwc
+          - login
+          - stores
+          - context
+          - disk-quota
+          - clustering
+    steps:
+      - uses: actions/checkout@v4
       - name: Run scenario test ${{ matrix.scenario }}
         working-directory: scenario_tests/${{ matrix.scenario }}
         env:
           COMPOSE_INTERACTIVE_NO_CLI: 1
           PRINT_TEST_LOGS: 1
         run: |
-          bash ./test.sh
+          # Use the built Docker image to run scenario tests
+          docker run -it kartoza/geoserver:manual-build bash ./test.sh
 
   push-internal-pr-images:
     if: github.event_name == 'pull_request' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
     runs-on: ubuntu-latest
-    needs: [ run-scenario-tests ]
+    needs: [run-scenario-tests]
     strategy:
       matrix:
         geoserverMajorVersion:
@@ -87,8 +92,6 @@ jobs:
         geoserverMinorVersion:
           - minor: 24
             patch: 0
-          #- minor: 23
-            #patch: 2
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:
@@ -118,7 +121,6 @@ jobs:
           tags: |
             type=semver,pattern=\d.\d.\d
             type=ref,event=branch
-            type=ref,event=pr
 
       - name: Build image for testing
         id: docker_build_testing_image
