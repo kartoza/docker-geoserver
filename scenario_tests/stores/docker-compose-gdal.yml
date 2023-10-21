@@ -15,7 +15,6 @@ services:
     environment:
       GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
       GEOSERVER_ADMIN_USER: admin
-      SAMPLE_DATA: TRUE
       TEST_CLASS: test_gdal.TestGeoServerGDAL
     ports:
       - "8080"

@@ -55,9 +55,11 @@ class TestGeoServerGDAL(unittest.TestCase):
         curl_command = f'curl -u {self.geo_username}:{self.geo_password} -v -XPUT -H "Content-type: text/plain" -d "file:{vrt_path}" {vrt_upload_url}'
         check_call(curl_command, shell=True)
 
-        # Check that the data store exists
-        data_store_url = f'{self.gs_url}/rest/workspaces/{self.geo_workspace_name}/datastores/{self.store_name}.json'
-        response = get(data_store_url, auth=auth)
+        # Check that the published layer exists
+        layer_source_url = f'{self.gs_url}/{self.geo_workspace_name}/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/jpeg&TRANSPARENT=true&STYLES&LAYERS={self.geo_workspace_name}:{self.store_name}&exceptions=application/vnd.ogc.se_inimage&SRS=EPSG:26713&WIDTH=768&HEIGHT=578&BBOX=594739.7048312925,4919224.415741393,602069.4450795503,4924731.264860202'
+        response = get(layer_source_url)
+
+        # Check that the response has a status code of 200 (OK)
         self.assertEqual(response.status_code, 200)
 
 
