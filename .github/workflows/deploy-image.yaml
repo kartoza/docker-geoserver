@@ -1,19 +1,6 @@
 name: deploy-image
 on:
   workflow_dispatch:
-#    inputs:
-#      distro:
-#        description: Base image distro
-#        required: true
-#        default: debian
-#      imageVersion:
-#        description: Base distro image version/release
-#        required: true
-#        default: bullseye
-#      imageVariant:
-#        description: Base image variant
-#        required: true
-#        default: slim
   workflow_run:
     workflows:
       - build-latest
@@ -34,10 +21,10 @@ jobs:
           - image: 9.0.73-jdk11-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 22
-            patch: 4
-          - minor: 23
-            patch: 2
+          - minor: 24
+            patch: 0
+          #- minor: 23
+            #patch: 2
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:

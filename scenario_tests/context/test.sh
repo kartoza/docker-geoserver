@@ -28,8 +28,28 @@ for service in "${services[@]}"; do
   # Execute tests
   sleep 60
   echo "Execute test for $service"
-  ${VERSION} exec -T $service /bin/bash /tests/test.sh
+  ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
 
 done
 
 ${VERSION} down -v
+
+# Update context password
+sleep 5
+sed -i 's/foobar/foobar#geoserver/g' docker-compose.yml
+# Bring the services up again
+${VERSION} up -d geoserver
+
+services=("geoserver")
+
+for service in "${services[@]}"; do
+
+  # Execute tests
+  sleep 60
+  echo "Execute test for $service"
+  ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
+
+done
+
+${VERSION} down -v
+sed -i 's/foobar#geoserver/foobar/g' docker-compose.yml

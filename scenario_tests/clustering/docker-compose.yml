@@ -6,7 +6,7 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:15-3.4
+      image: kartoza/postgis:16-3.4
       volumes:
         - geo-db-data:/var/lib/postgresql
         - ./tests/init.sql:/docker-entrypoint-initdb.d/init.sql
