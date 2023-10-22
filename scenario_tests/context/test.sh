@@ -35,6 +35,7 @@ done
 ${VERSION} down -v
 
 # Update context password
+sleep 5
 sed -i 's/foobar/foobar#geoserver/g' docker-compose.yml
 # Bring the services up again
 ${VERSION} up -d geoserver

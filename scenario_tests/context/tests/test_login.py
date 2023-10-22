@@ -7,7 +7,8 @@ class TestGeoServerREST(unittest.TestCase):
 
     def setUp(self):
         # Login to GeoServer and get the authentication cookies
-        self.base_url = 'http://localhost:8080/foobar'
+        self.geo_context = environ.get('GEOSERVER_CONTEXT_ROOT').replace("#", '/')
+        self.base_url = f'http://localhost:8080/{self.geo_context}'
         self.login_url = f'{self.base_url}/j_spring_security_check'
         self.username = 'admin'
         self.container_name = environ['CONTAINER_NAME']
