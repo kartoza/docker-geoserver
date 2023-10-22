@@ -142,9 +142,9 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          push: true
+          push: false
           tags: |
-            kartoza/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+            kartoza/geoserver:manual-build
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
