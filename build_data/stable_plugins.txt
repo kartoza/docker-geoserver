@@ -18,7 +18,7 @@ geopkg-output-plugin
 grib-plugin
 gwc-s3-plugin
 h2-plugin
-imagemap-plugin
+iau-plugin
 importer-plugin
 inspire-plugin
 jp2k-plugin
@@ -48,5 +48,4 @@ wps-cluster-hazelcast-plugin
 wps-download-plugin
 wps-jdbc-plugin
 wps-plugin
-xslt-plugin
 ysld-plugin

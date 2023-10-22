@@ -6,7 +6,7 @@ volumes:
 
 services:
    db:
-      image: kartoza/postgis:15-3.3
+      image: kartoza/postgis:16-3.4
       volumes:
         - geo-db-data:/var/lib/postgresql
       environment:
@@ -19,7 +19,7 @@ services:
       healthcheck:
         test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
    master:
-      image: kartoza/geoserver:2.23.2
+      image: kartoza/geoserver:2.24.0
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
@@ -50,7 +50,7 @@ services:
         timeout: 10s
         retries: 3
    node:
-      image: kartoza/geoserver:2.23.2
+      image: kartoza/geoserver:2.24.0
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
       ports:
