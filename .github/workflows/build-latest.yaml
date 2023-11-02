@@ -20,7 +20,7 @@ jobs:
         id: docker_build_testing_image_activeqm
         uses: docker/build-push-action@v5
         with:
-          context: ./clustering/activemq-docker
+          context: ./clustering/activemq-docker/
           file: Dockerfile
           push: false
           load: true
