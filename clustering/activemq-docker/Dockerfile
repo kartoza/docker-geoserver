@@ -1,4 +1,4 @@
-FROM bellsoft/liberica-openjdk-alpine:13
+FROM bellsoft/liberica-openjdk-alpine:13 AS activemq-prod
 
 LABEL maintainer="Alessio Fabiani <alessio.fabiani@geosolutionsgroup.com>"
 
