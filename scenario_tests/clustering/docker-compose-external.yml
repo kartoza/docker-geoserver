@@ -4,7 +4,7 @@ version: "3.9"
 x-common-activemq:
   &default-common-activemq
   image: kartoza/activemq-docker:manual-build
-  build: activemq-docker
+  #build: activemq-docker
   restart: on-failure
 
 services:
@@ -13,8 +13,7 @@ services:
     image: kartoza/postgis:16-3.4
     volumes:
       - geo-db-data:/var/lib/postgresql
-    ports:
-      - "5432"
+      - ./tests/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - POSTGRES_DB=gis,data,sample
       - POSTGRES_USER=docker
@@ -93,9 +92,7 @@ services:
       retries: 10
 
   master:
-    image: kartoza/geoserver:2.24.0
-    ports:
-      - "8081:8080"
+    image: kartoza/geoserver:manual-build
     environment:
       - CLUSTERING=true
       - CLUSTER_DURABILITY=false
@@ -105,6 +102,7 @@ services:
       - POSTGRES_DB=gis
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
+      #- POSTGRES_SCHEMA=gwc
       - SSL_MODE=ALLOW
       - BROKER_URL=failover:(tcp://broker1:61616,tcp://broker2:61616,tcp://broker3:61616)
       - READONLY=disabled
@@ -116,14 +114,19 @@ services:
       - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
       - STABLE_EXTENSIONS=
       - COMMUNITY_EXTENSIONS=jms-cluster-plugin
+      - TEST_CLASS=test_clustering_master.GeoServerClusteringMaster
     volumes:
       - geoserver-cluster-data:/opt/geoserver/data_dir
+      - ./tests:/tests
+    healthcheck:
+      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:myawesomegeoserver http://localhost:8080/geoserver/rest/about/version.xml"
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
 
 
   node:
-    image: kartoza/geoserver:2.24.0
-    ports:
-      - "8082:8080"
+    image: kartoza/geoserver:manual-build
     environment:
       - CLUSTERING=true
       - CLUSTER_DURABILITY=false
@@ -133,6 +136,7 @@ services:
       - POSTGRES_DB=gis
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
+      #- POSTGRES_SCHEMA=gwc
       - SSL_MODE=ALLOW
       - BROKER_URL=failover:(tcp://broker1:61616,tcp://broker2:61616,tcp://broker3:61616)
       - READONLY=enabled
@@ -144,8 +148,15 @@ services:
       - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
       - STABLE_EXTENSIONS=
       - COMMUNITY_EXTENSIONS=jms-cluster-plugin
+      - TEST_CLASS=test_clustering_node.GeoServerClusteringNode
     volumes:
       - geoserver-cluster-data:/opt/geoserver/data_dir
+      - ./tests:/tests
+    healthcheck:
+      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:myawesomegeoserver http://localhost:8080/geoserver/rest/about/version.xml"
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
 
 volumes:
    geoserver-cluster-data:
