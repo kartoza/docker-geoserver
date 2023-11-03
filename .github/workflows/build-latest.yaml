@@ -117,6 +117,7 @@ jobs:
           name: kartoza-activemq
           path: /tmp
       - name: Load ActiveMQ image
+        if: ${{ matrix.scenario }} == 'clustering'
         run: |
           docker load --input /tmp/activemq.tar
       - name: Run scenario test ${{ matrix.scenario }}
