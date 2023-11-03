@@ -52,6 +52,7 @@ class GeoServerClusteringMaster(unittest.TestCase):
             <entry key="Method used to simplify geometries">FAST</entry>
             <entry key="dbtype">postgis</entry>
             <entry key="Loose bbox">true</entry>
+            <entry key="SSL mode">ALLOW</entry>
           </connectionParameters>
           <disableOnConnFailure>false</disableOnConnFailure>
         </dataStore>

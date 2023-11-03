@@ -1,0 +1,152 @@
+version: "3.9"
+
+# Common template for ActiveMQ services below
+x-common-activemq:
+  &default-common-activemq
+  image: kartoza/activemq-docker:manual-build
+  build: activemq-docker
+  restart: on-failure
+
+services:
+
+  db:
+    image: kartoza/postgis:16-3.4
+    volumes:
+      - geo-db-data:/var/lib/postgresql
+    ports:
+      - "5432"
+    environment:
+      - POSTGRES_DB=gis,data,sample
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - ALLOW_IP_RANGE=0.0.0.0/0
+      - FORCE_SSL=TRUE
+    restart: on-failure
+    healthcheck:
+      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
+
+  broker1:
+    << : *default-common-activemq
+    environment:
+      - JAVA_HOME=/opt/java/openjdk
+      - HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=gis
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - ACTIVEMQ_SERVER_URI=tcp://broker1:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=false&transport.daemon=true
+      - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
+      - SSL_MODE=ALLOW
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: netstat -ltn | grep -c ":61616"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  broker2:
+    << : *default-common-activemq
+    environment:
+      - JAVA_HOME=/opt/java/openjdk
+      - HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=data
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - ACTIVEMQ_SERVER_URI=tcp://broker2:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=false&transport.daemon=true
+      - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
+      - SSL_MODE=ALLOW
+    depends_on:
+      db:
+        condition: service_healthy
+      broker1:
+        condition: service_healthy
+    healthcheck:
+      test: netstat -ltn | grep -c ":61616"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  broker3:
+    << : *default-common-activemq
+    environment:
+      - JAVA_HOME=/opt/java/openjdk
+      - HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=sample
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - ACTIVEMQ_SERVER_URI=tcp://broker3:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=false&transport.daemon=true
+      - ACTIVEMQ_SERVER_DISCOVERYURI=multicast://default
+      - SSL_MODE=ALLOW
+    depends_on:
+      db:
+        condition: service_healthy
+      broker1:
+        condition: service_healthy
+    healthcheck:
+      test: netstat -ltn | grep -c ":61616"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  master:
+    image: kartoza/geoserver:2.24.0
+    ports:
+      - "8081:8080"
+    environment:
+      - CLUSTERING=true
+      - CLUSTER_DURABILITY=false
+      - DB_BACKEND=POSTGRES
+      - HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=gis
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - SSL_MODE=ALLOW
+      - BROKER_URL=failover:(tcp://broker1:61616,tcp://broker2:61616,tcp://broker3:61616)
+      - READONLY=disabled
+      - TOGGLE_MASTER=true
+      - TOGGLE_SLAVE=false
+      - EMBEDDED_BROKER=disabled
+      - RUN_AS_ROOT=TRUE
+      - GEOSERVER_ADMIN_USER=admin
+      - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
+      - STABLE_EXTENSIONS=
+      - COMMUNITY_EXTENSIONS=jms-cluster-plugin
+    volumes:
+      - geoserver-cluster-data:/opt/geoserver/data_dir
+
+
+  node:
+    image: kartoza/geoserver:2.24.0
+    ports:
+      - "8082:8080"
+    environment:
+      - CLUSTERING=true
+      - CLUSTER_DURABILITY=false
+      - DB_BACKEND=POSTGRES
+      - HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=gis
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - SSL_MODE=ALLOW
+      - BROKER_URL=failover:(tcp://broker1:61616,tcp://broker2:61616,tcp://broker3:61616)
+      - READONLY=enabled
+      - TOGGLE_MASTER=false
+      - TOGGLE_SLAVE=true
+      - EMBEDDED_BROKER=disabled
+      - RUN_AS_ROOT=TRUE
+      - GEOSERVER_ADMIN_USER=admin
+      - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
+      - STABLE_EXTENSIONS=
+      - COMMUNITY_EXTENSIONS=jms-cluster-plugin
+    volumes:
+      - geoserver-cluster-data:/opt/geoserver/data_dir
+
+volumes:
+   geoserver-cluster-data:
+   geo-db-data:
