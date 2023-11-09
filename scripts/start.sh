@@ -229,7 +229,7 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip jar_files.zip -d  "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
     rm jar_files.zip
   else
-    cp -r jdom2-2.0.6.1.jar "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
+    cp -r /build_data/jdom2-2.0.6.1.jar "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
   fi
 fi
 
