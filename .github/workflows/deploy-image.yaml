@@ -54,7 +54,8 @@ jobs:
         run: |
           import datetime
           now = datetime.datetime.utcnow()
-          print(f'::set-output name=formatted::{now:%Y.%m.%d}')
+          formatted_date = now.strftime('%Y.%m.%d')
+          echo "FORMATTED_DATE=$formatted_date" >> $GITHUB_ENV
 
       - name: Build prod image
         id: docker_build_prod
@@ -66,7 +67,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ env.FORMATTED_DATE }}
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
