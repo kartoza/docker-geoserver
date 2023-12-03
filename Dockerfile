@@ -8,7 +8,7 @@ ARG JAVA_HOME=/opt/java/openjdk
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.24.0
+ARG GS_VERSION=2.24.1
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
