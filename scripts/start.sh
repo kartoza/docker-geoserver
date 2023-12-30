@@ -224,13 +224,8 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
     fi
   fi
   # Download Clustering module, temporary fixes https://github.com/kartoza/docker-geoserver/issues/514
-  ${request} https://download.jar-download.com/cache_jars/org.jdom/jdom2/2.0.6.1/jar_files.zip
-  if [[ -f jar_files.zip ]];then
-    unzip jar_files.zip -d  "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
-    rm jar_files.zip
-  else
-    cp -r /build_data/jdom2-2.0.6.1.jar "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
-  fi
+  cp -r /build_data/jdom2-2.0.6.1.jar "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
+
 fi
 
 export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
