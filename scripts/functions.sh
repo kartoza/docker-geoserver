@@ -238,7 +238,9 @@ function cluster_config() {
       envsubst < /build_data/cluster.properties > "${CLUSTER_CONFIG_DIR}"/cluster.properties
     fi
   fi
-  chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+  if [[ -d "${CLUSTER_CONFIG_DIR}" ]];then
+    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+  fi
 }
 
 # Helper function to setup broker config. Used with clustering configs

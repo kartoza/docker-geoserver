@@ -108,7 +108,9 @@ if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
       chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${directory}"
     fi
   done
-  chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+  if [[ -d "${CLUSTER_CONFIG_DIR}" ]];then
+    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+  fi
   chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"/logging.xml
 fi
 
