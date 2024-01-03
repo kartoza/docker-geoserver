@@ -183,7 +183,9 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   if [[ -z "${EXISTING_DATA_DIR}" ]];then
     if [[ ! -d "${CLUSTER_CONFIG_DIR}" ]];then
         create_dir "${CLUSTER_CONFIG_DIR}"
-        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+        if [[ -d "${CLUSTER_CONFIG_DIR}" ]];then
+          chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+        fi
     fi
     if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]];then
       postgres_ssl_setup
@@ -233,9 +235,10 @@ export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 # Setup control flow properties
 setup_control_flow
 
-create_dir "${GEOSERVER_DATA_DIR}"/logs
+
 export GEOSERVER_LOG_LEVEL
 geoserver_logging
+
 
 if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   postgres_ssl_setup

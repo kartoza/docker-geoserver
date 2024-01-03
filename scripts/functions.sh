@@ -238,7 +238,9 @@ function cluster_config() {
       envsubst < /build_data/cluster.properties > "${CLUSTER_CONFIG_DIR}"/cluster.properties
     fi
   fi
-  chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"/cluster
+  if [[ -d "${CLUSTER_CONFIG_DIR}" ]];then
+    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+  fi
 }
 
 # Helper function to setup broker config. Used with clustering configs
@@ -390,6 +392,7 @@ function geoserver_logging() {
     if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
         export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver.log
       else
+        create_dir "${GEOSERVER_DATA_DIR}"/logs
         export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver.log
     fi
 
@@ -400,6 +403,7 @@ function geoserver_logging() {
   <stdOutLogging>true</stdOutLogging>
 </logging>
 " > "${GEOSERVER_DATA_DIR}"/logging.xml
+
 
   if [[ ! -f ${LOG_PATH} ]];then
     touch "${LOG_PATH}"
@@ -472,7 +476,7 @@ function postgres_ready_status() {
   PORT="$2"
   USER="$3"
   DB="$4"
-  until psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB"  -c '\l'; do
+  until psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB"  -c '\dt public.spatial_ref_sys' >/dev/null 2>&1; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done
