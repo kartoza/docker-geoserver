@@ -233,9 +233,10 @@ export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 # Setup control flow properties
 setup_control_flow
 
-create_dir "${GEOSERVER_DATA_DIR}"/logs
+
 export GEOSERVER_LOG_LEVEL
 geoserver_logging
+
 
 if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
   postgres_ssl_setup

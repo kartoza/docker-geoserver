@@ -108,6 +108,8 @@ if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
       chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${directory}"
     fi
   done
+  chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+  chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"/logging.xml
 fi
 
 chmod o+rw "${CERT_DIR}";gwc_file_perms ;chmod 400 "${CATALINA_HOME}"/conf/*

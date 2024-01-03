@@ -9,10 +9,6 @@
   <broker useJmx="true" xmlns="http://activemq.apache.org/schema/core">
 
     <amq:persistenceAdapter>
-      <kahaDB directory="${activemq.base}/kahadb" lockKeepAlivePeriod="0" />
-    </amq:persistenceAdapter>
-
-    <amq:persistenceAdapter>
       <jdbcPersistenceAdapter dataDirectory="activemq-data"
         dataSource="#postgres-ds" lockKeepAlivePeriod="0"/>
     </amq:persistenceAdapter>

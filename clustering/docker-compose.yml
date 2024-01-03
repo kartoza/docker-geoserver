@@ -2,6 +2,7 @@ version: '3.9'
 
 volumes:
    geoserver-cluster-data:
+   geoserver-cluster-gwc-data:
    geo-db-data:
 
 services:
@@ -22,9 +23,11 @@ services:
       image: kartoza/geoserver:2.24.1
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
+         - geoserver-cluster-gwc-data:/opt/geoserver/gwc
       ports:
         - "8081:8080"
       environment:
+        - GEOWEBCACHE_CACHE_DIR=/opt/geoserver/gwc
         - BROKER_URL=tcp://0.0.0.0:61661
         - READONLY=disabled
         - CLUSTER_DURABILITY=false
@@ -53,9 +56,11 @@ services:
       image: kartoza/geoserver:2.24.1
       volumes:
          - geoserver-cluster-data:/opt/geoserver/data_dir
+         - geoserver-cluster-gwc-data:/opt/geoserver/gwc
       ports:
         - "8082:8080"
       environment:
+        - GEOWEBCACHE_CACHE_DIR=/opt/geoserver/gwc
         - BROKER_URL=tcp://master:61661
         - READONLY=disabled
         - CLUSTER_DURABILITY=false
