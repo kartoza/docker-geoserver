@@ -6,7 +6,15 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
                         http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
-  <broker useJmx="true" xmlns="http://activemq.apache.org/schema/core">
+
+  <broker id="broker" persistent="${activemq.broker.persistent}"
+		useJmx="true" xmlns="http://activemq.apache.org/schema/core"
+		dataDirectory="${activemq.base}" tmpDataDirectory="${activemq.base}/tmp"
+		startAsync="false" start="false" brokerName="${INSTANCE_STRING}">
+
+    <amq:persistenceAdapter>
+      <kahaDB directory="${activemq.base}/kahadb" lockKeepAlivePeriod="0" />
+    </amq:persistenceAdapter>
 
     <amq:persistenceAdapter>
       <jdbcPersistenceAdapter dataDirectory="activemq-data"
@@ -17,6 +25,8 @@
         <property name="url" value="jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?${SSL_PARAMETERS}"/>
         <property name="user" value="${POSTGRES_USER}"/>
         <property name="password" value="${POSTGRES_PASS}"/>
+        <property name="createTablesOnStartup" value="true"/>
+        <property name="createDatabaseIfNotExist" value="true"/>
         <property name="initialConnections" value="15"/>
         <property name="maxConnections" value="30"/>
     </bean>

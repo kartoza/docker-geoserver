@@ -43,6 +43,8 @@ services:
         - SSL_MODE=allow
         - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
         - GEOSERVER_ADMIN_USER=admin
+        # prevent some errors the option below
+        #- ADDITIONAL_JAVA_STARTUP_OPTIONS="--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED"
       restart: on-failure
       depends_on:
         db:
@@ -76,6 +78,8 @@ services:
         - SSL_MODE=allow
         - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
         - GEOSERVER_ADMIN_USER=admin
+        # prevent some errors the option below
+        #- ADDITIONAL_JAVA_STARTUP_OPTIONS="--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED"
       restart: on-failure
       depends_on:
         master:

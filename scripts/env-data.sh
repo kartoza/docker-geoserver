@@ -27,6 +27,11 @@ if [ -z "${WMSC_ENABLED}" ]; then
   WMSC_ENABLED=true
 fi
 
+if [ -z "${DISKQUOTA_DISABLED}" ]; then
+  DISKQUOTA_DISABLED=false
+fi
+
+
 
 if [ -z "${TMS_ENABLED}" ]; then
   TMS_ENABLED=true
