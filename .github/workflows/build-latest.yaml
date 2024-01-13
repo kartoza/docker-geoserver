@@ -32,7 +32,7 @@ jobs:
           cache-to: type=gha,scope=test
           target: activemq-prod
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kartoza-activemq
           path: /tmp/activemq.tar
@@ -84,7 +84,7 @@ jobs:
           cache-to: type=gha,scope=test
           target: geoserver-test
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kartoza-geoserver
           path: /tmp/geoserver.tar
