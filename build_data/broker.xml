@@ -18,15 +18,20 @@
 
     <amq:persistenceAdapter>
       <jdbcPersistenceAdapter dataDirectory="activemq-data"
-        dataSource="#postgres-ds" lockKeepAlivePeriod="0"/>
+        dataSource="#postgres-ds" lockKeepAlivePeriod="0" createTablesOnStartup="true"
+                              brokerName="${INSTANCE_STRING}"/>
+        <statements useLockCreateWhereClause="true"
+                            tablePrefix="ACTIVEMQ_"
+                            dualCommitEnabled="false"
+                            updateClob="true"
+                            updateBlob="true"
+                            lockKeepAlivePeriod="30000"/>
     </amq:persistenceAdapter>
 
     <bean id="postgres-ds" class="org.postgresql.ds.PGPoolingDataSource">
         <property name="url" value="jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?${SSL_PARAMETERS}"/>
         <property name="user" value="${POSTGRES_USER}"/>
         <property name="password" value="${POSTGRES_PASS}"/>
-        <property name="createTablesOnStartup" value="true"/>
-        <property name="createDatabaseIfNotExist" value="true"/>
         <property name="initialConnections" value="15"/>
         <property name="maxConnections" value="30"/>
     </bean>

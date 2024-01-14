@@ -255,23 +255,16 @@ function broker_config() {
 
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
+
       if [[ -f ${EXTRA_CONFIG_DIR}/embedded-broker.properties ]]; then
         envsubst < "${EXTRA_CONFIG_DIR}"/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
       else
         # default values
         envsubst < /build_data/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
       fi
-    else
-       if [[ -f ${EXTRA_CONFIG_DIR}/embedded-broker.properties ]]; then
-        envsubst < "${EXTRA_CONFIG_DIR}"/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
-      else
-        # default values
-        envsubst < /build_data/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
-        sed -i -e '9,15d' "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
-      fi
 
-    fi
+
+
   fi
 }
 
@@ -291,7 +284,7 @@ function broker_xml_config() {
         sed -i -e '15,17d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       else
         envsubst < /build_data/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
-        sed -i -e '19,32d' "${CLUSTER_CONFIG_DIR}"/broker.xml
+        sed -i -e '19,37d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       fi
     fi
   fi
