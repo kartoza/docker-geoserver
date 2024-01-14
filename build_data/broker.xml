@@ -13,10 +13,6 @@
 		startAsync="false" start="false" brokerName="${INSTANCE_STRING}">
 
     <amq:persistenceAdapter>
-      <kahaDB directory="${activemq.base}/kahadb" lockKeepAlivePeriod="0" />
-    </amq:persistenceAdapter>
-
-    <amq:persistenceAdapter>
       <jdbcPersistenceAdapter dataDirectory="activemq-data"
         dataSource="#postgres-ds" lockKeepAlivePeriod="0" createTablesOnStartup="true"
                               brokerName="${INSTANCE_STRING}"/>
