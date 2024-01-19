@@ -383,9 +383,9 @@ function setup_logging() {
     else
       # default value
       if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver.log
+        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
       else
-        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver.log
+        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver-${HOSTNAME}.log
       fi
       envsubst < /build_data/log4j.properties > "${CATALINA_HOME}"/log4j.properties
     fi
@@ -395,10 +395,10 @@ function setup_logging() {
 
 function geoserver_logging() {
     if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver.log
+        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
       else
         create_dir "${GEOSERVER_DATA_DIR}"/logs
-        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver.log
+        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver-${HOSTNAME}.log
     fi
 
     echo "
