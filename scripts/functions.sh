@@ -246,6 +246,7 @@ function cluster_config() {
 # Helper function to setup broker config. Used with clustering configs
 # https://docs.geoserver.org/stable/en/user/community/jms-cluster/index.html
 
+
 function broker_config() {
   # Delete default config
   if [ -f "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties ];then
@@ -254,12 +255,16 @@ function broker_config() {
 
   if [[ ! -f ${CLUSTER_CONFIG_DIR}/embedded-broker.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
-    if [[ -f ${EXTRA_CONFIG_DIR}/embedded-broker.properties ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
-    else
-      # default values
-      envsubst < /build_data/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
-    fi
+
+      if [[ -f ${EXTRA_CONFIG_DIR}/embedded-broker.properties ]]; then
+        envsubst < "${EXTRA_CONFIG_DIR}"/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
+      else
+        # default values
+        envsubst < /build_data/embedded-broker.properties > "${CLUSTER_CONFIG_DIR}"/embedded-broker.properties
+      fi
+
+
+
   fi
 }
 
@@ -276,10 +281,10 @@ function broker_xml_config() {
       # default values
       if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
         envsubst < /build_data/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
-        sed -i -e '11,13d' "${CLUSTER_CONFIG_DIR}"/broker.xml
+        sed -i -e '15,17d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       else
         envsubst < /build_data/broker.xml > "${CLUSTER_CONFIG_DIR}"/broker.xml
-        sed -i -e '15,26d' "${CLUSTER_CONFIG_DIR}"/broker.xml
+        sed -i -e '19,37d' "${CLUSTER_CONFIG_DIR}"/broker.xml
       fi
     fi
   fi
@@ -444,7 +449,12 @@ function set_vars() {
   fi
 
   INSTANCE_STRING="${RANDOM_STRING}"
-  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RANDOM_STRING}"
+  if [[ ${EMBEDDED_BROKER} == 'disabled' ]];then
+    CLUSTER_NAME=node
+  else
+    CLUSTER_NAME=master
+  fi
+  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/${CLUSTER_NAME}/instance_${RANDOM_STRING}"
   MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"
 }
 
