@@ -396,3 +396,7 @@ fi
 if [ -z "${RUN_AS_ROOT}" ]; then
   RUN_AS_ROOT=false
 fi
+
+if [ -z "${JDBC_CONFIG_ENABLED}" ]; then
+  JDBC_CONFIG_ENABLED=true
+fi
