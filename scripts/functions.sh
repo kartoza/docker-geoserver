@@ -571,3 +571,17 @@ EOF
 fi
 
 }
+
+function setup_jdbc_db_config() {
+    create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
+    cp -r /build_data/jdbcconfig/scripts/ "${GEOSERVER_DATA_DIR}"/jdbcconfig
+
+    if [[ ${ext} == 'jdbcconfig-plugin' ]];then
+        if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
+            postgres_ssl_setup
+            envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+        else
+            envsubst <  /build_data/jdbcconfig/jdbcconfig.properties.h2 > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+        fi
+    fi
+}

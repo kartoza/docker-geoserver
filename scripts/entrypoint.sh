@@ -61,7 +61,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
        -XX:SoftRefLRUPolicyMSPerMB=36000  -XX:NewRatio=2 \
        -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 \
-       -XX:InitiatingHeapOccupancyPercent=${INITIAL_HEAP_OCCUPANCY_PERCENT} -XX:+CMSClassUnloadingEnabled \
+       -XX:InitiatingHeapOccupancyPercent=${INITIAL_HEAP_OCCUPANCY_PERCENT}  \
        -Djts.overlay=ng \
        -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} \
