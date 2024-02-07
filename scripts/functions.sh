@@ -579,6 +579,7 @@ function setup_jdbc_db_config() {
     if [[ ${ext} == 'jdbcconfig-plugin' ]];then
         if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
             postgres_ssl_setup
+            export SSL_PARAMETERS=${PARAMS}
             envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
         else
             envsubst <  /build_data/jdbcconfig/jdbcconfig.properties.h2 > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
