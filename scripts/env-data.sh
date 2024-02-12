@@ -400,3 +400,11 @@ fi
 if [ -z "${JDBC_CONFIG_ENABLED}" ]; then
   JDBC_CONFIG_ENABLED=true
 fi
+
+if [ -z "${JDBC_STORE_ENABLED}" ]; then
+  JDBC_STORE_ENABLED=true
+fi
+
+if [ -z "${JDBC_IGNORE_PATHS}" ]; then
+  JDBC_IGNORE_PATHS='data,jdbcstore,jdbcconfig,temp,tmp,logs'
+fi
