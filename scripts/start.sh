@@ -111,7 +111,7 @@ export S3_SERVER_URL S3_USERNAME S3_PASSWORD
 # Pass an additional startup argument i.e -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties
 s3_config
 
-export JDBC_CONFIG_ENABLED
+export JDBC_CONFIG_ENABLED JDBC_IGNORE_PATHS JDBC_STORE_ENABLED
 # Install community modules plugins
 if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
   if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
@@ -121,6 +121,7 @@ if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
       download_extension "${community_plugins_url}" "${plugin}" /community_plugins
     done
     for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+        setup_jdbc_db_store
         setup_jdbc_db_config
         install_plugin /community_plugins "${ext}"
     done
@@ -129,9 +130,11 @@ if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
         if [[ ! -f /community_plugins/${ext}.zip ]]; then
           community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
           download_extension "${community_plugins_url}" "${ext}" /community_plugins
+          setup_jdbc_db_store
           setup_jdbc_db_config
           install_plugin /community_plugins "${ext}"
         else
+          setup_jdbc_db_store
           setup_jdbc_db_config
           install_plugin /community_plugins "${ext}"
         fi

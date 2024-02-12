@@ -573,16 +573,45 @@ fi
 }
 
 function setup_jdbc_db_config() {
-    create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
-    cp -r /build_data/jdbcconfig/scripts/ "${GEOSERVER_DATA_DIR}"/jdbcconfig
-
     if [[ ${ext} == 'jdbcconfig-plugin' ]];then
         if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
+            if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcconfig ]];then
+              rm -r "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            else
+              create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            fi
+            cp -r /build_data/jdbcconfig/scripts/ "${GEOSERVER_DATA_DIR}"/jdbcconfig
             postgres_ssl_setup
             export SSL_PARAMETERS=${PARAMS}
             envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
         else
-            envsubst <  /build_data/jdbcconfig/jdbcconfig.properties.h2 > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            echo "skipping jdbc config and will use default settings"
+        fi
+    fi
+}
+
+
+function setup_jdbc_db_store() {
+    if [[ ${ext} == 'jdbcstore-plugin' ]];then
+        if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
+            if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcstore ]];then
+              rm -r "${GEOSERVER_DATA_DIR}"/jdbcstore
+            else
+              create_dir "${GEOSERVER_DATA_DIR}"/jdbcstore
+            fi
+            if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcconfig ]];then
+              rm -r "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            else
+              create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            fi
+            cp -r /build_data/jdbcstore/scripts/ "${GEOSERVER_DATA_DIR}"/jdbcstore
+            cp -r /build_data/jdbcconfig/scripts/ "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            postgres_ssl_setup
+            export SSL_PARAMETERS=${PARAMS}
+            envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            envsubst < /build_data/jdbcstore/jdbcstore.properties > "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.properties
+        else
+          echo "skipping jdbc store config and will use default settings"
         fi
     fi
 }
