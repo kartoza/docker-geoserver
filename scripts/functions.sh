@@ -598,7 +598,6 @@ function setup_jdbc_db_store() {
     if [[ ${ext} == 'jdbcstore-plugin' ]];then
         PGPASSWORD="${POSTGRES_PASS}"
         export PGPASSWORD
-        postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$JDBC_STORE_DB"
         postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB"
         if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
             if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcstore ]];then
