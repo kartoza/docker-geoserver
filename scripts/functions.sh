@@ -578,15 +578,20 @@ function setup_jdbc_db_config() {
             PGPASSWORD="${POSTGRES_PASS}"
             export PGPASSWORD
             postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB"
-            if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcconfig ]];then
-              rm -r "${GEOSERVER_DATA_DIR}"/jdbcconfig
-            else
-              create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
-            fi
-            cp -r /build_data/jdbcconfig/scripts/ "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            cp -r /build_data/jdbcconfig/scripts "${GEOSERVER_DATA_DIR}"/jdbcconfig/
             postgres_ssl_setup
             export SSL_PARAMETERS=${PARAMS}
-            envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            if [[ -f "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties ]]; then
+              envsubst < "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            else
+              envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            fi
+            check_jdbc_config_table=$(psql -d "$POSTGRES_DB" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -h "$HOST" -tAc "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'object_property')")
+            if [[  ${check_jdbc_config_table} = "t" ]]; then
+              sed -i 's/initdb=true/initdb=false/g' "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+              sed -i 's/import=true/import=false/g' "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            fi
         else
             echo "skipping jdbc config and will use default settings"
         fi
@@ -600,24 +605,51 @@ function setup_jdbc_db_store() {
         export PGPASSWORD
         postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB"
         if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
-            if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcstore ]];then
-              rm -r "${GEOSERVER_DATA_DIR}"/jdbcstore
-            else
-              create_dir "${GEOSERVER_DATA_DIR}"/jdbcstore
-            fi
-            if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcconfig ]];then
-              rm -r "${GEOSERVER_DATA_DIR}"/jdbcconfig
-            else
-              create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
-            fi
-            cp -r /build_data/jdbcstore/scripts/ "${GEOSERVER_DATA_DIR}"/jdbcstore
-            cp -r /build_data/jdbcconfig/scripts/ "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            create_dir "${GEOSERVER_DATA_DIR}"/jdbcstore
+            create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
+            cp -r /build_data/jdbcstore/scripts "${GEOSERVER_DATA_DIR}"/jdbcstore/
+            cp -r /build_data/jdbcconfig/scripts "${GEOSERVER_DATA_DIR}"/jdbcconfig/
             postgres_ssl_setup
             export SSL_PARAMETERS=${PARAMS}
-            envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
-            envsubst < /build_data/jdbcstore/jdbcstore.properties > "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.properties
+            if [[ -f "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties ]]; then
+              envsubst < "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            else
+              envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            fi
+            if [[ -f "${EXTRA_CONFIG_DIR}"/jdbcstore.properties ]]; then
+              envsubst < "${EXTRA_CONFIG_DIR}"/jdbcstore.properties > "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.propertiesproperties
+            else
+              envsubst < /build_data/jdbcstore/jdbcstore.properties > "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.propertiesproperties
+            fi
+
+            check_jdbc_store_table=$(psql -d "$POSTGRES_DB" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -h "${HOST}" -tAc "SELECT EXISTS(SELECT 1 from information_schema.tables where table_name = 'resources')")
+            if [[  ${check_jdbc_store_table} = "t" ]]; then
+              sed -i 's/initdb=true/initdb=false/g' "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.properties
+              sed -i 's/import=true/import=false/g' "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.properties
+            fi
+            check_jdbc_config_table=$(psql -d "$POSTGRES_DB" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -h "$HOST" -tAc "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'object_property')")
+            if [[  ${check_jdbc_config_table} = "t" ]]; then
+              sed -i 's/initdb=true/initdb=false/g' "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+              sed -i 's/import=true/import=false/g' "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+            fi
         else
           echo "skipping jdbc store config and will use default settings"
+        fi
+    fi
+}
+
+function setup_hz_cluster() {
+    if [[ ${ext} == 'hz-cluster-plugin' ]];then
+        create_dir "${GEOSERVER_DATA_DIR}"/cluster
+        if [[ -f "${EXTRA_CONFIG_DIR}"/cluster.properties ]]; then
+          envsubst < "${EXTRA_CONFIG_DIR}"/cluster.properties > "${GEOSERVER_DATA_DIR}"/cluster/cluster.properties
+        else
+          envsubst < /build_data/hazelcast_cluster/cluster.properties > "${GEOSERVER_DATA_DIR}"/cluster/cluster.properties
+        fi
+        if [[ -f "${EXTRA_CONFIG_DIR}"/hazelcast.xml ]]; then
+          envsubst < "${EXTRA_CONFIG_DIR}"/hazelcast.xml > "${GEOSERVER_DATA_DIR}"/cluster/hazelcast.xml
+        else
+          envsubst < /build_data/hazelcast_cluster/hazelcast.xml > "${GEOSERVER_DATA_DIR}"/cluster/hazelcast.xml
         fi
     fi
 }
