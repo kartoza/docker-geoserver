@@ -642,8 +642,8 @@ function setup_hz_cluster() {
     # TODO Add http://og.cens.am:8081/opengeo-docs/sysadmin/clustering/setup.html#session-sharing
     if [[ ${ext} == 'hz-cluster-plugin' ]];then
         create_dir "${GEOSERVER_DATA_DIR}"/cluster
-        if [[ -f "${EXTRA_CONFIG_DIR}"/cluster.properties ]]; then
-          envsubst < "${EXTRA_CONFIG_DIR}"/cluster.properties > "${GEOSERVER_DATA_DIR}"/cluster/cluster.properties
+        if [[ -f "${EXTRA_CONFIG_DIR}"/hazelcast_cluster.properties ]]; then
+          envsubst < "${EXTRA_CONFIG_DIR}"/hazelcast_cluster.properties > "${GEOSERVER_DATA_DIR}"/cluster/cluster.properties
         else
           envsubst < /build_data/hazelcast_cluster/cluster.properties > "${GEOSERVER_DATA_DIR}"/cluster/cluster.properties
         fi
