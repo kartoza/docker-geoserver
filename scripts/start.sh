@@ -159,10 +159,13 @@ export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING
 # Cleanup existing monitoring files
 if [[ ${CLUSTERING} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   if [[ -d "${GEOSERVER_DATA_DIR}"/monitoring ]];then
-    find "${GEOSERVER_DATA_DIR}"/monitoring -type d -name 'monitor_*' -exec rm -r {} +
+    if [[ ${RESET_MONITORING_LOGS} =~ [Tt][Rr][Uu][Ee] ]];then
+      find "${GEOSERVER_DATA_DIR}"/monitoring -type d -name 'monitor_*' -exec rm -r {} +
+    fi
   fi
 fi
 create_dir "${MONITOR_AUDIT_PATH}"
+export MONITORING_AUDIT_ENABLED MONITORING_AUDIT_ROLL_LIMIT MONITORING_STORAGE MONITORING_MODE MONITORING_SYNC MONITORING_BODY_SIZE MONITORING_BBOX_LOG_CRS MONITORING_BBOX_LOG_LEVEL
 setup_monitoring
 
 
