@@ -559,14 +559,14 @@ if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
 else
 
 cat > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties <<EOF
-audit.enabled=true
-audit.roll_limit=40
-storage=memory
-mode=history
-sync=async
-maxBodySize=1024
-bboxLogCrs=EPSG:4326
-bboxLogLevel=no_wfs
+audit.enabled=${MONITORING_AUDIT_ENABLED}
+audit.roll_limit=${MONITORING_AUDIT_ROLL_LIMIT}
+storage=${MONITORING_STORAGE}
+mode=${MONITORING_MODE}
+sync=${MONITORING_SYNC}
+maxBodySize=${MONITORING_BODY_SIZE}
+bboxLogCrs=${MONITORING_BBOX_LOG_CRS}
+bboxLogLevel=${MONITORING_BBOX_LOG_LEVEL}
 EOF
 fi
 
@@ -579,7 +579,7 @@ function setup_jdbc_db_config() {
             export PGPASSWORD
             postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB"
             create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
-            cp -r /build_data/jdbcconfig/scripts "${GEOSERVER_DATA_DIR}"/jdbcconfig/
+            cp -rn /build_data/jdbcconfig/scripts "${GEOSERVER_DATA_DIR}"/jdbcconfig/
             postgres_ssl_setup
             export SSL_PARAMETERS=${PARAMS}
             if [[ -f "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties ]]; then
@@ -607,8 +607,8 @@ function setup_jdbc_db_store() {
         if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
             create_dir "${GEOSERVER_DATA_DIR}"/jdbcstore
             create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
-            cp -r /build_data/jdbcstore/scripts "${GEOSERVER_DATA_DIR}"/jdbcstore/
-            cp -r /build_data/jdbcconfig/scripts "${GEOSERVER_DATA_DIR}"/jdbcconfig/
+            cp -rn /build_data/jdbcstore/scripts "${GEOSERVER_DATA_DIR}"/jdbcstore/
+            cp -rn /build_data/jdbcconfig/scripts "${GEOSERVER_DATA_DIR}"/jdbcconfig/
             postgres_ssl_setup
             export SSL_PARAMETERS=${PARAMS}
             if [[ -f "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties ]]; then

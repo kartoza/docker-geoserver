@@ -92,6 +92,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -DGWC_DISKQUOTA_DISABLED=${DISKQUOTA_DISABLED} \
        -DGEOSERVER_CSRF_WHITELIST=${CSRF_WHITELIST} \
        -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} \
+       -DGEOSERVER_REQUIRE_FILE=${GEOSERVER_REQUIRE_FILE} \
        ${ADDITIONAL_JAVA_STARTUP_OPTIONS} "
 
 ## Prepare the JVM command line arguments
@@ -119,6 +120,9 @@ if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
 
   if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcstore ]];then
     chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"/jdbcstore
+  fi
+  if [[ -d "${GEOSERVER_DATA_DIR}"/logs ]];then
+    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"/logs
   fi
   # hazel cluster
   if [[ -d "${GEOSERVER_DATA_DIR}"/cluster ]];then

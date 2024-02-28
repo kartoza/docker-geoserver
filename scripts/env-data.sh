@@ -408,3 +408,37 @@ fi
 if [ -z "${JDBC_IGNORE_PATHS}" ]; then
   JDBC_IGNORE_PATHS='data,jdbcstore,jdbcconfig,temp,tmp,logs'
 fi
+
+if [ -z "${GEOSERVER_REQUIRE_FILE}" ];then
+  GEOSERVER_REQUIRE_FILE=''
+fi
+
+if [ -z "${RESET_MONITORING_LOGS}" ];then
+  RESET_MONITORING_LOGS=FALSE
+fi
+
+if [ -z "${MONITORING_AUDIT_ENABLED}" ];then
+  MONITORING_AUDIT_ENABLED=true
+fi
+if [ -z "${MONITORING_AUDIT_ROLL_LIMIT}" ];then
+  MONITORING_AUDIT_ROLL_LIMIT=40
+fi
+if [ -z "${MONITORING_STORAGE}" ];then
+  MONITORING_STORAGE=memory
+fi
+if [ -z "${MONITORING_MODE}" ];then
+  MONITORING_MODE=history
+fi
+if [ -z "${MONITORING_SYNC}" ];then
+  MONITORING_SYNC=async
+fi
+if [ -z "${MONITORING_BODY_SIZE}" ];then
+  MONITORING_BODY_SIZE=1024
+fi
+if [ -z "${MONITORING_BBOX_LOG_CRS}"  ];then
+  MONITORING_BBOX_LOG_CRS=EPSG:4326
+fi
+if [ -z "${MONITORING_BBOX_LOG_LEVEL}" ];then
+  MONITORING_BBOX_LOG_LEVEL=no_wfs
+fi
+
