@@ -632,6 +632,7 @@ function setup_jdbc_db_store() {
               sed -i 's/initdb=true/initdb=false/g' "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
               sed -i 's/import=true/import=false/g' "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
             fi
+            touch ${GEOSERVER_DATA_DIR}/.jdbcstore-plugin.lock
         else
           echo "skipping jdbc store config and will use default settings"
         fi

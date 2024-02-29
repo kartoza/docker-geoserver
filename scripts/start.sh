@@ -500,8 +500,8 @@ fi
 # Cleanup temp file
 delete_file "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
 
-
-if [[ -z "${EXISTING_DATA_DIR}" ]]; then
+# TODO Fix fragile check, we need a robust way to check if the instance is a replica or not and then skip updating password
+if [[ -z "${EXISTING_DATA_DIR}" || ! -f ${GEOSERVER_DATA_DIR}/.jdbcstore-plugin.lock ]]; then
   /scripts/update_passwords.sh
 fi
 
