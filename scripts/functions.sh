@@ -394,13 +394,14 @@ function setup_logging() {
 }
 
 function geoserver_logging() {
-    if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
-      else
-        create_dir "${GEOSERVER_DATA_DIR}"/logs
-        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver-${HOSTNAME}.log
-    fi
+  if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
+      export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
+    else
+      create_dir "${GEOSERVER_DATA_DIR}"/logs
+      export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver-${HOSTNAME}.log
+  fi
 
+  if [[ ! -f "${GEOSERVER_DATA_DIR}"/logging.xml ]]; then
     echo "
 <logging>
   <level>${GEOSERVER_LOG_LEVEL}</level>
@@ -408,7 +409,7 @@ function geoserver_logging() {
   <stdOutLogging>true</stdOutLogging>
 </logging>
 " > "${GEOSERVER_DATA_DIR}"/logging.xml
-
+  fi
 
   if [[ ! -f ${LOG_PATH} ]];then
     touch "${LOG_PATH}"
@@ -554,11 +555,12 @@ function entry_point_script {
 
 function setup_monitoring() {
 
-if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/monitor.properties > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
-else
+  if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
+        envsubst < "${EXTRA_CONFIG_DIR}"/monitor.properties > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
+  else
 
-cat > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties <<EOF
+  if [[ ! -f "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties ]]; then
+  cat > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties <<EOF
 audit.enabled=${MONITORING_AUDIT_ENABLED}
 audit.roll_limit=${MONITORING_AUDIT_ROLL_LIMIT}
 storage=${MONITORING_STORAGE}
@@ -568,6 +570,7 @@ maxBodySize=${MONITORING_BODY_SIZE}
 bboxLogCrs=${MONITORING_BBOX_LOG_CRS}
 bboxLogLevel=${MONITORING_BBOX_LOG_LEVEL}
 EOF
+  fi
 fi
 
 }
