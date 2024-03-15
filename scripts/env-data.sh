@@ -298,7 +298,7 @@ if [ -z "${GEOSERVER_LOG_PROFILE}" ]; then
 fi
 
 if [ -z "${GEOSERVER_LOG_DIR}" ]; then
-    GEOSERVER_LOG_DIR=/opt/geoserver/data_dir/logs/geoserver.log
+    GEOSERVER_LOG_DIR=/opt/geoserver/data_dir/logs
 fi
 
 if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENSIONS}" ]; then
