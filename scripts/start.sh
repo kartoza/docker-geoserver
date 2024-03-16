@@ -107,7 +107,7 @@ fi
 
 
 # Function to install community extensions
-export S3_SERVER_URL S3_USERNAME S3_PASSWORD
+export S3_SERVER_URL S3_USERNAME S3_PASSWORD ALIAS
 # Pass an additional startup argument i.e -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties
 s3_config
 
@@ -123,6 +123,7 @@ if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
     for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
         setup_jdbc_db_store
         setup_jdbc_db_config
+        setup_hz_cluster
         install_plugin /community_plugins "${ext}"
     done
   else
@@ -132,10 +133,12 @@ if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
           download_extension "${community_plugins_url}" "${ext}" /community_plugins
           setup_jdbc_db_store
           setup_jdbc_db_config
+          setup_hz_cluster
           install_plugin /community_plugins "${ext}"
         else
           setup_jdbc_db_store
           setup_jdbc_db_config
+          setup_hz_cluster
           install_plugin /community_plugins "${ext}"
         fi
     done
