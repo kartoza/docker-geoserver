@@ -385,7 +385,7 @@ function setup_logging() {
       if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
         export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
       else
-        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver-${HOSTNAME}.log
+        export LOG_PATH=${GEOSERVER_LOG_DIR}/geoserver.log
       fi
       envsubst < /build_data/log4j.properties > "${CATALINA_HOME}"/log4j.properties
     fi
@@ -394,21 +394,20 @@ function setup_logging() {
 }
 
 function geoserver_logging() {
-    if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-        export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
-      else
-        create_dir "${GEOSERVER_DATA_DIR}"/logs
-        export LOG_PATH=${GEOSERVER_DATA_DIR}/logs/geoserver-${HOSTNAME}.log
-    fi
+  if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
+      export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
+    else
+      create_dir "${GEOSERVER_LOG_DIR}"
+      export LOG_PATH=${GEOSERVER_LOG_DIR}/geoserver.log
+  fi
 
     echo "
 <logging>
-  <level>${GEOSERVER_LOG_LEVEL}</level>
+  <level>${GEOSERVER_LOG_PROFILE}</level>
   <location>${LOG_PATH}</location>
   <stdOutLogging>true</stdOutLogging>
 </logging>
 " > "${GEOSERVER_DATA_DIR}"/logging.xml
-
 
   if [[ ! -f ${LOG_PATH} ]];then
     touch "${LOG_PATH}"
@@ -554,11 +553,11 @@ function entry_point_script {
 
 function setup_monitoring() {
 
-if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}"/monitor.properties > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
-else
+  if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
+        envsubst < "${EXTRA_CONFIG_DIR}"/monitor.properties > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
+  else
 
-cat > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties <<EOF
+  cat > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties <<EOF
 audit.enabled=${MONITORING_AUDIT_ENABLED}
 audit.roll_limit=${MONITORING_AUDIT_ROLL_LIMIT}
 storage=${MONITORING_STORAGE}
@@ -568,7 +567,7 @@ maxBodySize=${MONITORING_BODY_SIZE}
 bboxLogCrs=${MONITORING_BBOX_LOG_CRS}
 bboxLogLevel=${MONITORING_BBOX_LOG_LEVEL}
 EOF
-fi
+  fi
 
 }
 

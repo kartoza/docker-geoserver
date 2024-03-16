@@ -121,8 +121,8 @@ if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
   if [[ -d "${GEOSERVER_DATA_DIR}"/jdbcstore ]];then
     chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"/jdbcstore
   fi
-  if [[ -d "${GEOSERVER_DATA_DIR}"/logs ]];then
-    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"/logs
+  if [[ -d "${GEOSERVER_LOG_DIR}" ]];then
+    chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_LOG_DIR}"
   fi
   # hazel cluster
   if [[ -d "${GEOSERVER_DATA_DIR}"/cluster ]];then
