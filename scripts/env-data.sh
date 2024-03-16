@@ -412,8 +412,8 @@ if [ -z "${JDBC_IGNORE_PATHS}" ]; then
   JDBC_IGNORE_PATHS='data,jdbcstore,jdbcconfig,temp,tmp,logs,styles'
 fi
 # S3 Alias
-if [ -z "${ALIAS}" ]; then
-  ALIAS='alias'
+if [ -z "${S3_ALIAS}" ]; then
+  S3_ALIAS='alias'
 fi
 
 if [ -z "${GEOSERVER_REQUIRE_FILE}" ];then

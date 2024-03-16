@@ -107,7 +107,7 @@ fi
 
 
 # Function to install community extensions
-export S3_SERVER_URL S3_USERNAME S3_PASSWORD ALIAS
+export S3_SERVER_URL S3_USERNAME S3_PASSWORD S3_ALIAS
 # Pass an additional startup argument i.e -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties
 s3_config
 
@@ -247,7 +247,7 @@ export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 # Setup control flow properties
 setup_control_flow
 
-
+# TODO: If this value is set and a user resets it in the UI, we need to respect that and not reset it again
 export GEOSERVER_LOG_PROFILE
 geoserver_logging
 
