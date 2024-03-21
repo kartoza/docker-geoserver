@@ -298,7 +298,7 @@ if [ -z "${GEOSERVER_LOG_PROFILE}" ]; then
 fi
 
 if [ -z "${GEOSERVER_LOG_DIR}" ]; then
-    GEOSERVER_LOG_DIR=/opt/geoserver/data_dir/logs
+    GEOSERVER_LOG_DIR=${GEOSERVER_DATA_DIR}/logs
 fi
 
 if [ -z "${ACTIVATE_ALL_COMMUNITY_EXTENSIONS}" ]; then
@@ -409,7 +409,11 @@ if [ -z "${JDBC_STORE_ENABLED}" ]; then
 fi
 
 if [ -z "${JDBC_IGNORE_PATHS}" ]; then
-  JDBC_IGNORE_PATHS='data,jdbcstore,jdbcconfig,temp,tmp,logs'
+  JDBC_IGNORE_PATHS='data,jdbcstore,jdbcconfig,temp,tmp,logs,styles'
+fi
+# S3 Alias
+if [ -z "${S3_ALIAS}" ]; then
+  S3_ALIAS='alias'
 fi
 
 if [ -z "${GEOSERVER_REQUIRE_FILE}" ];then

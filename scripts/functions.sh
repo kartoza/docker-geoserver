@@ -292,9 +292,9 @@ function broker_xml_config() {
 
 function s3_config() {
   cat >"${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
-alias.s3.endpoint=${S3_SERVER_URL}
-alias.s3.user=${S3_USERNAME}
-alias.s3.password=${S3_PASSWORD}
+${S3_ALIAS}.s3.endpoint=${S3_SERVER_URL}
+${S3_ALIAS}.s3.user=${S3_USERNAME}
+${S3_ALIAS}.s3.password=${S3_PASSWORD}
 EOF
 
 }
