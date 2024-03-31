@@ -449,3 +449,10 @@ if [ -z "${MONITORING_BBOX_LOG_LEVEL}" ];then
   MONITORING_BBOX_LOG_LEVEL=no_wfs
 fi
 
+if [ -z "${ENTITY_RESOLUTION_ALLOWLIST}" ];then
+  ENTITY_RESOLUTION_ALLOWLIST="www.w3.org|schemas.opengis.net|www.opengis.net|inspire.ec.europa.eu/schemas"
+fi
+
+if [ -z "${GEOSERVER_DISABLE_STATIC_WEB_FILES}" ];then
+  GEOSERVER_DISABLE_STATIC_WEB_FILES=true
+fi

@@ -87,9 +87,9 @@ done
 
 # Install libjpeg-turbo
 system_architecture=$(dpkg --print-architecture)
-libjpeg_version=2.1.5
+libjpeg_version=3.0.2
 if [[ ! -f ${resources_dir}/libjpeg-turbo-official_${libjpeg_version}_"${system_architecture}".deb ]]; then
-  wget https://master.dl.sourceforge.net/project/libjpeg-turbo/${libjpeg_version}/libjpeg-turbo-official_${libjpeg_version}_"${system_architecture}".deb?viasf=1 \
+  wget https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/"${libjpeg_version}"/libjpeg-turbo-official_"${libjpeg_version}"_"${system_architecture}".deb \
   -O ${resources_dir}/libjpeg-turbo-official_${libjpeg_version}_"${system_architecture}".deb
 fi
 
@@ -127,17 +127,19 @@ if [[ ${GDAL_VERSION} != ${version} ]];then
   wget https://repo1.maven.org/maven2/org/gdal/gdal/${GDAL_VERSION:0:3}.0/gdal-${GDAL_VERSION:0:3}.0.jar -O ${lib_dir}/gdal-${GDAL_VERSION:0:3}.0.jar
 fi
 
+
 # Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-if [[ ${JAVA_VERSION} -gt 10 ]];then
+java_version_major=$(echo "${JAVA_VERSION}" | cut -d '.' -f 1)
+if [[ ${java_version_major} -gt 10 ]];then
     if [[  -f $(find "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
       mv "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-* "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-render.jar
     fi
 else
     if [[ -f $(find "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
       rm "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-*
-      validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_2_jdk9/marlin-0.9.4.2-Unsafe-OpenJDK9.jar && \
-      mv marlin-0.9.4.2-Unsafe-OpenJDK9.jar "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-render.jar
+      validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_8/marlin-0.9.4.8-Unsafe-OpenJDK11.jar && \
+      mv marlin-0.9.4.8-Unsafe-OpenJDK11.jar "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-render.jar
     fi
 fi
 
@@ -165,16 +167,18 @@ rm -f /tmp/resources/overlays/README.txt &&
 
 
 # Package tomcat webapps - useful to activate later
-if [ -d "$CATALINA_HOME"/webapps.dist ]; then
-    mv "$CATALINA_HOME"/webapps.dist /tomcat_apps &&
-    zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
+if [[ -d "${CATALINA_HOME}"/webapps.dist ]]; then
+    mv "${CATALINA_HOME}"/webapps.dist /tomcat_apps
+    zip -r /tomcat_apps.zip /tomcat_apps
+    rm -r /tomcat_apps
 else
-    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps &&
-    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps &&
-    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps &&
-    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps &&
-    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps &&
-    zip -r /tomcat_apps.zip /tomcat_apps && rm -r /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps
+    zip -r /tomcat_apps.zip /tomcat_apps
+    rm -r /tomcat_apps
 fi
 
 # Delete resources after installation

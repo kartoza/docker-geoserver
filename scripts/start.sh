@@ -63,7 +63,7 @@ if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
     create_gwc_tile_tables "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB" "$POSTGRES_SCHEMA"
   fi
 else
-  export DISK_QUOTA_BACKEND=H2
+  export DISK_QUOTA_BACKEND=HSQL
   default_disk_quota_config
 fi
 
@@ -109,7 +109,20 @@ fi
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD S3_ALIAS
 # Pass an additional startup argument i.e -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties
-s3_config
+if [[ -z "${S3_SERVER_URL}" || -z "${S3_USERNAME}" || -z "${S3_PASSWORD}" || -z "${S3_ALIAS}" ]]; then
+  echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
+  echo -e "[Entrypoint] One or more variables needed for S3 community extensions are empty, skipping configuration of: \e[1;31m s3.properties \033[0m"
+
+else
+  if [[ "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" == *"-Ds3.properties.location"* ]]; then
+    s3_config
+else
+    echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
+    echo -e "[Entrypoint] -Ds3.properties.location is not setup in: \e[1;31m ${ADDITIONAL_JAVA_STARTUP_OPTIONS} \033[0m"
+fi
+
+
+fi
 
 export JDBC_CONFIG_ENABLED JDBC_IGNORE_PATHS JDBC_STORE_ENABLED
 # Install community modules plugins
