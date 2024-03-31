@@ -46,8 +46,8 @@ jobs:
           - image: 9.0.73-jdk11-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 24
-            patch: 2
+          - minor: 25
+            patch: 0
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:
@@ -142,8 +142,8 @@ jobs:
           - image: 9.0.73-jdk11-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 24
-            patch: 2
+          - minor: 25
+            patch: 0
         downloadAllStableExtensions:
           - 1
         downloadAllCommunityExtensions:

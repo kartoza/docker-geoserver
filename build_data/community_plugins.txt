@@ -7,12 +7,14 @@ dataidr-catalog-loader-plugin
 dds-plugin
 dyndimension-plugin
 elasticsearch-plugin
+features-autopopulate-plugin
 features-templating-plugin
 flatgeobuf-plugin
 gdal-wcs-plugin
 gdal-wps-plugin
 geopkg-plugin
 gpx-plugin
+graticule-plugin
 gsr-plugin
 gwc-azure-blobstore-plugin
 gwc-distributed-plugin
@@ -29,6 +31,7 @@ libdeflate-plugin
 mbtiles-plugin
 mbtiles-store-plugin
 mongodb-schemaless-plugin
+monitor-kafka-plugin
 ncwms-plugin
 netcdf-ghrsst-plugin
 notification-plugin
@@ -44,6 +47,7 @@ ogr-datastore-plugin
 opensearch-eo-plugin
 pgraster-plugin
 proxy-base-ext-plugin
+rat-plugin
 s3-geotiff-plugin
 sec-keycloak-plugin
 sec-oauth2-geonode-plugin
