@@ -60,6 +60,12 @@ get our docker trusted build like this:
 VERSION=2.25.0
 docker pull kartoza/geoserver:$VERSION
 ```
+**Note** Although the images are tagged and backed by unit tests
+it is recommended to use tagged versions with dates i.e. 
+`kartoza/geoserver:$VERSION--v2024.03.21` depending on the day you
+pull the image because successive builds using actions tend to 
+override the tagged images
+
 ### Building the image
 
 
