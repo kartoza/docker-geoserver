@@ -1,48 +1,52 @@
 # Table of Contents
-* [Kartoza docker-geoserver](#kartoza-docker-geoserver)
-   * [Getting the image](#getting-the-image)
-       * [Pulling from Dockerhub](#pulling-from-dockerhub)
-       * [Building the image](#building-the-image)
-       * [Local build using repository checkout](#local-build-using-repository-checkout)
-       * [Building with a specific version of  Tomcat](#building-with-a-specific-version-of--tomcat)
-       * [Building on Windows](#building-on-windows)
-   * [Environment Variables](#environment-variables)
-       * [Default installed  plugins](#default-installed--plugins)
-           * [Activate stable plugins during contain startup](#activate-stable-plugins-during-contain-startup)
-           * [Activate community plugins during contain startup](#activate-community-plugins-during-contain-startup)
-       * [Using sample data](#using-sample-data)
-       * [Enable disk quota storage in PostgreSQL backend](#enable-disk-quota-storage-in-postgresql-backend)
-           * [Using SSL and Default PostgreSQL ssl certificates](#using-ssl-and-default-postgresql-ssl-certificates)
-           * [Using SSL certificates signed by a certificate authority](#using-ssl-certificates-signed-by-a-certificate-authority)
-       * [Activating JNDI PostgreSQL connector](#activating-jndi-postgresql-connector)
-       * [Running under SSL](#running-under-ssl)
-       * [Proxy Base URL](#proxy-base-url)
-       * [Removing Tomcat extras](#removing-tomcat-extras)
-       * [Upgrading image to use a specific version](#upgrading-image-to-use-a-specific-version)
-       * [Installing extra fonts](#installing-extra-fonts)
-       * [Other Environment variables supported](#other-environment-variables-supported)
-       * [Control flow properties](#control-flow-properties)
-       * [Changing GeoServer password and username](#changing-geoserver-password-and-username)
-           * [Docker secrets](#docker-secrets)
-       * [Changing GeoServer deployment context-root](#changing-geoserver-deployment-context-root)
-   * [Mounting Configs](#mounting-configs)
-       * [CORS Support](#cors-support)
-   * [Clustering using JMS Plugin](#clustering-using-jms-plugin)
-   * [Running the Image](#running-the-image)
-       * [Run (automated using docker-compose)](#run-automated-using-docker-compose)
-       * [Reverse Proxy using NGINX](#reverse-proxy-using-nginx)
-       * [Additional Notes for MacOS M1 Chip](#additional-notes-for-macos-m1-chip)
-       * [Reverse Proxy using NGINX](#reverse-proxy-using-nginx-1)
-   * [Kubernetes (Helm Charts)](#kubernetes-helm-charts)
-   * [Contributing to the image](#contributing-to-the-image)
-       * [Upgrading GeoServer Versions](#upgrading-geoserver-versions)
-   * [Support](#support)
-   * [Credits](#credits)
-
+- [Kartoza docker-geoserver](#kartoza-docker-geoserver)
+  * [Getting the image](#getting-the-image)
+    + [Pulling from Dockerhub](#pulling-from-dockerhub)
+    + [Building the image](#building-the-image)
+    + [Local build using repository checkout](#local-build-using-repository-checkout)
+    + [Building with a specific version of  Tomcat](#building-with-a-specific-version-of--tomcat)
+    + [Building on Windows](#building-on-windows)
+  * [Environment Variables](#environment-variables)
+    + [Default installed extensions](#default-installed-extensions)
+      - [Activate stable extensions during contain startup](#activate-stable-extensions-during-contain-startup)
+      - [Activate community extensions during contain startup](#activate-community-extensions-during-contain-startup)
+    + [Using sample data](#using-sample-data)
+    + [Enable disk quota storage in PostgreSQL backend](#enable-disk-quota-storage-in-postgresql-backend)
+      - [Using SSL and Default PostgreSQL ssl certificates (kartoza/postgis backend)](#using-ssl-and-default-postgresql-ssl-certificates--kartoza-postgis-backend-)
+      - [Using SSL certificates signed by a certificate authority (kartoza/postgis backend)](#using-ssl-certificates-signed-by-a-certificate-authority--kartoza-postgis-backend-)
+    + [Activating JNDI PostgreSQL connector](#activating-jndi-postgresql-connector)
+    + [Running under SSL](#running-under-ssl)
+    + [Proxy Base URL](#proxy-base-url)
+    + [Removing Tomcat extras](#removing-tomcat-extras)
+    + [Upgrading image to use a specific version](#upgrading-image-to-use-a-specific-version)
+    + [Installing extra fonts](#installing-extra-fonts)
+    + [Other Environment variables supported](#other-environment-variables-supported)
+    + [Control flow properties](#control-flow-properties)
+    + [Changing GeoServer password and username](#changing-geoserver-password-and-username)
+      - [Docker secrets](#docker-secrets)
+    + [Changing GeoServer deployment context-root](#changing-geoserver-deployment-context-root)
+  * [Mounting Configs](#mounting-configs)
+    + [CORS Support](#cors-support)
+  * [Clustering using JMS Plugin](#clustering-using-jms-plugin)
+  * [Running the Image](#running-the-image)
+    + [Run (automated using docker-compose)](#run--automated-using-docker-compose-)
+    + [Reverse Proxy using NGINX](#reverse-proxy-using-nginx)
+  * [Kubernetes (Helm Charts)](#kubernetes--helm-charts-)
+  * [Contributing to the image](#contributing-to-the-image)
+    + [Upgrading GeoServer Versions](#upgrading-geoserver-versions)
+      - [Upgrade extensions files](#upgrade-extensions-files)
+      - [Run upgrade helper script](#run-upgrade-helper-script)
+  * [Support](#support)
+  * [Credits](#credits)
 
 # Kartoza docker-geoserver
 
-A simple docker container that runs GeoServer influenced by this [docker recipe](https://github.com/eliotjordan/docker-geoserver/blob/master/Dockerfile)
+* A simple docker container that runs GeoServer influenced by this [docker recipe](https://github.com/eliotjordan/docker-geoserver/blob/master/Dockerfile).
+* The image has environment variables that allow users to configure GeoServer based on [running-in-production](https://docs.geoserver.org/latest/en/user/production/index.html)
+* The image uses [kartoza/postgis](https://github.com/kartoza/docker-postgis/) as a
+ database backend. You can use any other PostgreSQL image
+out there but make sure you adjust the environment variables accordingly.
+
 
 ## Getting the image
 
@@ -53,8 +57,8 @@ There are various ways to get the image onto your system:
 
 ### Pulling from Dockerhub
 
-The preferred way (but using most bandwidth for the initial image) is to
-get our docker trusted build like this:
+The preferred way (but using the most bandwidth for the initial image) is to
+get our docker-trusted build like this:
 
 ```shell
 VERSION=2.25.0
@@ -62,57 +66,26 @@ docker pull kartoza/geoserver:$VERSION
 ```
 **Note** Although the images are tagged and backed by unit tests
 it is recommended to use tagged versions with dates i.e. 
-`kartoza/geoserver:$VERSION--v2024.03.21` depending on the day you
-pull the image because successive builds using actions tend to 
-override the tagged images
+`kartoza/geoserver:$VERSION--2.25.0--v2024.03.31`.The first date available
+from [dockerhub](https://hub.docker.com/repository/docker/kartoza/geoserver/tags?page=1&ordering=last_updated)
+would be the first version for that series. Successive builds that fix [issues](https://github.com/kartoza/docker-geoserver/issues) 
+tend to override the tagged images and also produce dated images.
 
 ### Building the image
 
 
 ### Local build using repository checkout
 
-To build yourself with a local checkout using the docker-compose.build.yaml:
+To build yourself with a local checkout using the docker-compose.build.yml:
 
 1. Clone the GitHub repository:
 
    ```shell
    git clone https://github.com/kartoza/docker-geoserver
    ```
-2. Edit the [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) to change the build arguments:
+2. Edit the [build arguments](https://github.com/kartoza/docker-geoserver/blob/master/.env) in the `.env` file:
 
-   ```
-   IMAGE_VERSION=[dockerhub tomcat](https://hub.docker.com/_/tomcat/)
-   JAVA_HOME= java home path corresponding to the tomcat version
-   WAR_URL= Default URL to fetch GeoServer war or zip file
-   STABLE_PLUGIN_URL= URL to fetch GeoServer plugins
-   DOWNLOAD_ALL_STABLE_EXTENSIONS= Specifies whether to download all stable plugins or a single one
-   DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=Specifies whether to download all community plugins or a single one
-   GEOSERVER_UID=Specifies the uid to use for the user used to run GeoServer in the container
-   GEOSERVER_GID=Specifies the gid to use for the group used to run GeoServer in the container
-   ```
-3. In the `build_data` directory, two helper files are provided that generates a list of plugins
-for `stable_plugins.txt` and `community_plugins.txt`. Before running the scripts you need to install the
-following python packages
-    ```bash
-        pip3 install beautifulsoup4
-        pip3 install requests
-    ```
-Then execute the scripts as below:
-
-For community plugins run the command below:
-
-```bash
-    cd ./build_data
-    python3 community_plugins.py 2.23.x
-```
-For stable plugins run the command below:
-```bash
-cd ./build_data
-python3 stable_plugins.py 2.25.0 https://sourceforge.net/projects/geoserver/files/GeoServer
-    
-```
-
-4. Build the container and spin up the services
+3. Build the container and spin up the services
    ```shell
    cd docker-geoserver
    docker-compose -f docker-compose-build.yml up -d geoserver-prod --build
@@ -121,22 +94,24 @@ python3 stable_plugins.py 2.25.0 https://sourceforge.net/projects/geoserver/file
 
 ### Building with a specific version of  Tomcat
 
-To build using a specific tagged release for tomcat image set the
-`IMAGE_VERSION` build-arg to `8-jre8`: See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
-to choose which tag you need to build against.
+To build using a specific tagged release of the tomcat image set the
+`IMAGE_VERSION` build arg: 
+See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
+for available tags.
 
 ```
-ie VERSION=2.25.0
-docker build --build-arg IMAGE_VERSION=8-jre8 --build-arg GS_VERSION=2.25.0 -t kartoza/geoserver:${VERSION} .
+VERSION=2.25.0
+IMAGE_VERSION=9.0.85-jdk17-temurin-focal
+docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} --build-arg GS_VERSION=${VERSION} -t kartoza/geoserver:${VERSION} .
 ```
 
-For some recent builds it is necessary to set the JAVA_PATH as well (e.g. Apache Tomcat/9.0.36)
+For some recent builds, it is necessary to set the JAVA_PATH as well (e.g. Apache Tomcat/9.0.36)
 ```
 docker build --build-arg IMAGE_VERSION=9-jdk11-openjdk-slim --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.25.0 -t kartoza/geoserver:2.25.0 .
 ```
 
 **Note:** Please check the [GeoServer documentation](https://docs.geoserver.org/stable/en/user/production/index.html) 
-to see which tomcat versions are supported.
+to see which Tomcat versions are supported.
 
 We currently build the image using `tomcat:9.0.73-jdk11-temurin-focal` because
 `libgdal-java` is no longer being built and support in base images > focal will not
@@ -155,42 +130,42 @@ Prerequisites - You will need to have this software preinstalled on the system b
 
 Add the conda-forge channel to your conda installation:
 
-```pwsh
+```bash
 conda config --add channels conda-forge
 ```
 
 Now create a new conda environment with GDAL, installed from conda. Ensure that this environment is active when running
 the docker build, e.g.
 
-```pwsh
+```bash
 conda create -n geoserver-build -c conda-forge python gdal
 conda activate geoserver-build
 ```
 
-Modify the `.env` with the appropriate environment variables. It is recommended that shortpaths (without whitespace) 
-are used with forward slashes to prevent errors. You can get the current java command short path with powershell:
+Modify the `.env` with the appropriate environment variables. It is recommended that short paths (without whitespace) 
+are used with forward slashes to prevent errors. You can get the current Java command short path with PowerShell:
 
-```pwsh
+```bash
 (New-Object -ComObject Scripting.FileSystemObject).GetFile((get-command java).Source).ShortPath
 ```
 
 Running the above command should yield a path similar to `C:/PROGRA~1/Java/JDK-15~1.2/bin/java.exe`, which can be 
-assigned to `JAVA_HOME` in the environment confoguration file.
+assigned to `JAVA_HOME` in the environment configuration file.
 
 Then run the docker build commands. If you encounter issues, you may want to ensure that you try to build the image 
 without the cache and then run docker up separately:
 
-```pwsh
+```bash
 docker-compose -f docker-compose-build.yml build --force-rm --no-cache
 docker-compose -f docker-compose-build.yml up -d
 ```
 
 ## Environment Variables
-A full list of environment variables are specified in the [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) file
+A full list of environment variables are specified in the [.env](https://github.com/kartoza/docker-geoserver/blob/develop/.env) file
 
-### Default installed  plugins
+### Default installed extensions
 
-The image ships with the following stable plugins:
+The image ships with the following stable extensions:
 * vectortiles-plugin
 * wps-plugin
 * printing-plugin
@@ -202,21 +177,12 @@ The image ships with the following stable plugins:
 * inspire-plugin
 * csw-plugin
 
-**Note:** The plugins listed above are omitted from [Stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
-even though they are considered [stable plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.0/extensions/)
-The image activates them on startup.
+These extensions are automatically activated on container start. 
 
-The image provides the necessary plugin zip files which are used when activating the
-plugins. Not all the plugins will work out of the box because some plugins have
-extra dependencies which need to be downloaded and installed by users because of
-their licence terms i.e. [db2](https://docs.geoserver.org/stable/en/user/data/database/db2.html)
+####  Activate stable extensions during the contain startup
 
-Some  plugins also need extra configuration parameters i.e. community plugin `s3-geotiff-plugin`
-
-####  Activate stable plugins during contain startup
-
-The environment variable `STABLE_EXTENSIONS` can be used to activate plugins listed in
-[Stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
+The environment variable `STABLE_EXTENSIONS` can be used to activate extensions listed as
+[stable_plugins](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
 
 Example
 
@@ -225,18 +191,18 @@ ie VERSION=2.25.0
 docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,db2-plugin kartoza/geoserver:${VERSION}
 
 ```
-You can pass any comma-separated plugins as defined in the text file `stable_plugins.txt`
+You can pass any comma-separated extensions as defined in the text file [stable_plugins](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
 
-**Note** Due to the nature of the plugin ecosystem, there are new plugins that are always
-being upgraded from community extensions to stable extensions. If the `stable_plugins.txt`
-hasn't been updated with the latest changes you can still pass the environment variable with
-the name of the plugin. The plugin will be downloaded and installed.
-This might slow down the process of starting GeoServer but will ensure all plugins get
-activated
+**Note**  If the extension you are looking for is not listed in 
+`stable_plugins.txt` but is available on the [GeoServer list](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.0/extensions/)
+you can still pass it as an environment variable and it will be downloaded
+on container startup. This might delay GeoServer startup depending on
+your bandwidth speed.
 
-####  Activate community plugins during contain startup
 
-The environment variable `COMMUNITY_EXTENSIONS` can be used to activate plugins listed in
+####  Activate community extensions during contain startup
+
+The environment variable `COMMUNITY_EXTENSIONS` can be used to activate extensions listed in
 [community_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/community_plugins.txt)
 
 Example
@@ -244,73 +210,59 @@ Example
 ```
 ie VERSION=2.25.0
 docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-plugin,ogr-datastore-plugin kartoza/geoserver:${VERSION}
-
 ```
 
-You can also pass the environment variable `FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS=true` to download
-the latest community plugins during initialisation of the container.
+The image ships with extension zip files pre-downloaded. 
+You can pass an additional environment variable `FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS=true` 
+to download the latest community extensions during the initialisation of the container.
 
-**Note:** Community plugins are always in flux state. There is no guarantee that
-plugins will be accessible between each successive build. You can build the extensions
+**Note:** If you experience an issue running community extensions
+please check upstream before reporting the issue here. If an extension
+is no longer available you can build the extensions
 following the guidelines from [GeoServer develop guidelines](https://docs.geoserver.org/latest/en/developer/maven-guide/index.html#building-extensions)
 
 ### Using sample data
 
 Geoserver ships with sample data which can be used by users to familiarize them with software.
-This is not activated by default. You can activate it using the environment variable `SAMPLE_DATA=true`
+This is not activated by default. You can activate it using the environment variable
+`SAMPLE_DATA=true`
 
 ```
 ie VERSION=2.25.0
 docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserver:${VERSION}
-
 ```
 
 ### Enable disk quota storage in PostgreSQL backend
 
-GeoServer defaults to using H2 datastore for configuring disk quota. You can alternatively
-use the PostgreSQL backend as a disk quota store.
+GeoServer defaults to using HSQL datastore for configuring disk quota. 
+You can alternatively use a PostgreSQL backend as a disk quota store.
 
 You will need to run a PostgreSQL DB and link it to a GeoServer instance.
 
-```
-docker run -d -p 5432:5432 --name db kartoza/postgis:13.0
-docker run -d -p 8600:8080 --name geoserver --link db:db -e DB_BACKEND=POSTGRES -e HOST=db -e POSTGRES_PORT=5432 -e POSTGRES_DB=gis -e POSTGRES_USER=docker -e POSTGRES_PASS=docker kartoza/geoserver:2.18.0
-
-```
-
-Some additional environment variables to use when activating the disk quota are:
-
-* DISK_QUOTA_SIZE - Specifies the size of the disk quota you need to use. Defaults to 20Gb
-
-If you are using the `kartoza/docker-postgis` image as a database backend you can additionally
-configure communication between the containers to use [SSL](https://github.com/kartoza/docker-postgis#postgres-ssl-setup)
 
 If you want to test it locally with docker-compose postgres db you need to specify these env variables:
+```bash
+DB_BACKEND=POSTGRES               
+HOST=db                          
+POSTGRES_PORT=5432                
+POSTGRES_DB=gwc                   
+POSTGRES_USER=${POSTGRES_USER}    
+POSTGRES_PASS=${POSTGRES_PASS}    
+SSL_MODE=allow                    
+POSTGRES_SCHEMA=public           
+DISK_QUOTA_SIZE=5 
+```
 
-        - DB_BACKEND=POSTGRES               
-        - HOST=db                          
-        - POSTGRES_PORT=5432                
-        - POSTGRES_DB=gwc                   
-        - POSTGRES_USER=${POSTGRES_USER}    
-        - POSTGRES_PASS=${POSTGRES_PASS}    
-        - SSL_MODE=allow                    
-        - POSTGRES_SCHEMA=public           
-        - DISK_QUOTA_SIZE=5                 
-
-NOTE: 
-
-    HOST should be your local container name for db
-    POSTGRES_SCHEMA works only with 'public' right now
-#### Using SSL and Default PostgreSQL ssl certificates
+#### Using SSL and Default PostgreSQL SSL certificates (kartoza/postgis backend)
 
 When the environment variable `FORCE_SSL=TRUE` is set for the database container you
 will need to set `SSL_MODE=allow` in the GeoServer container.
 
-#### Using SSL certificates signed by a certificate authority
+#### Using SSL certificates signed by a certificate authority (kartoza/postgis backend)
 
 When the environment variable `FORCE_SSL=TRUE` is set for the database container you
 will need to set `SSL_MODE` to either `verify-full` or `verify-ca`
-for the GeoServer container. You will also need to mount the ssl certificates
+for the GeoServer container. You will also need to mount the SSL certificates
 you have done in the DB.
 
 In the GeoServer container, the certificates need to be mounted to the folder
@@ -323,9 +275,11 @@ SSL_CA_FILE=/etc/certs/root.crt
 ```
 
 ### Activating JNDI PostgreSQL connector
-When defining vector stores you can use the JNDI pooling. To set this up you will need to activate the following 
-environment variable `POSTGRES_JNDI=TRUE`. By default, the environment the variable is set to `FALSE`
-Additionally, you will need to define parameters to connect to an existing PostgreSQL database
+When defining vector stores you can use the JNDI pooling. To set
+this up you will need to activate the following environment 
+variable `POSTGRES_JNDI=TRUE`. By default, the environment the 
+variable is set to `FALSE`. Additionally, you will need to 
+define parameters to connect to an existing PostgreSQL database
 
 ```
 POSTGRES_JNDI=TRUE
@@ -334,9 +288,6 @@ POSTGRES_DB=${POSTGRES_DB}
 POSTGRES_USER=${POSTGRES_USER}
 POSTGRES_PASS=${POSTGRES_PASS}
 ```
-If you are using the [kartoza/postgis image](https://github.com/kartoza/docker-postgis)
-with the env variable `FORCE_SSL=TRUE` you will also need to set the environment
-variable `SSL_MODE` to correspond to value mentioned in [kartoza/postgis ssl](https://github.com/kartoza/docker-postgis#postgres-ssl-setup)
 
 When defining the parameters for the store in GeoServer you will need to set
 `jndiReferenceName=java:comp/env/jdbc/postgres`
@@ -347,15 +298,15 @@ Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for pro
 run under SSL.
 
 
-If you set the environment variable `SSL=true` but do not provide the pem files (fullchain.pem and privkey.pem)
-the container will generate a self-signed SSL certificates.
+If you set the environment variable `SSL=true` but do not provide the pem files (`fullchain.pem` and `privkey.pem`)
+the container will generate self-signed SSL certificates.
 
 ```
 ie VERSION=2.25.0
 docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
 ```
 
-If you already have your perm files (fullchain.pem and privkey.pem) you can mount the directory containing your keys as:
+If you already have your perm files (`fullchain.pem` and `privkey.pem`) you can mount the directory containing your keys as:
 
 ```
 ie VERSION=2.25.0
@@ -363,40 +314,20 @@ docker run -it --name geo -v /etc/certs:/etc/certs  -e PKCS12_PASSWORD=geoserver
 
 ```
 
-You can also use a PFX file with this image.
+You can also use a `PFX` file with this image.
 Rename your PFX file as certificate.pfx and then mount the folder containing
 your pfx file. This will be converted to perm files.
 
-**Note** When using PFX files make sure that the ALIAS_KEY you specify as
-an environment variable matches the ALIAS_KEY that was used when generating
-your PFX key.
+**Note** When using PFX files make sure that the `ALIAS_KEY` you specify as
+an environment variable matches the `ALIAS_KEY` that was used when generating
+your `PFX` key.
 
-A full list of SSL variables is provided here
-* HTTP_PORT
-* HTTP_PROXY_NAME
-* HTTP_PROXY_PORT
-* HTTP_REDIRECT_PORT
-* HTTP_CONNECTION_TIMEOUT
-* HTTP_COMPRESSION
-* HTTP_SCHEME
-* HTTP_MAX_HEADER_SIZE
-* HTTPS_SCHEME
-* HTTPS_PORT
-* HTTPS_MAX_THREADS
-* HTTPS_CLIENT_AUTH
-* HTTPS_PROXY_NAME
-* HTTPS_PROXY_PORT
-* HTTPS_COMPRESSION
-* HTTPS_MAX_HEADER_SIZE
-* JKS_FILE
-* JKS_KEY_PASSWORD
-* KEY_ALIAS
-* JKS_STORE_PASSWORD
-* P12_FILE
+A full list of SSL variables is provided in [SSL Settings](https://github.com/kartoza/docker-geoserver/blob/develop/.env)
+
 
 ### Proxy Base URL
 
-For the server to report a full proxy base url, you need to pass
+For the server to report a full proxy base URL, you need to pass
 the following env variable i.e.
 
 ```
@@ -404,7 +335,7 @@ HTTP_PROXY_NAME
 HTTP_PROXY_PORT
 ```
 
-If you are running GeoServer under SSL with reverse proxy i.e nginx you will need
+If you are running GeoServer under SSL with reverse proxy i.e. nginx you will need
 to set the following env variables
 
 Example below:
@@ -414,10 +345,10 @@ HTTP_PROXY_NAME=foo.org
 HTTP_SCHEME=https
 ```
 
-This will prevent the login form from sending insecure http post request as experienced
+This will prevent the login form from sending insecure http post requests as experienced
 in [login issue](https://github.com/kartoza/docker-geoserver/issues/293)
 
-For SSL based connections the env variables are:
+For SSL-based connections the env variables are:
 
 ```
 HTTPS_PROXY_NAME
@@ -427,11 +358,11 @@ HTTPS_SCHEME
 
 ### Removing Tomcat extras
 
-To include Tomcat extras including docs, examples, and the manager webapp, set the
+To include Tomcat extras including docs, examples, and the manager web app, set the
 `TOMCAT_EXTRAS` environment variable to `true`:
 
 **Note:** If `TOMCAT_EXTRAS` is set to true then you should configure  `TOMCAT_PASSWORD`
-to use a strong password otherwise the default one is set up.
+to use a strong password otherwise a randomly generated password is used.
 
 ```
 ie VERSION=2.25.0
@@ -441,23 +372,20 @@ docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geos
 **Note:** If `TOMCAT_EXTRAS` is set to false, requests to the root webapp ("/") will return HTTP status code 404. 
 To issue a redirect to the GeoServer webapp ("/geoserver/web") set `ROOT_WEBAPP_REDIRECT=true`
 
-### Upgrading image to use a specific version
-During initialization, the image will run a script that updates the passwords. This
-is recommended to change passwords the first time that GeoServer runs. If you are migrating
-your GeoServer instance, from one a lower version to a higher one you will need to set the
-environment variable `EXISTING_DATA_DIR`; unset it to run the initialization script.
+### Upgrading the image to use a specific version
+If you are migrating your GeoServer instance, from one to a lower 
+version to a higher and do not need to update your master 
+password, you will need to set the variable `EXISTING_DATA_DIR`. 
 
-The environment variable will ensure that the password initialization is skipped
+You can set the  env variable `EXISTING_DATA_DIR` to any value i.e.
+`EXISTING_DATA_DIR=foo` or `EXISTING_DATA_DIR=false` 
+When the environment variable is set it will ensure that the password initialization is skipped
 during the startup procedure.
-
-If you set the env variable `EXISTING_DATA_DIR` to any value i.e `EXISTING_DATA_DIR=foo` or
-`EXISTING_DATA_DIR=false` it will result in password update being skipped. So if you need to have
-the password being updated do not include the env variable in your configuration (this is the default configuration).
 
 ### Installing extra fonts
 
 If you have downloaded extra fonts you can mount the folder to the path
-`/opt/fonts`. This will ensure that all the .ttf files are copied to the correct
+`/opt/fonts`. This will ensure that all the `.ttf` files are copied to the correct
 path during initialisation.
 
 ```
@@ -466,49 +394,42 @@ docker run -v fonts:/opt/fonts -p 8080:8080 -t kartoza/geoserver:${VERSION}
 ```
 
 ### Other Environment variables supported
-You can also use the following environment variables to pass arguments to GeoServer:
 
-* `GEOSERVER_DATA_DIR=<PATH>`
-* `ENABLE_JSONP=<true or false>`
-* `MAX_FILTER_RULES=<Any integer>`
-* `OPTIMIZE_LINE_WIDTH=<false or true>`
-* `FOOTPRINTS_DATA_DIR=<PATH>`
-* `GEOWEBCACHE_CACHE_DIR=<PATH>`
-* `GEOSERVER_ADMIN_PASSWORD=<password>`
-* `GEOSERVER_ADMIN_USER=<username>`
-* `GEOSERVER_FILEBROWSER_HIDEFS=<false or true>`
-* `XFRAME_OPTIONS="true"` - In order to prevent clickjacking attacks GeoServer defaults to
-setting the X-Frame-Options HTTP header to SAMEORIGIN. Controls whether the X-Frame-Options
-filter should be set at all. Default is true
-* Tomcat properties:
+You can find a full list of environment variables in [Generic Env variables](https://github.com/kartoza/docker-geoserver/blob/develop/.env)
 
-  * You can change the variables based on [geoserver container considerations](http://docs.geoserver.org/stable/en/user/production/container.html). 
-  These arguments operate on the `-Xms` and `-Xmx` options of the Java Virtual Machine
-  * `INITIAL_MEMORY=<size>` : Initial Memory that Java can allocate, default `2G`
-  * `MAXIMUM_MEMORY=<size>` : Maximum Memory that Java can allocate, default `4G`
-  * `ACTIVATE_ALL_COMMUNITY_EXTENSIONS` : Activates all downloaded community plugins
-  * `ACTIVATE_ALL_STABLE_EXTENSIONS` : Activates all stable plugins previously downloaded
+**Note** The list below is not exhaustive of all values available.
+Always consult the `.env` file to check possible values. 
 
-**Note:** Before using `ACTIVATE_ALL_STABLE_EXTENSIONS` and `ACTIVATE_ALL_COMMUNITY_EXTENSIONS`
-ensure that all prerequisites for those plugins are matched otherwise the container will not start
-and errors will result
+* GEOSERVER_DATA_DIR=`PATH`
+* ENABLE_JSONP=`true or false`
+* MAX_FILTER_RULES=`Any integer`
+* OPTIMIZE_LINE_WIDTH=`false or true`
+* FOOTPRINTS_DATA_DIR=`PATH`
+* GEOWEBCACHE_CACHE_DIR=`PATH`
+* GEOSERVER_ADMIN_PASSWORD=`password`
+* GEOSERVER_ADMIN_USER=`username`
+* GEOSERVER_FILEBROWSER_HIDEFS=`false or true`
+* XFRAME_OPTIONS=`"true"` - Based on [Xframe-options](https://docs.geoserver.org/latest/en/user/production/config.html#x-frame-options-policy)
+* INITIAL_MEMORY=`size` : Initial Memory that Java can allocate, default `2G`
+* MAXIMUM_MEMORY=`size` : Maximum Memory that Java can allocate, default `4G`
+
 
 ### Control flow properties
 
 The control flow module manages requests in GeoServer. Instructions on
-what each parameter mean can be read from [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html).
+what each parameter means can be read from [documentation](http://docs.geoserver.org/latest/en/user/extensions/controlflow/index.html).
 
-* Example default values for the environment variables
+The following env variables can be set
 
-    * `REQUEST_TIMEOUT=60`
-    * `PARALLEL_REQUEST=100`
-    * `GETMAP=10`
-    * `REQUEST_EXCEL=4`
-    * `SINGLE_USER=6`
-    * `GWC_REQUEST=16`
-    * `WPS_REQUEST=1000/d;30s`
-
-**Note:** You should customise these variables based on the resources available with your GeoServer
+```bash
+REQUEST_TIMEOUT=60
+PARALLEL_REQUEST=100
+GETMAP=10
+REQUEST_EXCEL=4
+SINGLE_USER=6
+GWC_REQUEST=16
+WPS_REQUEST=1000/d;30s
+```
 
 ### Changing GeoServer password and username
 
@@ -604,13 +525,12 @@ The configs that can be mounted are
 Example
 ```
  docker run --name "geoserver" -e GEOSERVER_ADMIN_USER=kartoza  -v /data/controlflow.properties:/settings/controlflow.properties -p 8080:8080 -d -t kartoza/geoserver
-
 ```
 
 **Note:** The files `users.xml` and `roles.xml` should be mounted together to prevent errors
 during container start. Mounting these two files will overwrite `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER`
 
-You can additionally run some bash script to correct some missing dependency i.e. in 
+You can additionally run some bash script to correct some missing dependencies i.e. in 
 community extension like [cluster issue](https://github.com/kartoza/docker-geoserver/issues/514)
 
 ```bash
@@ -632,39 +552,25 @@ You can read more about how to set up clustering in [kartoza clustering](https:/
 
 ### Run (automated using docker-compose)
 
-**Note:** You probably want to use docker-compose for running as it will provide
-a repeatable orchestrated deployment system.
-
-
 We provide a sample ``docker-compose.yml`` file that illustrates
 how you can establish a GeoServer + PostGIS.
 
-If you are interested in the backups , add a section in the `docker-compose.yml`
+If you are interested in the backups, add a section in the `docker-compose.yml`
 following instructions from [docker-pg-backup](https://github.com/kartoza/docker-pg-backup/blob/master/docker-compose.yml#L23).
 
-If you start the stack using the compose file make sure you log in into GeoServer using username:`admin` and password:`myawesomegeoserver`.
-
-**Note** The username and password are specified in the `.env` file. It is recommended
-to change them into something more secure otherwise a strong password is generated.
-
-Please read the ``docker-compose``
-[documentation](https://docs.docker.com/compose/) for details on usage and syntax of ``docker-compose`` - it is 
-not covered here.
-
-
-Once all the services start, test by visiting the GeoServer landing
-page in your browser: [http://localhost:8600/geoserver](http://localhost:8600/geoserver).
-
-To run in the background rather, press ``ctrl-c`` to stop the
-containers and run again in the background:
-
+Start the services using:
 ```shell
 docker-compose up -d
 ```
 
-**Note:** The ``docker-compose.yml`` **uses host-based volumes** so
-when you remove the containers, **all data will be kept**. Using host-based volumes ensures that your data persists 
-between invocations of the compose file. If you need to delete the container data you need to run `docker-compose down -v`.
+**Note** The username and password are specified in the `.env` file. It is recommended
+to change them into something more secure. If you do not pass the
+env `GEOSERVER_ADMIN_PASSWORD` the container generates a 
+random string which will be your password. This is visible from 
+the startup logs.
+
+Once all the services start, test by visiting the GeoServer landing
+page in your browser: [http://localhost:8600/geoserver](http://localhost:8600/geoserver).
 
 ### Reverse Proxy using NGINX
 
@@ -680,50 +586,65 @@ Once the services are running GeoServer will be available from
 http://localhost/geoserver/web/
 
 
-### Additional Notes for MacOS M1 Chip
-
-To run the docker image with MacOS M1 Chip, the image needs to be built locally.
-
-- JDK version of `9-jdk17-openjdk-slim-buster` can work with M1 Chip as it is instructed on [Local build using 
-repository checkout](https://github.com/kartoza/docker-geoserver/#local-build-using-repository-checkout) section, the parameters below needs to be changed in [.env](https://github.com/kartoza/docker-geoserver/blob/master/.env) file
-
-```
-IMAGE_VERSION=9-jdk17-openjdk-slim-buster
-JAVA_HOME=/usr/local/openjdk-17
-```
-
-
-After these changes, the image can be built as instructed.
-
-To run the just-built local image with your docker-compose file, the platform option in the docker-compose file 
-needs to be specified as `linux/arm64/v8`. Otherwise, it will try to pull the docker image from the docker hub 
-instead of using the local image.
-
 ## Kubernetes (Helm Charts)
 
 You can run the image in Kubernetes following the [recipe](https://github.com/kartoza/charts/tree/develop/charts/geoserver)
 
 
 ## Contributing to the image
-We welcome users who want to contribute  enriching this service. We follow
+We welcome users who want to contribute enriching this service. We follow
 the git principles and all pull requests should be against the develop branch so that
 we can test them and when we are happy we push them to the master branch.
 
 ### Upgrading GeoServer Versions
-GeoServer releases and bug fixes are done frequently. We provide a helper script `upgrade_geoserver_version.sh`
-which can be run to update the respective files which mention GeoServer version. To run this you need to run
+GeoServer releases and bug fixes are done frequently. We provide a helper script 
+`upgrade_geoserver_version.sh` which can be run to update the 
+respective files which mention the GeoServer version. To upgrade to
+a new version involves two steps:
+
+1. Upgrade text files `stable_plugins.txt` and `community_plugins.txt` as 
+new versions usually have extensions promoted/demoted from community/stable
+extensions.
+2. Run the upgrade script that updates some env variables.
+
+#### Upgrade extensions files
+
+In the `build_data` directory, two helper files are provided that generate a list of extensions
+for `stable_plugins.txt` and `community_plugins.txt`. 
+Before running these scripts you need to install the following Python packages
+```bash
+    pip3 install beautifulsoup4
+    pip3 install requests
+```
+Then execute the scripts as below:
+
+For community extensions run the command below:
+
+```bash
+    cd ./build_data
+    python3 community_plugins.py 2.23.x
+```
+For stable extensions run the command below:
+```bash
+cd ./build_data
+python3 stable_plugins.py 2.25.0 https://sourceforge.net/projects/geoserver/files/GeoServer
+    
+```
+
+#### Run upgrade helper script
+
 
 ```bash
 /bin/bash upgrade_geoserver_version.sh ${GS_VERSION} ${GS_NEW_VERSION}
 ```
-**Note:** The script will also push this changes to the current repo, and it is up to the individual running the script
+**Note:** The script will also push these changes to the current repo, and it is up to the individual running the script
 to push the changes to his specific branch of choice and then complete the pull request
 
 ## Support
-When reporting issue especially related to installed plugins (community and stable) please refer to the [GeoServer Issue page](https://osgeo-org.atlassian.net/jira/software/c/projects/GEOS/issues)
+When reporting issues especially related to installed extensions (community and stable) please refer to the [GeoServer Issue page](https://osgeo-org.atlassian.net/jira/software/c/projects/GEOS/issues)
 to see if there are no issues reported there. We rely on the GeoServer community to resolve upstream
-issues. For urgent upstream problems you will need to get paid support
-the developers in [GeoServer](https://geoserver.org/). 
+issues. For urgent upstream problems, you will need to get paid support
+from the developers in [GeoServer](https://geoserver.org/). 
 
 Other platforms where users can ask questions and get assistance are listed below:
 * [Stack Exchange](https://stackexchange.com/)
