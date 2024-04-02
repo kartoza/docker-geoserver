@@ -4,9 +4,19 @@ on:
   pull_request:
     branches:
       - develop
+    paths:
+      - 'Dockerfile'
+      - 'scripts/**'
+      - 'build_data/**'
+      - '.github/workflows/**'
   push:
     branches:
       - develop
+    paths:
+      - 'Dockerfile'
+      - 'scripts/**'
+      - 'build_data/**'
+      - '.github/workflows/**'
 jobs:
   build-activemq-docker-image:
     runs-on: ubuntu-latest
