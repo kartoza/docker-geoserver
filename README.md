@@ -66,7 +66,7 @@ docker pull kartoza/geoserver:$VERSION
 ```
 **Note** Although the images are tagged and backed by unit tests
 it is recommended to use tagged versions with dates i.e. 
-`kartoza/geoserver:$VERSION--2.25.0--v2024.03.31`.The first date available
+`kartoza/geoserver:$VERSION--v2024.03.31`.The first date available
 from [dockerhub](https://hub.docker.com/repository/docker/kartoza/geoserver/tags?page=1&ordering=last_updated)
 would be the first version for that series. Successive builds that fix [issues](https://github.com/kartoza/docker-geoserver/issues) 
 tend to override the tagged images and also produce dated images.
@@ -659,5 +659,5 @@ docker-geoserver is pro bono), please consider taking out a [Support Level Agree
 * Tim Sutton (tim@kartoza.com)
 * Shane St Clair (shane@axiomdatascience.com)
 * Alex Leith (alexgleith@gmail.com)
-* Admire Nyakudya (admire@kartoza.com)
+* Admire Nyakudya (addloe@gmail.com)
 * Gavin Fleming (gavin@kartoza.com)
