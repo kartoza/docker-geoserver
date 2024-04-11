@@ -140,6 +140,7 @@ function validate_geo_install() {
   if [[ $(ls -A "${DATA_PATH}")  ]]; then
      echo -e "\e[32m  GeoServer install dir exist proceed with install \033[0m"
   else
+    echo -e "\e[32m  GeoServer install dir does not exist, exiting \033[0m"
     exit 1
   fi
 

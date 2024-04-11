@@ -22,6 +22,35 @@ if ls "${FONTS_DIR}"/*.otf >/dev/null 2>&1; then
   cp -rf "${FONTS_DIR}"/*.otf /usr/share/fonts/opentype/
 fi
 
+# Install google fonts based on https://github.com/google/fonts
+# ADDED env variable to allow users to pass comma separated values
+if [[ ! -z  ${GOOGLE_FONTS_NAMES}  ]];then
+  # Mount google-fonts.zip from settings file to accelerate download speed
+  if [[ -f "${EXTRA_CONFIG_DIR}"/google-fonts.zip ]]; then
+    cp -f "${EXTRA_CONFIG_DIR}"/google-fonts.zip main.zip
+  else
+    validate_url https://github.com/google/fonts/archive/main.zip
+  fi
+  if [[ -f main.zip ]];then
+    mv main.zip "${FONTS_DIR}"
+    if [[ ! -d "${FONTS_DIR}"/google-fonts ]];then
+      unzip "${FONTS_DIR}"/main.zip -d "${FONTS_DIR}"/google-fonts
+    fi
+    rm "${FONTS_DIR}"/main.zip
+    if [[ "$(ls -A "${FONTS_DIR}"/google-fonts)" ]]; then
+      for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
+        cp -r  "${FONTS_DIR}"/google-fonts/fonts-main/ofl/"${gfont}" /usr/share/fonts/truetype/
+      done
+    fi
+
+  else
+    echo -e "\e[32m  main.zip does not exist, google fonts will be skipped \033[0m"
+  fi
+
+
+fi
+
+
 # Add custom espg properties file or the default one
 create_dir "${GEOSERVER_DATA_DIR}"/user_projections
 create_dir "${GEOWEBCACHE_CACHE_DIR}"
