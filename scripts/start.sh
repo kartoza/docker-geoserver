@@ -25,29 +25,35 @@ fi
 # Install google fonts based on https://github.com/google/fonts
 # ADDED env variable to allow users to pass comma separated values
 if [[ ! -z  ${GOOGLE_FONTS_NAMES}  ]];then
-  # Mount google-fonts.zip from settings file to accelerate download speed
-  if [[ -f "${EXTRA_CONFIG_DIR}"/google-fonts.zip ]]; then
-    cp -f "${EXTRA_CONFIG_DIR}"/google-fonts.zip main.zip
-  else
-    validate_url https://github.com/google/fonts/archive/main.zip
-  fi
-  if [[ -f main.zip ]];then
-    mv main.zip "${FONTS_DIR}"
-    if [[ ! -d "${FONTS_DIR}"/google-fonts ]];then
-      unzip "${FONTS_DIR}"/main.zip -d "${FONTS_DIR}"/google-fonts
-    fi
-    rm "${FONTS_DIR}"/main.zip
-    if [[ "$(ls -A "${FONTS_DIR}"/google-fonts)" ]]; then
-      for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
-        cp -r  "${FONTS_DIR}"/google-fonts/fonts-main/ofl/"${gfont}" /usr/share/fonts/truetype/
-      done
-    fi
+  git clone --filter=blob:none --no-checkout https://github.com/google/fonts.git
+  cd $(pwd)/fonts
+  git config core.sparsecheckout true
+
+  if [[ "$GOOGLE_FONTS_NAMES" == *,* ]]; then
+    for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
+          if grep -Fxq "$gfont" /build_data/google_fonts.txt; then
+            echo ofl/$gfont >> .git/info/sparse-checkout
+          fi
+    done
+    git checkout main
+    for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
+          if grep -Fxq "$gfont" /build_data/google_fonts.txt; then
+            cp -r  ofl/"${gfont}" /usr/share/fonts/truetype/
+          fi
+    done
 
   else
-    echo -e "\e[32m  main.zip does not exist, google fonts will be skipped \033[0m"
+    if grep -Fxq "$GOOGLE_FONTS_NAMES" /build_data/google_fonts.txt; then
+      echo ofl/$GOOGLE_FONTS_NAMES >> .git/info/sparse-checkout
+    fi
+    git checkout main
+    if grep -Fxq "$GOOGLE_FONTS_NAMES" /build_data/google_fonts.txt; then
+      git sparse-checkout set ofl/$GOOGLE_FONTS_NAMES
+      cp -r ofl/$GOOGLE_FONTS_NAMES /usr/share/fonts/truetype/
+    fi
   fi
-
-
+  cd ..
+  rm -rf fonts
 fi
 
 
