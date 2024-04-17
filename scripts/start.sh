@@ -22,6 +22,41 @@ if ls "${FONTS_DIR}"/*.otf >/dev/null 2>&1; then
   cp -rf "${FONTS_DIR}"/*.otf /usr/share/fonts/opentype/
 fi
 
+# Install google fonts based on https://github.com/google/fonts
+# ADDED env variable to allow users to pass comma separated values
+if [[ ! -z  ${GOOGLE_FONTS_NAMES}  ]];then
+  git clone --filter=blob:none --no-checkout https://github.com/google/fonts.git
+  cd $(pwd)/fonts
+  git config core.sparsecheckout true
+
+  if [[ "$GOOGLE_FONTS_NAMES" == *,* ]]; then
+    for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
+          if grep -Fxq "$gfont" /build_data/google_fonts.txt; then
+            echo ofl/$gfont >> .git/info/sparse-checkout
+          fi
+    done
+    git checkout main
+    for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
+          if grep -Fxq "$gfont" /build_data/google_fonts.txt; then
+            cp -r  ofl/"${gfont}" /usr/share/fonts/truetype/
+          fi
+    done
+
+  else
+    if grep -Fxq "$GOOGLE_FONTS_NAMES" /build_data/google_fonts.txt; then
+      echo ofl/$GOOGLE_FONTS_NAMES >> .git/info/sparse-checkout
+    fi
+    git checkout main
+    if grep -Fxq "$GOOGLE_FONTS_NAMES" /build_data/google_fonts.txt; then
+      git sparse-checkout set ofl/$GOOGLE_FONTS_NAMES
+      cp -r ofl/$GOOGLE_FONTS_NAMES /usr/share/fonts/truetype/
+    fi
+  fi
+  cd ..
+  rm -rf fonts
+fi
+
+
 # Add custom espg properties file or the default one
 create_dir "${GEOSERVER_DATA_DIR}"/user_projections
 create_dir "${GEOWEBCACHE_CACHE_DIR}"

@@ -28,6 +28,7 @@ services:
       interval: 1m
       timeout: 10s
       retries: 3
+      start_period: 1m
     build:
       context: .
       # Use yaml anchor for reusability

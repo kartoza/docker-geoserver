@@ -76,7 +76,7 @@ tend to override the tagged images and also produce dated images.
 
 ### Local build using repository checkout
 
-To build yourself with a local checkout using the docker-compose.build.yml:
+To build yourself with a local checkout using the docker-compose-build.yml:
 
 1. Clone the GitHub repository:
 
