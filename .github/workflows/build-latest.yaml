@@ -181,12 +181,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Push image to DockerHub
-        uses: docker/build-push-action@v5
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v5
         with:
-          push: true
-          context: .
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          cache-from: type=gha,scope=test
-          #cache-to: type=gha,scope=prod
+          images: ${{ secrets.DOCKERHUB_REPO}}/geoserver
+          tags: |
+            type=semver,pattern=\d.\d.\d
+            type=ref,event=branch
+      
 
