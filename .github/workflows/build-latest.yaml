@@ -100,16 +100,15 @@ jobs:
         with:
           name: kartoza-geoserver
           path: /tmp/geoserver.tar
-
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ steps.docker_build_testing_image.outputs.image }}
-          format: 'table'
-          exit-code: '1'
+          format: 'sarif'
           ignore-unfixed: true
-          vuln-type: 'os,library'
+          image-ref: ${{ steps.docker_build_testing_image.outputs.image }}
+          output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
+          vuln-type: 'os,library'
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
