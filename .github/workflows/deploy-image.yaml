@@ -68,7 +68,6 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ steps.set_tags.outputs.tags }}
-
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
