@@ -185,6 +185,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
+          context: .
           tags: ${{ steps.docker_meta.outputs.tags }}
           cache-from: type=gha,scope=test
           #cache-to: type=gha,scope=prod
