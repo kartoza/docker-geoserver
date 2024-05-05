@@ -52,7 +52,13 @@ jobs:
       - name: Get Current Date
         id: current_date
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
-
+      - name: Set tags
+        run: |
+          tags=(
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
+          )
+          echo "tags=$tags" >> $GITHUB_OUTPUT
       - name: Build prod image
         id: docker_build_prod
         uses: docker/build-push-action@v5
@@ -61,9 +67,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
+          tags: ${{ steps.set_tags.outputs.tags }}
 
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
@@ -78,15 +82,17 @@ jobs:
             type=gha,scope=prod
           cache-to: type=gha,scope=prod
           target: geoserver-prod
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ steps.docker_meta.outputs.tags }}
+          image-ref: ${{ steps.set_tags.outputs.tags }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
