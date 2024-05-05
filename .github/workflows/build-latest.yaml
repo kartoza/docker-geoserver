@@ -121,7 +121,8 @@ jobs:
   scan_image:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [build-docker-image]
+    needs: [build-docker-image, run-scenario-tests]
+    if: ${{ jobs.run-scenario-tests.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
