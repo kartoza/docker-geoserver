@@ -105,7 +105,7 @@ jobs:
         with:
           format: 'sarif'
           ignore-unfixed: true
-          input: /tmp/geoserver.tar
+          input: ${{ steps.upload-artifact.outputs.artifact }}
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           vuln-type: 'os,library'
