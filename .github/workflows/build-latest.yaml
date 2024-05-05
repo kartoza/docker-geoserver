@@ -100,6 +100,14 @@ jobs:
         with:
           name: kartoza-geoserver
           path: /tmp/geoserver.tar
+      - name: Check if artifact exists
+        run: |
+          if [ -f "${steps.upload-artifact.outputs.artifact}" ]; then
+            echo "Artifact  exist: ${steps.upload-artifact.outputs.artifact}"
+          else
+            echo "Artifact does not exist: ${steps.upload-artifact.outputs.artifact}"
+            exit 1
+          fi
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
