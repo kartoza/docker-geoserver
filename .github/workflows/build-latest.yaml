@@ -105,7 +105,7 @@ jobs:
         with:
           format: 'sarif'
           ignore-unfixed: true
-          image-ref: docker://${steps.docker_build_testing_image.outputs.image}
+          input: /tmp/geoserver.tar
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           vuln-type: 'os,library'
