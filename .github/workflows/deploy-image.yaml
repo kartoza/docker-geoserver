@@ -11,6 +11,7 @@ on:
 jobs:
   deploy-image:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       latest-ref: refs/heads/develop
     strategy:
@@ -51,7 +52,6 @@ jobs:
       - name: Get Current Date
         id: current_date
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
-
       - name: Build prod image
         id: docker_build_prod
         uses: docker/build-push-action@v5
@@ -63,7 +63,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
-
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
@@ -76,3 +75,6 @@ jobs:
             type=gha,scope=test
             type=gha,scope=prod
           cache-to: type=gha,scope=prod
+          target: geoserver-prod
+
+
