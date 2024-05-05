@@ -100,12 +100,14 @@ jobs:
         with:
           name: kartoza-geoserver
           path: /tmp/geoserver.tar
+        env:
+          artifact_path: ${{ steps.upload-artifact.outputs.artifact }}
       - name: Check if artifact exists
         run: |
-          if [ -f "${steps.upload-artifact.outputs.artifact}" ]; then
-            echo "Artifact  exist: ${steps.upload-artifact.outputs.artifact}"
+          if [ -f "${artifact_path}" ]; then
+            echo "Artifact  exist: ${artifact_path}"
           else
-            echo "Artifact does not exist: ${steps.upload-artifact.outputs.artifact}"
+            echo "Artifact does not exist: ${artifact_path}"
             exit 1
           fi
       - name: Run Trivy vulnerability scanner
@@ -113,7 +115,7 @@ jobs:
         with:
           format: 'sarif'
           ignore-unfixed: true
-          input: ${{ steps.upload-artifact.outputs.artifact }}
+          input: '${artifact_path}'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           vuln-type: 'os,library'
