@@ -129,16 +129,16 @@ jobs:
         with:
           name: kartoza-geoserver
           path: /tmp
-#      - name: Load image
-#        run: |
-#          docker load --input /tmp/geoserver.tar
+      - name: Load image
+        run: |
+          docker load --input /tmp/geoserver.tar
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           format: 'sarif'
           ignore-unfixed: true
-          input: /tmp/geoserver.tar
-          #image-ref: kartoza/geoserver:manual-build
+          #input: /tmp/geoserver.tar
+          image-ref: kartoza/geoserver:manual-build
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           vuln-type: 'os,library'
