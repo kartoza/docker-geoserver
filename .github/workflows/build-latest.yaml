@@ -110,10 +110,8 @@ jobs:
           load: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           outputs: type=docker,dest=/tmp/geoserver_production.tar
-          cache-from: |
-            type=gha,scope=test
-            type=gha,scope=prod
-            cache-to: type=gha,scope=test
+          cache-from: type=gha,scope=test
+          cache-to: type=gha,scope=prod
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
