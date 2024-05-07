@@ -20,8 +20,8 @@ RUN set -eux; \
     apt-get update; \
     apt-get -y --no-install-recommends install \
         locales gnupg2 wget ca-certificates rpl pwgen software-properties-common  iputils-ping \
-        apt-transport-https curl gettext fonts-cantarell lmodern ttf-aenigma \
-        ttf-bitstream-vera ttf-mscorefonts-installer ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
+        apt-transport-https curl gettext fonts-cantarell fonts-liberation lmodern ttf-aenigma \
+        ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
         wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin libgdal-java; \
       dpkg-divert --local --rename --add /sbin/initctl \
       && (echo "Yes, do as I say!" | apt-get remove --force-yes login) \
