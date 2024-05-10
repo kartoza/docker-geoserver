@@ -126,7 +126,7 @@ function download_extension() {
   URL=$1
   PLUGIN=$2
   OUTPUT_PATH=$3
-  if [[ $(wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
+  if [[ $(wget -S --spider "${URL}"  2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
     ${request} "${URL}" -O "${OUTPUT_PATH}"/"${PLUGIN}".zip
   else
     echo -e "Plugin URL does not exist:: \e[1;31m ${URL} \033[0m"
