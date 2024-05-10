@@ -24,7 +24,6 @@ RUN set -eux; \
         ttf-bitstream-vera ttf-sjfonts tv-fonts  libapr1-dev libssl-dev git \
         wget zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin libgdal-java; \
       dpkg-divert --local --rename --add /sbin/initctl \
-      && (echo "Yes, do as I say!" | apt-get remove --force-yes login) \
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*; \
       # verify that the binary works
