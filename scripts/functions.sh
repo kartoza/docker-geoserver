@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-export request="wget --progress=bar:force:noscroll -c --tries=2 "
+export request="wget --progress=bar:force:noscroll -c --tries=2 --timeout=10 --limit-rate=1m  --keep-session-cookies "
 
 function log() {
     echo "$0:${BASH_LINENO[*]}": $@
@@ -126,7 +126,7 @@ function download_extension() {
   URL=$1
   PLUGIN=$2
   OUTPUT_PATH=$3
-  if curl --output /dev/null --silent --head --fail "${URL}"; then
+  if [[ $(wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
     ${request} "${URL}" -O "${OUTPUT_PATH}"/"${PLUGIN}".zip
   else
     echo -e "Plugin URL does not exist:: \e[1;31m ${URL} \033[0m"
@@ -179,7 +179,7 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resourc
     if [[ "${WAR_URL}" == *\.zip ]]; then
       if [[ "${WAR_URL}" == *\bin.zip ]];then
         destination=/tmp/resources/geoserver-${GS_VERSION}-bin.zip
-        if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+        if [[ $(wget -S --spider "${WAR_URL}"  2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
           ${request} "${WAR_URL}" -O "${destination}"
         else
             echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
@@ -189,7 +189,7 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resourc
         unzip_geoserver
       else
         destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-        if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+        if [[ $(wget -S --spider "${WAR_URL}"  2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
           ${request} "${WAR_URL}" -O "${destination}"
         else
             echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
@@ -201,7 +201,7 @@ if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resourc
     else
       destination=/tmp/geoserver/geoserver.war
       mkdir -p /tmp/geoserver/ &&
-      if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
+      if [[ $(wget -S --spider "${WAR_URL}"  2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
           ${request} "${WAR_URL}" -O ${destination} && \
           unzip_geoserver
         else

@@ -32,31 +32,29 @@ if [[ -f ttf-mscorefonts-installer_3.8.1_all.deb ]];then
  rm ttf-mscorefonts-installer_3.8.1_all.deb
 fi
 
-pushd "${STABLE_PLUGINS_DIR}" || exit
-
 # Check if we have pre downloaded plugin yet
-
 stable_count=$(find "$resources_dir/plugins/stable_plugins" -type f -name '*.zip' 2>/dev/null | wc -l)
 if [ "$stable_count" != 0 ]; then
-  cp -r $resources_dir/plugins/stable_plugins/*.zip /stable_plugins/
+  cp -r $resources_dir/plugins/stable_plugins/*.zip "${STABLE_PLUGINS_DIR}"
 fi
 
 
 community_count=$(find "$resources_dir/plugins/community_plugins" -type f -name '*.zip' 2>/dev/null | wc -l)
 if [ "${community_count}" != 0 ]; then
-  cp -r $resources_dir/plugins/community_plugin/*.zip /community_plugins/
+  cp -r $resources_dir/plugins/community_plugin/*.zip "${COMMUNITY_PLUGINS_DIR}"
 fi
 
+pushd "${STABLE_PLUGINS_DIR}" || exit
 # Download all other stable plugins to keep for activating using env variables, excludes the mandatory stable ones installed
 
 if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" -eq 0 ]; then
-  plugin=$(head -n 1 /stable_plugins/stable_plugins.txt)
+  plugin=$(head -n 1 "${STABLE_PLUGINS_DIR}"/stable_plugins.txt)
   approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-  download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
+  download_extension "${approved_plugins_url}" "${plugin}" "${STABLE_PLUGINS_DIR}"
 else
-  for plugin in $(cat /stable_plugins/stable_plugins.txt); do
+  for plugin in $(cat "${STABLE_PLUGINS_DIR}"/stable_plugins.txt); do
     approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-    download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
+    download_extension "${approved_plugins_url}" "${plugin}" "${STABLE_PLUGINS_DIR}"
   done
 fi
 
@@ -64,13 +62,13 @@ fi
 pushd "${COMMUNITY_PLUGINS_DIR}" || exit
 
 if [ -z "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" -eq 0 ]; then
-  plugin=$(head -n 1 /community_plugins/community_plugins.txt)
+  plugin=$(head -n 1 "${COMMUNITY_PLUGINS_DIR}"/community_plugins.txt)
   community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-  download_extension "${community_plugins_url}" "${plugin}" /community_plugins
+  download_extension "${community_plugins_url}" "${plugin}" "${COMMUNITY_PLUGINS_DIR}"
 else
-  for plugin in $(cat /community_plugins/community_plugins.txt); do
+  for plugin in $(cat "${COMMUNITY_PLUGINS_DIR}"/community_plugins.txt); do
     community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-    download_extension "${community_plugins_url}" "${plugin}" /community_plugins
+    download_extension "${community_plugins_url}" "${plugin}" "${COMMUNITY_PLUGINS_DIR}"
 
   done
 fi
@@ -88,10 +86,9 @@ for i in "${array[@]}"; do
   download_extension "${url}" "${i%.*}" ${resources_dir}/plugins
 done
 
-
 # Install libjpeg-turbo
 system_architecture=$(dpkg --print-architecture)
-libjpeg_version=3.0.2
+libjpeg_version=3.0.3
 if [[ ! -f ${resources_dir}/libjpeg-turbo-official_${libjpeg_version}_"${system_architecture}".deb ]]; then
   wget https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/"${libjpeg_version}"/libjpeg-turbo-official_"${libjpeg_version}"_"${system_architecture}".deb \
   -O ${resources_dir}/libjpeg-turbo-official_${libjpeg_version}_"${system_architecture}".deb
