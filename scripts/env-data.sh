@@ -114,33 +114,6 @@ if [ -z "${HTTPS_PROXY_PORT}" ]; then
   HTTPS_PROXY_PORT=
 fi
 
-if [ -z "${JKS_FILE}" ]; then
-  JKS_FILE=letsencrypt.jks
-fi
-
-file_env 'JKS_KEY_PASSWORD'
-if [ -z "${JKS_KEY_PASSWORD}" ]; then
-  JKS_KEY_PASSWORD='geoserver'
-fi
-
-if [ -z "${KEY_ALIAS}" ]; then
-  KEY_ALIAS=letsencrypt
-fi
-
-file_env 'JKS_STORE_PASSWORD'
-if [ -z "${JKS_STORE_PASSWORD}" ]; then
-    JKS_STORE_PASSWORD='geoserver'
-fi
-
-if [ -z "${P12_FILE}" ]; then
-    P12_FILE=letsencrypt.p12
-fi
-
-file_env 'PKCS12_PASSWORD'
-if [ -z "${PKCS12_PASSWORD}" ]; then
-    PKCS12_PASSWORD='geoserver'
-fi
-
 
 if [ -z "${ENCODING}" ]; then
     ENCODING='UTF8'

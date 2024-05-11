@@ -36,10 +36,11 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
         generate_random_string 15
         GEOSERVER_ADMIN_PASSWORD=${RAND}
-        echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
         if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
           echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
           echo -e "[Entrypoint] GENERATED GeoServer Random PASSWORD is: \e[1;31m $GEOSERVER_ADMIN_PASSWORD \033[0m"
+        else
+          echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
         fi
   fi
 

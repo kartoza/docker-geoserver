@@ -15,6 +15,7 @@ fi
 ################################
 #Test using internal jms cluster
 ################################
+echo -e "[Unit Test] Running testing using internal: \e[1;31m JMS plugin \033[0m"
 ${VERSION} -f docker-compose.yml up -d
 
 if [[ -n "${PRINT_TEST_LOGS}" ]]; then
@@ -52,6 +53,7 @@ ${VERSION} -f docker-compose.yml down -v
 #############################
 #Test using external ActiveMQ
 #############################
+echo -e "[Unit Test] Running testing using external: \e[1;31m ActiveMQ \033[0m"
 
 ${VERSION} -f docker-compose-external.yml up -d
 

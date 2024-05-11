@@ -3,7 +3,7 @@
 ##############################################################################
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.88-jdk17-temurin-focal
+ARG IMAGE_VERSION=9.0.89-jdk17-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
@@ -18,7 +18,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
     apt-get update; \
-    apt-get -y --no-install-recommends install locales ca-certificates  curl gettext fonts-cantarell \
+    apt-get -y --no-install-recommends install locales ca-certificates  git curl gettext fonts-cantarell \
         lmodern ttf-aenigma ttf-bitstream-vera ttf-sjfonts tv-fonts  \
         wget zip unzip  xsltproc certbot  cabextract  postgresql-client figlet gosu gdal-bin libgdal-java; \
       dpkg-divert --local --rename --add /sbin/initctl \
