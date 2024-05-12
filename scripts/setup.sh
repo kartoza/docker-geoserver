@@ -25,13 +25,6 @@ package_geoserver
 cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
 cp /build_data/letsencrypt-tomcat.xsl "${CATALINA_HOME}"/conf/ssl-tomcat.xsl
 
-# install microsoft fonts
-validate_url http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8.1_all.deb
-if [[ -f ttf-mscorefonts-installer_3.8.1_all.deb ]];then
- dpkg -i ttf-mscorefonts-installer_3.8.1_all.deb
- rm ttf-mscorefonts-installer_3.8.1_all.deb
-fi
-
 pushd "${STABLE_PLUGINS_DIR}" || exit
 
 # Check if we have pre downloaded plugin yet
