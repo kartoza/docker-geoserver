@@ -12,6 +12,11 @@ if [[ $(dpkg -l | grep "docker-compose") > /dev/null ]];then
     VERSION='docker compose'
 fi
 
+####################################
+#Test using default created password
+#####################################
+echo -e "[Unit Test] Running testing using password from env : \e[1;31m Geoserver password \033[0m"
+
 ${VERSION} up -d
 
 if [[ -n "${PRINT_TEST_LOGS}" ]]; then
@@ -34,7 +39,10 @@ done
 
 ${VERSION} down -v
 
-# Update context password
+####################################
+#Test using updated password
+#####################################
+echo -e "[Unit Test] Running testing using updated password from env : \e[1;31m Geoserver password \033[0m"
 sleep 5
 sed -i 's/foobar/foobar#geoserver/g' docker-compose.yml
 # Bring the services up again
