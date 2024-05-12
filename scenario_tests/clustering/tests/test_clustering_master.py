@@ -4,7 +4,6 @@ from os import environ
 from geo.Geoserver import Geoserver
 from requests import get, post, exceptions
 from requests.auth import HTTPBasicAuth
-from sys import exit
 
 
 class GeoServerClusteringMaster(unittest.TestCase):
@@ -63,10 +62,6 @@ class GeoServerClusteringMaster(unittest.TestCase):
         response = post(self.gs_url + '/rest/workspaces/%s/datastores' % self.geo_workspace_name, auth=auth,
                         headers={'Content-type': 'text/xml'},
                         data=xml)
-
-        if response.status_code != 201:
-            print("Failed to publish store. Exiting script.")
-            exit(1)
 
         # Check that the response has a status code of 201 (Created)
         self.assertEqual(response.status_code, 201)

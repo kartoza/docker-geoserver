@@ -18,9 +18,6 @@ class GeoServerClusteringNode(unittest.TestCase):
     def check_workspace_exists(self, auth):
         rest_url = '%s/rest/workspaces/%s.json' % (self.gs_url, self.geo_workspace_name)
         response = get(rest_url, auth=auth)
-        if response.status_code != 200:
-            print("Failed to publish store. Exiting script.")
-            exit(1)
         return response.status_code == 200
 
     def check_data_store_exists(self, auth):
