@@ -15,7 +15,7 @@ if [ -z "${OPTIMIZE_LINE_WIDTH}" ]; then
 fi
 
 if [ -z "${WMS_DIR_INTEGRATION}" ]; then
-  WMS_DIR_INTEGRATION=false
+  WMS_DIR_INTEGRATION=true
 fi
 
 if [ -z "${REQUIRE_TILED_PARAMETER}" ]; then

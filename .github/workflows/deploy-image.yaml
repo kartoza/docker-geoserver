@@ -10,6 +10,7 @@ on:
       - completed
 jobs:
   deploy-image:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:

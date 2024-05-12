@@ -21,6 +21,7 @@ jobs:
   build-activemq-docker-image:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
@@ -50,6 +51,7 @@ jobs:
   build-docker-image:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
     strategy:
       matrix:
         geoserverMajorVersion:
@@ -121,6 +123,7 @@ jobs:
   scan_image:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
     needs: [build-docker-image, run-scenario-tests]
     steps:
       - uses: actions/checkout@v4
@@ -144,13 +147,14 @@ jobs:
           vuln-type: 'os,library'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
 
   run-scenario-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
     needs: [ build-docker-image, build-activemq-docker-image]
     strategy:
       matrix:
@@ -191,7 +195,7 @@ jobs:
           bash ./test.sh
 
   push-internal-pr-images:
-    if: github.event_name == 'pull_request' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
+    if: github.event_name == 'pull_request' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [ build-docker-image, run-scenario-tests ]
