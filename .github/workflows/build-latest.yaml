@@ -57,7 +57,7 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0.73-jdk11-temurin-focal
+          - image: 9.0.89-jdk17-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 25
