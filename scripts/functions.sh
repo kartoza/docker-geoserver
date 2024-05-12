@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-export request="wget --progress=bar:force:noscroll -c --tries=2 "
+export request="wget --progress=bar:force:noscroll -c --tries=2 --timeout=10 --limit-rate=1m  --keep-session-cookies "
 
 function log() {
     echo "$0:${BASH_LINENO[*]}": $@
