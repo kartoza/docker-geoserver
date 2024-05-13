@@ -32,6 +32,12 @@ class GeoServerClusteringNode(unittest.TestCase):
         response = get(layer_url, auth=auth)
         return response.status_code == 200
 
+    def check_style_exists(self, auth, layer_name):
+        style_url = '%s/rest/workspaces/%s/styles/%s.json' % (
+            self.gs_url, self.geo_workspace_name, layer_name)
+        response = get(style_url, auth=auth)
+        return response.status_code == 200
+
     def test_workspace_exists(self):
         auth = HTTPBasicAuth('%s' % self.geo_username, '%s' % self.geo_password)
         workspace_exists = self.check_workspace_exists(auth)
@@ -47,6 +53,12 @@ class GeoServerClusteringNode(unittest.TestCase):
         layer_name = 'states'
         layer_exists = self.check_layer_exists(auth, layer_name)
         self.assertTrue(layer_exists, "Layer does not exist")
+
+    def test_layer_style_exists(self):
+        auth = HTTPBasicAuth('%s' % self.geo_username, '%s' % self.geo_password)
+        layer_name = 'states'
+        layer_exists = self.check_style_exists(auth, layer_name)
+        self.assertTrue(layer_exists, "Style does not exist")
 
 
 if __name__ == '__main__':
