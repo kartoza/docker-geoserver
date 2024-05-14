@@ -24,6 +24,7 @@ package_geoserver
 # Copy config files
 cp /build_data/stable_plugins.txt /stable_plugins && cp /build_data/community_plugins.txt /community_plugins && \
 cp /build_data/letsencrypt-tomcat.xsl "${CATALINA_HOME}"/conf/ssl-tomcat.xsl
+cp /build_data/logging.properties "${CATALINA_HOME}/conf/logging.properties"
 
 pushd "${STABLE_PLUGINS_DIR}" || exit
 
