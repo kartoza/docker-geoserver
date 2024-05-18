@@ -24,7 +24,6 @@ if [[ -n "${PRINT_TEST_LOGS}" ]]; then
   ${VERSION} -f docker-compose.yml logs -f &
 fi
 
-sleep 60
 
 # Test Master
 services=("master")
@@ -32,7 +31,7 @@ services=("master")
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 60
+  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} -f docker-compose.yml exec "${service}" /bin/bash /tests/test.sh
 
@@ -44,7 +43,7 @@ services=("node")
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 60
+  test_url_availability http://localhost:8082/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} -f docker-compose.yml exec "${service}" /bin/bash /tests/test.sh
 
@@ -65,7 +64,7 @@ if [[ -n "${PRINT_TEST_LOGS}" ]]; then
   ${VERSION} -f docker-compose-external.yml logs -f &
 fi
 
-sleep 120
+
 
 # Test Master
 services=("master")
@@ -73,7 +72,7 @@ services=("master")
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 60
+  test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} -f docker-compose.yml exec "${service}" /bin/bash /tests/test.sh
 
@@ -85,7 +84,7 @@ services=("node")
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 60
+  test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} -f docker-compose-external.yml exec "${service}" /bin/bash /tests/test.sh
 

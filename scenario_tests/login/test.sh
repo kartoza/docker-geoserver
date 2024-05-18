@@ -18,15 +18,13 @@ if [[ -n "${PRINT_TEST_LOGS}" ]]; then
   ${VERSION} logs -f &
 fi
 
-sleep 30
-
 
 services=("geoserver" "server")
 
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 60
+  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 
@@ -36,7 +34,7 @@ ${VERSION} down -v
 
 # Test Updating passwords
 ${VERSION} up -d geoserver
-sleep 60
+
 ${VERSION} stop
 
 # Update password
@@ -49,7 +47,7 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 60
+  test_url_availability http://localhost:8082/geoserver/rest/about/version.xml fabulousgeoserver
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 

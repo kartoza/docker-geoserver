@@ -15,7 +15,7 @@ fi
 ####################################
 #Test using default created password
 #####################################
-echo -e "[Unit Test] Running testing using password from env : \e[1;31m Geoserver password \033[0m"
+echo -e "[Unit Test] Running tests using password from env Geoserver password"
 
 ${VERSION} up -d
 
@@ -23,7 +23,7 @@ if [[ -n "${PRINT_TEST_LOGS}" ]]; then
   ${VERSION} logs -f &
 fi
 
-sleep 30
+
 
 
 services=("geoserver")
@@ -31,7 +31,7 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 60
+  test_url_availability http://localhost:8080/foobar/rest/about/version.xml foobargeoserver
   echo "Execute test for $service"
   ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
 
@@ -42,8 +42,7 @@ ${VERSION} down -v
 ####################################
 #Test using updated password
 #####################################
-echo -e "[Unit Test] Running testing using updated password from env : \e[1;31m Geoserver password \033[0m"
-sleep 5
+echo -e "[Unit Test] Running testing using updated password from env Geoserver password"
 sed -i 's/foobar/foobar#geoserver/g' docker-compose.yml
 # Bring the services up again
 ${VERSION} up -d geoserver
@@ -53,7 +52,7 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 60
+  test_url_availability http://localhost:8080/foobar/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
 

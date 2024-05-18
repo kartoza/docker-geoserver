@@ -41,6 +41,8 @@ services:
         - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
         - GEOSERVER_ADMIN_USER=admin
         - TEST_CLASS=test_clustering_master.GeoServerClusteringMaster
+      ports:
+        - "8081:8080"
       restart: on-failure
       depends_on:
         db:
@@ -72,6 +74,8 @@ services:
         - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
         - GEOSERVER_ADMIN_USER=admin
         - TEST_CLASS=test_clustering_node.GeoServerClusteringNode
+      ports:
+        - "8082:8080"
       restart: on-failure
       depends_on:
         master:

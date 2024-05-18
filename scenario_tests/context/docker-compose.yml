@@ -12,6 +12,8 @@ services:
     volumes:
       - geoserver-data-dir:/opt/geoserver/data_dir
       - ./tests:/tests
+    ports:
+      - "8080:8080"
     environment:
       GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
       GEOSERVER_ADMIN_USER: admin
