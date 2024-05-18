@@ -20,8 +20,10 @@ services:
       MAXIMUM_MEMORY: 4G
       CONTAINER_NAME: geoserver
       TEST_CLASS: test_login.TestGeoServerREST
+    ports:
+      - "8081:8080"
     healthcheck:
-      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"
+      test: ["CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml"]
       interval: 1m30s
       timeout: 10s
       retries: 3
@@ -38,8 +40,10 @@ services:
       MAXIMUM_MEMORY: 4G
       CONTAINER_NAME: server
       TEST_CLASS: test_login.TestGeoServerREST
+    ports:
+      - "8082:8080"
     healthcheck:
-      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:$$(cat /opt/geoserver/data_dir/security/pass.txt) http://localhost:8080/geoserver/rest/about/version.xml"
+      test: ["CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$$(cat /opt/geoserver/data_dir/security/pass.txt) http://localhost:8080/geoserver/rest/about/version.xml"]
       interval: 1m30s
       timeout: 10s
       retries: 3

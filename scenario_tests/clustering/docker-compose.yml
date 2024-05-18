@@ -41,6 +41,8 @@ services:
         - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
         - GEOSERVER_ADMIN_USER=admin
         - TEST_CLASS=test_clustering_master.GeoServerClusteringMaster
+      ports:
+        - "8081:8080"
       restart: on-failure
       depends_on:
         db:
@@ -72,6 +74,8 @@ services:
         - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
         - GEOSERVER_ADMIN_USER=admin
         - TEST_CLASS=test_clustering_node.GeoServerClusteringNode
+      ports:
+        - "8082:8080"
       restart: on-failure
       depends_on:
         master:
@@ -79,7 +83,7 @@ services:
         db:
           condition: service_healthy
       healthcheck:
-        test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"
+        test: ["CMD-SHELL","curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u admin:'myawesomegeoserver' http://localhost:8080/geoserver/rest/about/version.xml"]
         interval: 1m30s
         timeout: 10s
         retries: 3

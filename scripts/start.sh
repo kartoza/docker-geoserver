@@ -339,9 +339,11 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
-        echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
+
         if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
           echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
+        else
+          echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
         fi
     else
        export TOMCAT_PASSWORD=${TOMCAT_PASSWORD}
@@ -364,6 +366,37 @@ fi
 
 # Enable SSL
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
+  # ssl env variables
+  if [ -z "${JKS_FILE}" ]; then
+    JKS_FILE=letsencrypt.jks
+  fi
+
+  file_env 'JKS_KEY_PASSWORD'
+  if [ -z "${JKS_KEY_PASSWORD}" ]; then
+    generate_random_string 22
+    JKS_KEY_PASSWORD=${RAND}
+  fi
+
+  if [ -z "${KEY_ALIAS}" ]; then
+    KEY_ALIAS=letsencrypt
+  fi
+
+  file_env 'JKS_STORE_PASSWORD'
+  if [ -z "${JKS_STORE_PASSWORD}" ]; then
+      generate_random_string 23
+      JKS_STORE_PASSWORD=${RAND}
+  fi
+
+  if [ -z "${P12_FILE}" ]; then
+      P12_FILE=letsencrypt.p12
+  fi
+
+  file_env 'PKCS12_PASSWORD'
+  if [ -z "${PKCS12_PASSWORD}" ]; then
+     generate_random_string 24
+      PKCS12_PASSWORD=${RAND}
+  fi
+
 
   # convert LetsEncrypt certificates
   # https://community.letsencrypt.org/t/cry-for-help-windows-tomcat-ssl-lets-encrypt/22902/4
