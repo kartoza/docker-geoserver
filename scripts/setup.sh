@@ -24,6 +24,7 @@ package_geoserver
 # Copy config files
 cp /build_data/stable_plugins.txt "${STABLE_PLUGINS_DIR}" && cp /build_data/community_plugins.txt "${COMMUNITY_PLUGINS_DIR}" && \
 cp /build_data/letsencrypt-tomcat.xsl "${CATALINA_HOME}"/conf/ssl-tomcat.xsl
+cp /build_data/logging.properties "${CATALINA_HOME}/conf/logging.properties"
 
 pushd "${STABLE_PLUGINS_DIR}" || exit
 
@@ -71,7 +72,7 @@ fi
 #Install some mandatory stable extensions
 pushd ${resources_dir}/plugins || exit
 
-array=(geoserver-"${GS_VERSION}"-vectortiles-plugin.zip geoserver-"${GS_VERSION}"-wps-plugin.zip geoserver-"${GS_VERSION}"-printing-plugin.zip
+array=(geoserver-"${GS_VERSION}"-vectortiles-plugin.zip geoserver-"${GS_VERSION}"-wps-plugin.zip
   geoserver-"${GS_VERSION}"-libjpeg-turbo-plugin.zip geoserver-"${GS_VERSION}"-control-flow-plugin.zip
   geoserver-"${GS_VERSION}"-pyramid-plugin.zip geoserver-"${GS_VERSION}"-gdal-plugin.zip
   geoserver-"${GS_VERSION}"-monitor-plugin.zip geoserver-"${GS_VERSION}"-inspire-plugin.zip
