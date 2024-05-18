@@ -15,8 +15,8 @@ fi
 ################################
 #Test using internal jms cluster
 ################################
-echo -e "\e[32m -------------------------------------------------------- \033[0m"
-echo -e "[Unit Test] Running testing using internal: \e[1;31m JMS plugin \033[0m"
+echo -e "------------------------------------------------------"
+echo -e "[Unit Test] Running testing using internal: JMS plugin"
 
 ${VERSION} -f docker-compose.yml up -d
 
@@ -55,8 +55,8 @@ ${VERSION} -f docker-compose.yml down -v
 #Test using external ActiveMQ
 #############################
 
-echo -e "\e[32m -------------------------------------------------------- \033[0m"
-echo -e "[Unit Test] Running testing using internal: \e[1;31m ActiveMQ \033[0m"
+echo -e "------------------------------------------------------"
+echo -e "[Unit Test] Running testing using internal: ActiveMQ"
 
 ${VERSION} -f docker-compose-external.yml up -d
 
@@ -72,9 +72,9 @@ services=("master")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
+  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml
   echo "Execute test for $service"
-  ${VERSION} -f docker-compose.yml exec "${service}" /bin/bash /tests/test.sh
+  ${VERSION} -f docker-compose-external.yml exec "${service}" /bin/bash /tests/test.sh
 
 done
 
@@ -84,7 +84,7 @@ services=("node")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
+  test_url_availability http://localhost:8082/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} -f docker-compose-external.yml exec "${service}" /bin/bash /tests/test.sh
 
