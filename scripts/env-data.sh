@@ -59,7 +59,7 @@ if [ -z "${SSL}" ]; then
 fi
 
 if [ -z "${TOMCAT_EXTRAS}" ]; then
-  TOMCAT_EXTRAS=true
+  TOMCAT_EXTRAS=false
 fi
 
 if [ -z "${ROOT_WEBAPP_REDIRECT}" ]; then

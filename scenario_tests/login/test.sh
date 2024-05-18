@@ -24,7 +24,12 @@ services=("geoserver" "server")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml
+  if [[ $service == 'server' ]];then
+    PORT=8082
+  else
+    PORT=8081
+  fi
+  test_url_availability http://localhost:$PORT/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 
@@ -47,7 +52,7 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8082/geoserver/rest/about/version.xml fabulousgeoserver
+  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml fabulousgeoserver
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 

@@ -17,8 +17,17 @@ function test_url_availability() {
   if [ -z "$2" ]; then
     PASS=myawesomegeoserver
   fi
+  timeout=300
+  start_time=$(date +%s)
 
   while true; do
+    current_time=$(date +%s)
+    elapsed_time=$((current_time - start_time))
+
+    if [ $elapsed_time -ge $timeout ]; then
+      echo "Timeout reached. Exiting."
+      exit 1
+    fi
     if [[ $(wget -S --spider --user admin --password ${PASS} ${URL}  2>&1 | grep 'HTTP/1.1 200') ]]; then
       echo "Rest endpoint ${URL} is available"
       break
@@ -29,3 +38,5 @@ function test_url_availability() {
   done
 
 }
+
+
