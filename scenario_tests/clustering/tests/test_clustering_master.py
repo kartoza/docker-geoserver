@@ -85,10 +85,10 @@ class GeoServerClusteringMaster(unittest.TestCase):
             geo.publish_featurestore(workspace='%s'
                                                % self.geo_workspace_name, store_name='%s' % self.store_name,
                                      pg_table='states')
-            copy("/usr/local/tomcat/data/styles/default_polygon.sld", "/usr/local/tomcat/data/styles/states.sld")
+            copy("/usr/local/tomcat/data/styles/default_point.sld", "/usr/local/tomcat/data/styles/states.sld")
             layer_sld_file = "/usr/local/tomcat/data/styles/states.sld"
-            geo.upload_style(path=r'%s' % layer_sld_file, workspace='%s' % self.geo_workspace_name)
-            geo.publish_style(layer_name='states', style_name='states', workspace='%s' % self.geo_workspace_name)
+            geo.upload_style(path=str(layer_sld_file), workspace=self.geo_workspace_name)
+            geo.publish_style(layer_name='states', style_name='states', workspace=self.geo_workspace_name)
         self.assertEqual(response.status_code, 200)
 
         # Check that the layer exists
