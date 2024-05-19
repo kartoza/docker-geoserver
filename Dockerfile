@@ -3,7 +3,7 @@
 ##############################################################################
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.89-jdk17-temurin-focal
+ARG IMAGE_VERSION=9.0.89-jdk11-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
