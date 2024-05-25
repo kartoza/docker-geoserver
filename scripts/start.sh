@@ -336,21 +336,24 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         sed -i -e '19,36d' "${CATALINA_HOME}"/webapps/manager/META-INF/context.xml
       fi
     fi
+    export TOMCAT_USER
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
-
         if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
           echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
         else
           echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
         fi
+        # Setup tomcat apps manager
+        tomcat_user_config
+        # Unset random generated password
+        unset TOMCAT_PASSWORD
     else
+      # Setup tomcat apps manager
        export TOMCAT_PASSWORD=${TOMCAT_PASSWORD}
+       tomcat_user_config
     fi
-    # Setup tomcat apps manager
-    export TOMCAT_USER
-    tomcat_user_config
 else
     delete_folder "${CATALINA_HOME}"/webapps/ROOT &&
     delete_folder "${CATALINA_HOME}"/webapps/docs &&
@@ -375,8 +378,11 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   if [ -z "${JKS_KEY_PASSWORD}" ]; then
     generate_random_string 22
     JKS_KEY_PASSWORD=${RAND}
+    export JKS_KEY_PASSWORD
+    echo "JKS_KEY_PASSWORD" >> /tmp/set_vars.txt
   fi
 
+  file_env KEY_ALIAS
   if [ -z "${KEY_ALIAS}" ]; then
     KEY_ALIAS=letsencrypt
   fi
@@ -385,6 +391,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   if [ -z "${JKS_STORE_PASSWORD}" ]; then
       generate_random_string 23
       JKS_STORE_PASSWORD=${RAND}
+      export JKS_STORE_PASSWORD
+      echo "JKS_STORE_PASSWORD" >> /tmp/set_vars.txt
   fi
 
   if [ -z "${P12_FILE}" ]; then
@@ -394,7 +402,9 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   file_env 'PKCS12_PASSWORD'
   if [ -z "${PKCS12_PASSWORD}" ]; then
      generate_random_string 24
-      PKCS12_PASSWORD=${RAND}
+     PKCS12_PASSWORD=${RAND}
+     export PKCS12_PASSWORD
+     echo "PKCS12_PASSWORD" >> /tmp/set_vars.txt
   fi
 
 
@@ -406,7 +416,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
 
-  export PKCS12_PASSWORD
+
 
   # Copy PFX file if it exists in the extra config directory
   if [ -f "${EXTRA_CONFIG_DIR}"/certificate.pfx ]; then
@@ -438,8 +448,6 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -password pass:"$PKCS12_PASSWORD"
 
   # import PKCS12 into JKS
-  export JKS_KEY_PASSWORD JKS_STORE_PASSWORD
-
 
   keytool -importkeystore \
     -noprompt \
@@ -574,6 +582,7 @@ if [[ -f ${EXTRA_CONFIG_DIR}/server.xml ]]; then
 else
   # default value
   eval "$transform"
+  #sed -i 's|resourceName="UserDatabase"/>|resourceName="UserDatabase"><CredentialHandler className="org.apache.catalina.realm.MessageDigestCredentialHandler" algorithm="sha-512" />|g' "${CATALINA_HOME}"/conf/server.xml
   # Add x-forwarded headers
   if [[ "${ACTIVATE_PROXY_HEADERS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     sed -i.bak -r '/\<\Host\>/ i\ \t<Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="x-forwarded-for" remoteIpProxiesHeader="x-forwarded-by" protocolHeader="x-forwarded-proto" protocolHeaderHttpsValue="https"/>' "${CATALINA_HOME}"/conf/server.xml
@@ -583,6 +592,13 @@ fi
 
 # Cleanup temp file
 delete_file "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
+
+#Unset env variables
+if [[ -f /tmp/set_vars.txt ]];then
+  for vars in $(cat /tmp/set_vars.txt);do unset $vars;done
+  rm /tmp/set_vars.txt
+fi
+
 
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
