@@ -50,7 +50,7 @@ jobs:
           path: /tmp/activemq.tar
   build-docker-image:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     if: github.actor != 'dependabot[bot]'
     strategy:
       matrix:
