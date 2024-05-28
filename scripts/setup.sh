@@ -48,10 +48,16 @@ if [ -z "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_STABLE_EXTENS
   approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
   download_extension "${approved_plugins_url}" "${plugin}" "${STABLE_PLUGINS_DIR}"
 else
-  for plugin in $(cat "${STABLE_PLUGINS_DIR}"/stable_plugins.txt); do
-    approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-    download_extension "${approved_plugins_url}" "${plugin}" "${STABLE_PLUGINS_DIR}"
-  done
+    URL_FILE=$(mktemp)
+    for plugin in $(cat ${STABLE_PLUGINS_DIR}/stable_plugins.txt); do
+      approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+      echo "$approved_plugins_url" >> $URL_FILE
+    done
+    # Download the plugins
+    download_extensions $URL_FILE ${STABLE_PLUGINS_DIR}
+
+    rm $URL_FILE
+
 fi
 
 # Download community extensions. This needs to be checked on each iterations as they sometimes become unavailable
@@ -62,26 +68,23 @@ if [ -z "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" ] || [ "${DOWNLOAD_ALL_COMMUNITY_
   community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
   download_extension "${community_plugins_url}" "${plugin}" "${COMMUNITY_PLUGINS_DIR}"
 else
-  for plugin in $(cat "${COMMUNITY_PLUGINS_DIR}"/community_plugins.txt); do
-    community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-    download_extension "${community_plugins_url}" "${plugin}" "${COMMUNITY_PLUGINS_DIR}"
+    URL_FILE=$(mktemp)
+    for plugin in $(cat ${COMMUNITY_PLUGINS_DIR}/community_plugins.txt); do
+      community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
+      echo "$community_plugins_url" >> $URL_FILE
+    done
 
-  done
+    # Download the plugins
+    download_extensions $URL_FILE ${COMMUNITY_PLUGINS_DIR}
+
+    # Remove the temporary URL file
+    rm $URL_FILE
+
 fi
 
-#Install some mandatory stable extensions
-pushd ${resources_dir}/plugins || exit
 
-array=(geoserver-"${GS_VERSION}"-vectortiles-plugin.zip geoserver-"${GS_VERSION}"-wps-plugin.zip
-  geoserver-"${GS_VERSION}"-libjpeg-turbo-plugin.zip geoserver-"${GS_VERSION}"-control-flow-plugin.zip
-  geoserver-"${GS_VERSION}"-pyramid-plugin.zip geoserver-"${GS_VERSION}"-gdal-plugin.zip
-  geoserver-"${GS_VERSION}"-monitor-plugin.zip geoserver-"${GS_VERSION}"-inspire-plugin.zip
-  geoserver-"${GS_VERSION}"-csw-plugin.zip geoserver-"${GS_VERSION}"-csw-iso-plugin.zip)
-for i in "${array[@]}"; do
-  url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/${i}"
-  download_extension "${url}" "${i%.*}" ${resources_dir}/plugins
-done
-
+# Install GeoServer plugins in correct install dir
+GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
 # Install libjpeg-turbo
 system_architecture=$(dpkg --print-architecture)
@@ -94,18 +97,6 @@ fi
 dpkg -i ${resources_dir}/libjpeg-turbo-official_${libjpeg_version}_"${system_architecture}".deb
 
 pushd "${CATALINA_HOME}" || exit
-
-# Install GeoServer plugins in correct install dir
-GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
-
-# Install any plugin zip files in resources/plugins
-if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
-  for p in /tmp/resources/plugins/*.zip; do
-    unzip "$p" -d /tmp/gs_plugin &&
-      mv /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/ &&
-      rm -rf /tmp/gs_plugin
-  done
-fi
 
 lib_dir="${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib"
 

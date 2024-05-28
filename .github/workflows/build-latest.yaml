@@ -48,7 +48,7 @@ jobs:
         with:
           name: kartoza-activemq
           path: /tmp/activemq.tar
-  build-docker-image:
+  build-geoserver-docker-image:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     if: github.actor != 'dependabot[bot]'
@@ -74,6 +74,32 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: Build image for production
+        id: docker_build_production_image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: true
+          outputs: type=docker,dest=/tmp/geoserver_production.tar
+          build-args: |
+            IMAGE_VERSION=${{ matrix.imageVersion.image }}
+            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
+            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
+            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
+          cache-from: |
+            type=gha,scope=prod
+          cache-to: type=gha,scope=prod
+          target: geoserver-prod
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kartoza-geoserver-production
+          path: /tmp/geoserver_production.tar
       - name: Build image for testing
         id: docker_build_testing_image
         uses: docker/build-push-action@v5
@@ -93,8 +119,7 @@ jobs:
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
           cache-from: |
-           type=gha,scope=test
-           type=gha,scope=prod
+            type=gha,scope=prod
           cache-to: type=gha,scope=test
           target: geoserver-test
       - name: Upload artifact
@@ -102,29 +127,12 @@ jobs:
         with:
           name: kartoza-geoserver
           path: /tmp/geoserver.tar
-      - name: Build image for production
-        id: docker_build_production_image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          push: false
-          load: true
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          outputs: type=docker,dest=/tmp/geoserver_production.tar
-          cache-from: type=gha,scope=test
-          cache-to: type=gha,scope=prod
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kartoza-geoserver-production
-          path: /tmp/geoserver_production.tar
   scan_image:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.actor != 'dependabot[bot]'
-    needs: [build-docker-image, run-scenario-tests]
+    needs: [build-geoserver-docker-image, run-scenario-tests]
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
@@ -140,7 +148,6 @@ jobs:
         with:
           format: 'sarif'
           ignore-unfixed: true
-          #input: /tmp/geoserver.tar
           image-ref: kartoza/geoserver:manual-build
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
@@ -155,7 +162,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.actor != 'dependabot[bot]'
-    needs: [ build-docker-image, build-activemq-docker-image]
+    needs: [ build-geoserver-docker-image, build-activemq-docker-image]
     strategy:
       matrix:
         scenario:
@@ -198,7 +205,7 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [ build-docker-image, run-scenario-tests ]
+    needs: [ build-geoserver-docker-image, run-scenario-tests ]
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact

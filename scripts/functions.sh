@@ -134,6 +134,22 @@ function download_extension() {
 
 }
 
+function download_extensions() {
+  URL_FILE=$1
+  OUTPUT_PATH=$2
+  while IFS= read -r url; do
+    filename=$(basename -- "$url")
+    plugin_name=${filename#geoserver-*-*}
+    if [[ $plugin_name == SNAPSHOT-* ]]; then
+      plugin_name=${plugin_name#SNAPSHOT-}
+    fi
+    output_file="$OUTPUT_PATH/$plugin_name"
+    if [ ! -f "$output_file" ]; then
+      wget -c --tries=2 -nv --show-progress --https-only -O "$output_file" "$url"
+    fi
+  done < "$URL_FILE"
+}
+
 function validate_geo_install() {
   DATA_PATH=$1
   # Check if geoserver is installed early so that we can fail early on
@@ -652,5 +668,46 @@ function setup_hz_cluster() {
         else
           envsubst < /build_data/hazelcast_cluster/hazelcast.xml > "${GEOSERVER_DATA_DIR}"/cluster/hazelcast.xml
         fi
+    fi
+}
+
+function setup_stable_extensions() {
+      URL_FILE=$(mktemp)
+      for plugin in $(cat ${STABLE_PLUGINS_DIR}/stable_plugins.txt); do
+        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
+        echo "$approved_plugins_url" >> $URL_FILE
+      done
+      # Download the plugins
+      download_extensions $URL_FILE ${STABLE_PLUGINS_DIR}
+
+      rm $URL_FILE
+      if [ -n "${stable_plugins_array[@]}" ] && [ ${#stable_plugins_array[@]} -ne 0 ]; then
+        for ext in "${stable_plugins_array[@]}";do
+          install_plugin ${STABLE_PLUGINS_DIR}/ "${ext}"
+        done
+      fi
+
+
+}
+
+function setup_community_extensions() {
+    URL_FILE=$(mktemp)
+    for plugin in $(cat ${COMMUNITY_PLUGINS_DIR}/community_plugins.txt); do
+      community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
+      echo "$community_plugins_url" >> $URL_FILE
+    done
+
+    # Download the plugins
+    download_extensions $URL_FILE ${COMMUNITY_PLUGINS_DIR}
+
+    # Remove the temporary URL file
+    rm $URL_FILE
+    if [ -n "${community_plugins_array[@]}" ] && [ ${#community_plugins_array[@]} -ne 0 ]; then
+      for ext in "${community_plugins_array[@]}";do
+          setup_jdbc_db_store
+          setup_jdbc_db_config
+          setup_hz_cluster
+          install_plugin ${COMMUNITY_PLUGINS_DIR}/ "${ext}"
+      done
     fi
 }

@@ -32,10 +32,6 @@ jobs:
         downloadAllCommunityExtensions:
           - 1
         stablePluginBaseURL:
-          # empty because it often changes, so it's better
-          # to use the default one described in the Dockerfile
-          # to make it consistent. How-ever we keep this in GH Action
-          # to make it easy to pass overrides in the future.
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
       - uses: actions/checkout@v4
@@ -63,6 +59,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}

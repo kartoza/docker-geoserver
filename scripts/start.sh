@@ -106,29 +106,29 @@ fi
 export WMS_DIR_INTEGRATION REQUIRE_TILED_PARAMETER WMSC_ENABLED TMS_ENABLED SECURITY_ENABLED
 activate_gwc_global_configs
 
+# Install mandatory plugins
+IFS=','
+read -a mandatory_plugins_array <<< "$MANDATORY_STABLE_EXTENSIONS"
+URL_FILE=$(mktemp)
+for ext in "${mandatory_plugins_array[@]}";do
+  approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+  echo "$approved_plugins_url" >> $URL_FILE
+done
+download_extensions $URL_FILE /stable_plugins
+rm $URL_FILE
+for ext in "${mandatory_plugins_array[@]}";do
+    install_plugin ${STABLE_PLUGINS_DIR}/ "${ext}"
+done
+
 # Install stable plugins
+IFS=','
+read -r -a stable_plugins_array <<< "$STABLE_EXTENSIONS"
 if [[ ! -z "${STABLE_EXTENSIONS}" ]]; then
   if  [[ ${FORCE_DOWNLOAD_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
       rm -rf /stable_plugins/*.zip
-      for plugin in $(cat /stable_plugins/stable_plugins.txt); do
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${plugin}.zip"
-        download_extension "${approved_plugins_url}" "${plugin}" /stable_plugins
-      done
-      for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-        install_plugin /stable_plugins/ "${ext}"
-    done
-  else
-    for ext in $(echo "${STABLE_EXTENSIONS}" | tr ',' ' '); do
-        if [[ ! -f /stable_plugins/${ext}.zip ]]; then
-          approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-          download_extension "${approved_plugins_url}" "${ext}" /stable_plugins/
-          install_plugin /stable_plugins/ "${ext}"
-        else
-          install_plugin /stable_plugins/ "${ext}"
-        fi
-
-    done
   fi
+  setup_stable_extensions
+
 fi
 
 if [[ ${ACTIVATE_ALL_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
@@ -160,37 +160,14 @@ fi
 fi
 
 export JDBC_CONFIG_ENABLED JDBC_IGNORE_PATHS JDBC_STORE_ENABLED
+IFS=','
+read -a community_plugins_array <<< "$COMMUNITY_EXTENSIONS"
 # Install community modules plugins
 if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
   if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-    rm -rf /community_plugins/*.zip
-    for plugin in $(cat /community_plugins/community_plugins.txt); do
-      community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${plugin}.zip"
-      download_extension "${community_plugins_url}" "${plugin}" /community_plugins
-    done
-    for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-        setup_jdbc_db_store
-        setup_jdbc_db_config
-        setup_hz_cluster
-        install_plugin /community_plugins "${ext}"
-    done
-  else
-    for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-        if [[ ! -f /community_plugins/${ext}.zip ]]; then
-          community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-          download_extension "${community_plugins_url}" "${ext}" /community_plugins
-          setup_jdbc_db_store
-          setup_jdbc_db_config
-          setup_hz_cluster
-          install_plugin /community_plugins "${ext}"
-        else
-          setup_jdbc_db_store
-          setup_jdbc_db_config
-          setup_hz_cluster
-          install_plugin /community_plugins "${ext}"
-        fi
-    done
+    rm -rf ${COMMUNITY_PLUGINS_DIR}/*.zip
   fi
+  setup_community_extensions
 fi
 
 

@@ -177,7 +177,11 @@ The image ships with the following stable extensions:
 * inspire-plugin
 * csw-plugin
 
-These extensions are automatically activated on container start. 
+These extensions are automatically activated on container start, if you do
+not need any of the plugins to be installed you can also control
+them using the env variable `MANDATORY_STABLE_EXTENSIONS=`. Setting
+the variable to empty will ensure not mandatory plugins are installed.
+You can then control the installation with stable and community env.
 
 ####  Activate stable extensions during the contain startup
 

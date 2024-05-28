@@ -432,3 +432,7 @@ fi
 if [ -z "${GEOSERVER_DISABLE_STATIC_WEB_FILES}" ];then
   GEOSERVER_DISABLE_STATIC_WEB_FILES=true
 fi
+
+if [ -z "${MANDATORY_STABLE_EXTENSIONS}" ];then
+  MANDATORY_STABLE_EXTENSIONS=vectortiles-plugin,wps-plugin,libjpeg-turbo-plugin,control-flow-plugin,pyramid-plugin,gdal-plugin,monitor-plugin,inspire-plugin,csw-plugin,csw-iso-plugin
+fi
