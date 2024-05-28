@@ -1,0 +1,10 @@
+control-flow-plugin
+csw-iso-plugin
+csw-plugin
+gdal-plugin
+inspire-plugin
+libjpeg-turbo-plugin
+monitor-plugin
+pyramid-plugin
+vectortiles-plugin
+wps-plugin

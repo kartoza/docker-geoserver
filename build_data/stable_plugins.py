@@ -28,6 +28,14 @@ for link in soup.find_all('a'):
             plugin_base_name = plugin_name.replace("geoserver-%s-" % args.version, "")
             plugin_list.append(plugin_base_name)
 
+required_plugins = set()
+with open('required_plugins.txt', 'r') as f:
+    for plugin in f:
+        plugin = plugin.strip()
+        if plugin:
+            required_plugins.add(plugin)
+
 with open('stable_plugins.txt', 'w') as f:
     for plugin in plugin_list:
-        f.write(plugin + '\n')
+        if plugin not in required_plugins:
+            f.write(plugin + '\n')

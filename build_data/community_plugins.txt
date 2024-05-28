@@ -47,7 +47,6 @@ ogr-datastore-plugin
 opensearch-eo-plugin
 pgraster-plugin
 proxy-base-ext-plugin
-rat-plugin
 s3-geotiff-plugin
 sec-keycloak-plugin
 sec-oauth2-geonode-plugin
@@ -63,6 +62,7 @@ taskmanager-s3-plugin
 vector-mosaic-plugin
 vsi-plugin
 webp-plugin
+wfs-freemarker-plugin
 wps-longitudinal-profile-plugin
 wps-remote-plugin
 xslt-plugin
