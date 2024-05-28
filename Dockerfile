@@ -1,18 +1,70 @@
-##############################################################################
-# Production stage                                                           #
-##############################################################################
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 ARG IMAGE_VERSION=9.0.85-jdk17-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
+
+##############################################################################
+# Plugin downloader                                                          #
+##############################################################################
+# This container pulls in lists of plugins from
+# build_data/{required,stable,community}_plugins.txt, and then builds a curl
+# configuration file to fetch everything in each list, allowing HTTPS
+# connection re-use.
+#
+# By comparison, calling curl for each URL individually means setting up a new
+# HTTPS connection for each URL, which is at least 3 network round-trips
+# before we've even sent our HTTP request!
+#
+# Being a separate stage, docker buildx can run this part in parallel with the
+# rest of the build, and it can leverage caches to improve re-build times when
+# not changing any plugins (saving ~460 MiB of downloads).
+
+# Use $BUILDPLATFORM because plugin archives are architecture-neutral, and use
+# alpine because it's smaller.
+FROM --platform=$BUILDPLATFORM alpine:3.19 AS geoserver-plugin-downloader
+ARG GS_VERSION=2.25.0
+ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
+ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
+
+RUN apk update && apk add curl
+
+WORKDIR /work
+ADD build_data/required_plugins.txt build_data/stable_plugins.txt build_data/community_plugins.txt /work/
+
+RUN <<EOF
+    set -eux
+    # Download all required plugins
+    mkdir -p /work/required_plugins
+    cd /work/required_plugins
+    awk '{print "url = \"https://sourceforge.net/projects/geoserver/files/GeoServer/'"${GS_VERSION}"'/extensions/geoserver-'"${GS_VERSION}"'-"$0".zip\"\noutput = \""$0".zip\"\n--fail\n--location\n"}' < /work/required_plugins.txt | curl --fail-early -vK -
+    cd /work
+
+    # Download all stable plugins
+    mkdir -p /work/stable_plugins
+    if [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" == "1" ]; then
+        cd /work/stable_plugins
+        awk '{print "url = \"https://sourceforge.net/projects/geoserver/files/GeoServer/'"${GS_VERSION}"'/extensions/geoserver-'"${GS_VERSION}"'-"$0".zip\"\noutput = \""$0".zip\"\n--fail\n--location\n"}' < /work/stable_plugins.txt | curl --fail-early -vK -
+        cd /work
+    fi
+
+    # Download all community plugins
+    mkdir -p /work/community_plugins
+    if [ "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" == "1" ]; then
+        cd /work/community_plugins
+        awk '{print "url = \"https://build.geoserver.org/geoserver/'"${GS_VERSION:0:5}"'x/community-latest/geoserver-'"${GS_VERSION:0:4}"'-SNAPSHOT-"$0".zip\"\noutput = \""$0".zip\"\n--fail\n--location\n"}' < /work/community_plugins.txt | curl --fail-early -vK -
+        cd /work
+    fi
+EOF
+
+##############################################################################
+# Production stage                                                           #
+##############################################################################
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.25.0
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
-ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
-ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
 ARG HTTPS_PORT=8443
 ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
@@ -51,6 +103,10 @@ WORKDIR /scripts
 ADD resources /tmp/resources
 ADD build_data /build_data
 ADD scripts /scripts
+
+COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip /tmp/resources/plugins/
+COPY --from=geoserver-plugin-downloader /work/stable_plugins/*.zip /stable_plugins/
+COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip /community_plugins/
 
 RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \

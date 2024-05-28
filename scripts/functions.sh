@@ -1,24 +1,8 @@
 #!/usr/bin/env bash
 
-
-export request="wget --progress=bar:force:noscroll -c --tries=2 --timeout=10 --limit-rate=1m  --keep-session-cookies "
-
 function log() {
     echo "$0:${BASH_LINENO[*]}": $@
 }
-
-function validate_url(){
-  EXTRA_PARAMS=''
-  if [ -n "$2" ]; then
-    EXTRA_PARAMS=$2
-  fi
-  if [[ $(wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
-    ${request} "${1}" "${2}"
-  else
-    echo -e "URL : \e[1;31m $1 does not exists \033[0m"
-  fi
-}
-
 
 function generate_random_string() {
   STRING_LENGTH=$1
@@ -126,12 +110,7 @@ function download_extension() {
   URL=$1
   PLUGIN=$2
   OUTPUT_PATH=$3
-  if curl --output /dev/null --silent --head --fail "${URL}"; then
-    ${request} "${URL}" -O "${OUTPUT_PATH}"/"${PLUGIN}".zip
-  else
-    echo -e "Plugin URL does not exist:: \e[1;31m ${URL} \033[0m"
-  fi
-
+  curl -fLvo "${OUTPUT_PATH}/${PLUGIN}.zip" "${URL}"
 }
 
 function validate_geo_install() {
@@ -174,53 +153,25 @@ fi
 
 # A little logic that will fetch the geoserver war zip file if it is not available locally in the resources dir
 function package_geoserver() {
-
-if [[ ! -f /tmp/resources/geoserver-${GS_VERSION}.zip ]] || [[ ! -f /tmp/resources/geoserver-${GS_VERSION}-bin.zip ]]; then
-    if [[ "${WAR_URL}" == *\.zip ]]; then
-      if [[ "${WAR_URL}" == *\bin.zip ]];then
-        destination=/tmp/resources/geoserver-${GS_VERSION}-bin.zip
-        if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
-          ${request} "${WAR_URL}" -O "${destination}"
-        else
-            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
-            exit 1
-        fi
-        unzip /tmp/resources/geoserver-"${GS_VERSION}"-bin.zip -d /tmp/geoserver && \
-        unzip_geoserver
-      else
-        destination=/tmp/resources/geoserver-${GS_VERSION}.zip
-        if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
-          ${request} "${WAR_URL}" -O "${destination}"
-        else
-            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
-            exit 1
-        fi
-        unzip /tmp/resources/geoserver-"${GS_VERSION}".zip -d /tmp/geoserver && \
-        unzip_geoserver
-      fi
-    else
-      destination=/tmp/geoserver/geoserver.war
-      mkdir -p /tmp/geoserver/ &&
-      if curl --output /dev/null --silent --head --fail "${WAR_URL}"; then
-          ${request} "${WAR_URL}" -O ${destination} && \
-          unzip_geoserver
-        else
-            echo -e "GeoServer war file does not exist from:: \e[1;31m ${WAR_URL} \033[0m"
-            exit 1
-      fi
-    fi
-else
   if [[  -f /tmp/resources/geoserver-${GS_VERSION}.zip ]];then
     unzip /tmp/resources/geoserver-"${GS_VERSION}".zip -d /tmp/geoserver && \
     unzip_geoserver
-
   elif [[  -f /tmp/resources/geoserver-${GS_VERSION}-bin.zip  ]];then
     unzip /tmp/resources/geoserver-"${GS_VERSION}".zip -d /tmp/geoserver && \
     unzip_geoserver
-
+  else
+    if [[ "${WAR_URL}" == *\.zip ]]; then
+      destination="/tmp/resources/geoserver.zip"
+      curl -fLvo "${destination}" "${WAR_URL}" || exit 1
+      unzip /tmp/resources/geoserver.zip -d /tmp/geoserver && \
+        unzip_geoserver
+    else
+      destination=/tmp/geoserver/geoserver.war
+      mkdir -p /tmp/geoserver/
+      curl -fLvo "${destination}" "${WAR_URL}" || exit 1
+      unzip_geoserver
+    fi
   fi
-fi
-
 }
 
 # Helper function to setup cluster config for the clustering plugin
@@ -313,11 +264,11 @@ function install_plugin() {
   fi
   EXT=$2
 
-  if [[ -f "${DATA_PATH}"/"${EXT}".zip ]];then
-     unzip "${DATA_PATH}"/"${EXT}".zip -d /tmp/gs_plugin
+  if [[ -f "${DATA_PATH}/${EXT}.zip" ]]; then
+     unzip "${DATA_PATH}/${EXT}.zip" -d /tmp/gs_plugin
      echo -e "\e[32m Enabling ${EXT} for GeoServer \033[0m"
      GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
-     cp -r -u -p /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
+     cp -r -u -p /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
      rm -rf /tmp/gs_plugin
   else
     echo -e "\e[32m ${EXT} extension will not be installed because it is not available \033[0m"
