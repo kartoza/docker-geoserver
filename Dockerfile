@@ -29,32 +29,13 @@ ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
 RUN apk update && apk add curl
 
 WORKDIR /work
-ADD build_data/required_plugins.txt build_data/stable_plugins.txt build_data/community_plugins.txt /work/
-
-RUN <<EOF
-    set -eux
-    # Download all required plugins
-    mkdir -p /work/required_plugins
-    cd /work/required_plugins
-    awk '{print "url = \"https://sourceforge.net/projects/geoserver/files/GeoServer/'"${GS_VERSION}"'/extensions/geoserver-'"${GS_VERSION}"'-"$0".zip\"\noutput = \""$0".zip\"\n--fail\n--location\n"}' < /work/required_plugins.txt | curl --fail-early -vK -
-    cd /work
-
-    # Download all stable plugins
-    mkdir -p /work/stable_plugins
-    if [ "${DOWNLOAD_ALL_STABLE_EXTENSIONS}" == "1" ]; then
-        cd /work/stable_plugins
-        awk '{print "url = \"https://sourceforge.net/projects/geoserver/files/GeoServer/'"${GS_VERSION}"'/extensions/geoserver-'"${GS_VERSION}"'-"$0".zip\"\noutput = \""$0".zip\"\n--fail\n--location\n"}' < /work/stable_plugins.txt | curl --fail-early -vK -
-        cd /work
-    fi
-
-    # Download all community plugins
-    mkdir -p /work/community_plugins
-    if [ "${DOWNLOAD_ALL_COMMUNITY_EXTENSIONS}" == "1" ]; then
-        cd /work/community_plugins
-        awk '{print "url = \"https://build.geoserver.org/geoserver/'"${GS_VERSION:0:5}"'x/community-latest/geoserver-'"${GS_VERSION:0:4}"'-SNAPSHOT-"$0".zip\"\noutput = \""$0".zip\"\n--fail\n--location\n"}' < /work/community_plugins.txt | curl --fail-early -vK -
-        cd /work
-    fi
-EOF
+ADD \
+    build_data/required_plugins.txt \
+    build_data/stable_plugins.txt \
+    build_data/community_plugins.txt \
+    build_data/plugin_download.sh \
+    /work/
+RUN /work/plugin_download.sh
 
 ##############################################################################
 # Production stage                                                           #
