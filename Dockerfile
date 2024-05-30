@@ -25,6 +25,7 @@ FROM --platform=$BUILDPLATFORM alpine:3.19 AS geoserver-plugin-downloader
 ARG GS_VERSION=2.25.0
 ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
 ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
+ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 
 RUN apk update && apk add curl
 
