@@ -24,7 +24,7 @@ jobs:
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 25
-            patch: 0
+            patch: 1
           #- minor: 23
             #patch: 2
         downloadAllStableExtensions:
