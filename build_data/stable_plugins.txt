@@ -38,6 +38,7 @@ params-extractor-plugin
 printing-plugin
 pyramid-plugin
 querylayer-plugin
+rat-plugin
 sldservice-plugin
 sqlserver-plugin
 vectortiles-plugin
