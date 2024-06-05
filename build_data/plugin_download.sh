@@ -19,4 +19,4 @@ awk '{print "url = \"https://build.geoserver.org/geoserver/'"${GS_VERSION:0:5}"'
 
 
 # Download everything!
-curl --fail-early -vK /work/curl.cfg
+curl  -vK /work/curl.cfg
