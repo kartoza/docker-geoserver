@@ -14,6 +14,7 @@ create_dir "${STABLE_PLUGINS_DIR}"
 create_dir "${COMMUNITY_PLUGINS_DIR}"
 create_dir "${GEOSERVER_HOME}"
 create_dir "${FONTS_DIR}"
+create_dir "${REQUIRED_PLUGINS_DIR}"
 
 pushd "${CATALINA_HOME}" || exit
 
@@ -28,19 +29,6 @@ cp /build_data/letsencrypt-tomcat.xsl "${CATALINA_HOME}"/conf/ssl-tomcat.xsl
 cp /build_data/logging.properties "${CATALINA_HOME}/conf/logging.properties"
 
 pushd "${STABLE_PLUGINS_DIR}" || exit
-
-# Check if we have pre downloaded plugin yet
-
-stable_count=$(find "$resources_dir/plugins/stable_plugins" -type f -name '*.zip' 2>/dev/null | wc -l)
-if [ "$stable_count" != 0 ]; then
-  cp -r $resources_dir/plugins/stable_plugins/*.zip "${STABLE_PLUGINS_DIR}"/
-fi
-
-
-community_count=$(find "$resources_dir/plugins/community_plugins" -type f -name '*.zip' 2>/dev/null | wc -l)
-if [ "${community_count}" != 0 ]; then
-  cp -r $resources_dir/plugins/community_plugin/*.zip "${COMMUNITY_PLUGINS_DIR}"/
-fi
 
 # Install libjpeg-turbo
 system_architecture=$(dpkg --print-architecture)
@@ -58,14 +46,6 @@ pushd "${CATALINA_HOME}" || exit
 # Install GeoServer plugins in correct install dir
 GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
-# Install any plugin zip files in resources/plugins
-if ls /tmp/resources/plugins/*.zip >/dev/null 2>&1; then
-  for p in /tmp/resources/plugins/*.zip; do
-    unzip "$p" -d /tmp/gs_plugin &&
-      mv /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/ &&
-      rm -rf /tmp/gs_plugin
-  done
-fi
 
 lib_dir="${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib"
 

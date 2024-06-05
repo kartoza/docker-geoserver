@@ -20,17 +20,13 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0.73-jdk11-temurin-focal
+          - image: 9.0.89-jdk11-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 25
-            patch: 0
+            patch: 1
           #- minor: 23
             #patch: 2
-        downloadAllStableExtensions:
-          - 1
-        downloadAllCommunityExtensions:
-          - 1
         stablePluginBaseURL:
           # empty because it often changes, so it's better
           # to use the default one described in the Dockerfile
@@ -62,6 +58,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
           build-args: |
@@ -69,8 +66,6 @@ jobs:
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
             GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
-            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
-            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
           cache-from: |
             type=gha,scope=test

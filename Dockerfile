@@ -1,6 +1,6 @@
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.85-jdk17-temurin-focal
+ARG IMAGE_VERSION=9.0.89-jdk11-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
 
 ##############################################################################
@@ -22,9 +22,7 @@ ARG JAVA_HOME=/opt/java/openjdk
 # Use $BUILDPLATFORM because plugin archives are architecture-neutral, and use
 # alpine because it's smaller.
 FROM --platform=$BUILDPLATFORM alpine:3.19 AS geoserver-plugin-downloader
-ARG GS_VERSION=2.25.0
-ARG DOWNLOAD_ALL_STABLE_EXTENSIONS=1
-ARG DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=1
+ARG GS_VERSION=2.25.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 
 RUN apk update && apk add curl
@@ -53,7 +51,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN set -eux; \
     apt-get update; \
     apt-get -y --no-install-recommends install \
-        locales gnupg2 wget ca-certificates software-properties-common  iputils-ping \
+        locales gnupg2 ca-certificates software-properties-common  iputils-ping \
         apt-transport-https  gettext fonts-cantarell fonts-liberation lmodern ttf-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
         zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin libgdal-java; \
@@ -78,7 +76,8 @@ ENV \
     GEOSERVER_HOME=/geoserver \
     EXTRA_CONFIG_DIR=/settings \
     COMMUNITY_PLUGINS_DIR=/community_plugins  \
-    STABLE_PLUGINS_DIR=/stable_plugins
+    STABLE_PLUGINS_DIR=/stable_plugins \
+    REQUIRED_PLUGINS_DIR=/required_plugins
 
 
 WORKDIR /scripts
@@ -86,9 +85,11 @@ ADD resources /tmp/resources
 ADD build_data /build_data
 ADD scripts /scripts
 
-COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip /tmp/resources/plugins/
-COPY --from=geoserver-plugin-downloader /work/stable_plugins/*.zip /stable_plugins/
-COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip /community_plugins/
+COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip ${REQUIRED_PLUGINS_DIR}/
+COPY --from=geoserver-plugin-downloader /work/required_plugins.txt ${REQUIRED_PLUGINS_DIR}/
+COPY --from=geoserver-plugin-downloader /work/stable_plugins/*.zip ${STABLE_PLUGINS_DIR}/
+COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNITY_PLUGINS_DIR}/
+
 
 RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \

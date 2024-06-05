@@ -57,15 +57,11 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0.73-jdk11-temurin-focal
+          - image: 9.0.89-jdk11-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 25
-            patch: 0
-        downloadAllStableExtensions:
-          - 1
-        downloadAllCommunityExtensions:
-          - 1
+            patch: 1
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
@@ -89,8 +85,6 @@ jobs:
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
             GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
-            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
-            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
           cache-from: |
            type=gha,scope=test
