@@ -17,6 +17,8 @@ on:
       - 'scripts/**'
       - 'build_data/**'
       - '.github/workflows/**'
+permissions:
+  contents: read
 jobs:
   build-activemq-docker-image:
     runs-on: ubuntu-latest
@@ -166,6 +168,7 @@ jobs:
           - context
           - disk-quota
           - clustering
+          - jdbconfig
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact

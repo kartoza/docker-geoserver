@@ -168,7 +168,6 @@ A full list of environment variables are specified in the [.env](https://github.
 The image ships with the following stable extensions:
 * vectortiles-plugin
 * wps-plugin
-* printing-plugin
 * libjpeg-turbo-plugin
 * control-flow-plugin
 * pyramid-plugin
@@ -177,7 +176,20 @@ The image ships with the following stable extensions:
 * inspire-plugin
 * csw-plugin
 
-These extensions are automatically activated on container start. 
+These extensions are automatically activated on container start. if you wish to 
+exclude any of the default installed plugins you will need to se
+```bash
+ACTIVE_EXTENSIONS=${Default_extension} - skipped_default_extension
+```
+
+i.e. 
+```
+ACTIVE_EXTENSIONS=control-flow-plugin,csw-iso-plugin,csw-plugin,gdal-plugin,inspire-plugin,monitor-plugin,pyramid-plugin,vectortiles-plugin,wps-plugin
+```
+will skip activating libjpeg-turbo-plugin.
+
+The variable `ACTIVE_EXTENSIONS` is used to specify a set of plugins to enable, if left empty or unset the following 
+will be enabled : [list of default plugins](https://github.com/kartoza/docker-geoserver/blob/develop/build_data/required_plugins.txt)
 
 ####  Activate stable extensions during the contain startup
 
