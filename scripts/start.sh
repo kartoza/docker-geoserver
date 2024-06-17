@@ -339,9 +339,8 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         export TOMCAT_PASSWORD=${RAND}
         if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
           echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
-        else
-          echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
         fi
+        echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
         # Setup tomcat apps manager
         tomcat_user_config
         # Unset random generated password
