@@ -8,6 +8,8 @@ on:
       - develop
     types:
       - completed
+permissions:
+  contents: read
 jobs:
   deploy-image:
     if: github.actor != 'dependabot[bot]'

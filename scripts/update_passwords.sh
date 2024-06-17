@@ -41,6 +41,8 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
           echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
           echo -e "[Entrypoint] GENERATED GeoServer Random PASSWORD is: \e[1;31m $GEOSERVER_ADMIN_PASSWORD \033[0m"
         fi
+        echo "GEOSERVER_ADMIN_PASSWORD" >> /tmp/set_vars.txt
+        unset RAND
   fi
 
   USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
@@ -104,4 +106,10 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 else
   cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
 
+fi
+
+
+if [[ -f /tmp/set_vars.txt ]];then
+  for vars in $(cat /tmp/set_vars.txt);do unset $vars;done
+  rm /tmp/set_vars.txt
 fi

@@ -333,21 +333,24 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         sed -i -e '19,36d' "${CATALINA_HOME}"/webapps/manager/META-INF/context.xml
       fi
     fi
+    export TOMCAT_USER
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
         generate_random_string 18
         export TOMCAT_PASSWORD=${RAND}
-
         if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
           echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD \033[0m"
-        else
-          echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
         fi
+        echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
+        # Setup tomcat apps manager
+        tomcat_user_config
+        # Unset random generated password
+        unset TOMCAT_PASSWORD
+        unset RAND
     else
+      # Setup tomcat apps manager
        export TOMCAT_PASSWORD=${TOMCAT_PASSWORD}
+       tomcat_user_config
     fi
-    # Setup tomcat apps manager
-    export TOMCAT_USER
-    tomcat_user_config
 else
     delete_folder "${CATALINA_HOME}"/webapps/ROOT &&
     delete_folder "${CATALINA_HOME}"/webapps/docs &&
@@ -372,6 +375,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   if [ -z "${JKS_KEY_PASSWORD}" ]; then
     generate_random_string 22
     JKS_KEY_PASSWORD=${RAND}
+    echo "JKS_KEY_PASSWORD" >> /tmp/set_vars.txt
+    unset RAND
   fi
 
   if [ -z "${KEY_ALIAS}" ]; then
@@ -382,6 +387,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   if [ -z "${JKS_STORE_PASSWORD}" ]; then
       generate_random_string 23
       JKS_STORE_PASSWORD=${RAND}
+      echo "JKS_STORE_PASSWORD" >> /tmp/set_vars.txt
+      unset RAND
   fi
 
   if [ -z "${P12_FILE}" ]; then
@@ -392,6 +399,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   if [ -z "${PKCS12_PASSWORD}" ]; then
      generate_random_string 24
       PKCS12_PASSWORD=${RAND}
+      echo "PKCS12_PASSWORD" >> /tmp/set_vars.txt
+      unset RAND
   fi
 
 
@@ -580,6 +589,12 @@ fi
 
 # Cleanup temp file
 delete_file "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
+
+#Unset env variables
+if [[ -f /tmp/set_vars.txt ]];then
+  for vars in $(cat /tmp/set_vars.txt);do unset $vars;done
+  rm /tmp/set_vars.txt
+fi
 
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then

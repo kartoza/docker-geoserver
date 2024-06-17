@@ -240,6 +240,7 @@ if [ -z "${WPS_REQUEST}" ]; then
     WPS_REQUEST='1000/d;30s'
 fi
 
+file_env S3_SERVER_URL
 if [ -z "${S3_SERVER_URL}" ]; then
     S3_SERVER_URL=''
 fi
@@ -282,11 +283,12 @@ if [ -z "${ACTIVATE_ALL_STABLE_EXTENSIONS}" ]; then
     ACTIVATE_ALL_STABLE_EXTENSIONS=false
 fi
 
+file_env TOMCAT_USER
 if [ -z "${TOMCAT_USER}" ]; then
     TOMCAT_USER='tomcat'
 fi
 
-
+file_env GEOSERVER_ADMIN_USER
 if [ -z "${GEOSERVER_ADMIN_USER}" ]; then
     GEOSERVER_ADMIN_USER='admin'
 fi
@@ -385,6 +387,7 @@ if [ -z "${JDBC_IGNORE_PATHS}" ]; then
   JDBC_IGNORE_PATHS='data,jdbcstore,jdbcconfig,temp,tmp,logs,styles'
 fi
 # S3 Alias
+file_env S3_ALIAS
 if [ -z "${S3_ALIAS}" ]; then
   S3_ALIAS='alias'
 fi
