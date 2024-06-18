@@ -17,8 +17,8 @@ on:
       - 'scripts/**'
       - 'build_data/**'
       - '.github/workflows/**'
-permissions:
-  contents: read
+#permissions:
+#  contents: read
 jobs:
   build-activemq-docker-image:
     runs-on: ubuntu-latest
