@@ -29,10 +29,11 @@ You can additionally run the clustering using an external broker. To run this
 you will need to build the image locally and run the stack:
 
 ```bash
+docker compose -f docker-compose-external.yml up -d --build
 ```
 
 or run in a single step
 
 ```bash
-docker compose -f docker-compose-external.yml 
+docker compose -f docker-compose-external.yml up -d 
 ```

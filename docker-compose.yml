@@ -42,6 +42,7 @@ services:
         - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
         - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
         - GEOSERVER_CONTEXT_ROOT=${GEOSERVER_CONTEXT_ROOT}
+        - ROOT_WEBAPP_REDIRECT=true
       depends_on:
         db:
           condition: service_healthy
