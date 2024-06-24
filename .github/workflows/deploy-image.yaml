@@ -14,7 +14,7 @@ jobs:
   deploy-image:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     env:
       latest-ref: refs/heads/develop
     strategy:
@@ -52,6 +52,8 @@ jobs:
         id: current_date
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
       - name: Build prod image
+        if: github.actor != 'dependabot[bot]'
+        timeout-minutes: 15
         id: docker_build_prod
         uses: docker/build-push-action@v6
         with:
