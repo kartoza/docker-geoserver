@@ -32,7 +32,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build image for testing activeqm
         id: docker_build_testing_image_activeqm
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./clustering/activemq-docker/
           file: ./clustering/activemq-docker/Dockerfile
@@ -74,7 +74,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build image for production
         id: docker_build_production_image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
@@ -98,7 +98,7 @@ jobs:
           path: /tmp/geoserver_production.tar
       - name: Build image for testing
         id: docker_build_testing_image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
