@@ -53,7 +53,7 @@ jobs:
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
       - name: Build prod image
         id: docker_build_prod
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
