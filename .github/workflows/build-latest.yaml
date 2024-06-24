@@ -22,7 +22,7 @@ on:
 jobs:
   build-activemq-docker-image:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
     if: github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
           path: /tmp/activemq.tar
   build-geoserver-docker-image:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     if: github.actor != 'dependabot[bot]'
     strategy:
       matrix:
