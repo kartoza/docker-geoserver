@@ -3,6 +3,8 @@
 ARG IMAGE_VERSION=9.0.89-jdk11-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
 
+
+
 ##############################################################################
 # Plugin downloader                                                          #
 ##############################################################################
@@ -24,6 +26,7 @@ ARG JAVA_HOME=/opt/java/openjdk
 FROM --platform=$BUILDPLATFORM alpine:3.19 AS geoserver-plugin-downloader
 ARG GS_VERSION=2.25.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
+ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 
 RUN apk update && apk add curl
 
@@ -42,8 +45,7 @@ RUN /work/plugin_download.sh
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.25.0
-ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+ARG GS_VERSION=2.25.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ENV DEBIAN_FRONTEND=noninteractive
@@ -89,7 +91,7 @@ COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip ${REQUIRED_
 COPY --from=geoserver-plugin-downloader /work/required_plugins.txt ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins/*.zip ${STABLE_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNITY_PLUGINS_DIR}/
-
+COPY --from=geoserver-plugin-downloader /work/geoserver_war/geoserver.* ${REQUIRED_PLUGINS_DIR}/
 
 RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \

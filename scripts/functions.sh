@@ -110,7 +110,7 @@ function download_extension() {
   URL=$1
   PLUGIN=$2
   OUTPUT_PATH=$3
-  curl -fLvo "${OUTPUT_PATH}/${PLUGIN}.zip" "${URL}"
+  curl --progress-bar -fLvo "${OUTPUT_PATH}/${PLUGIN}.zip" "${URL}"
 }
 
 function validate_geo_install() {
@@ -160,16 +160,14 @@ function package_geoserver() {
     unzip /tmp/resources/geoserver-"${GS_VERSION}".zip -d /tmp/geoserver && \
     unzip_geoserver
   else
-    if [[ "${WAR_URL}" == *\.zip ]]; then
-      destination="/tmp/resources/geoserver.zip"
-      curl -fLvo "${destination}" "${WAR_URL}" || exit 1
-      unzip /tmp/resources/geoserver.zip -d /tmp/geoserver && \
-        unzip_geoserver
-    else
-      destination=/tmp/geoserver/geoserver.war
-      mkdir -p /tmp/geoserver/
-      curl -fLvo "${destination}" "${WAR_URL}" || exit 1
+    if [[ -f ${REQUIRED_PLUGINS_DIR}/geoserver.zip ]]; then
+      unzip ${REQUIRED_PLUGINS_DIR}/geoserver.zip -d /tmp/geoserver && \
       unzip_geoserver
+    elif [[ -f ${REQUIRED_PLUGINS_DIR}/geoserver.war ]]; then
+      unzip_geoserver
+    else
+      echo "GeoServer bin/war file missing, exiting installation"
+      exit 1
     fi
   fi
 }
