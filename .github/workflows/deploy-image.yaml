@@ -26,7 +26,7 @@ jobs:
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 25
-            patch: 1
+            patch: 2
           #- minor: 23
             #patch: 2
         stablePluginBaseURL:

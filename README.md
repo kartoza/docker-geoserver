@@ -61,7 +61,7 @@ The preferred way (but using the most bandwidth for the initial image) is to
 get our docker-trusted build like this:
 
 ```shell
-VERSION=2.25.1
+VERSION=2.25.2
 docker pull kartoza/geoserver:$VERSION
 ```
 **Note** Although the images are tagged and backed by unit tests
@@ -100,14 +100,14 @@ See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
 for available tags.
 
 ```
-VERSION=2.25.1
+VERSION=2.25.2
 IMAGE_VERSION=9.0.89-jdk11-temurin-focal
 docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} --build-arg GS_VERSION=${VERSION} -t kartoza/geoserver:${VERSION} .
 ```
 
 For some recent builds, it is necessary to set the JAVA_PATH as well (e.g. Apache Tomcat/9.0.36)
 ```
-docker build --build-arg IMAGE_VERSION=9.0.89-jdk11-temurin-focal --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.25.1 -t kartoza/geoserver:2.25.1 .
+docker build --build-arg IMAGE_VERSION=9.0.89-jdk11-temurin-focal --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.25.2 -t kartoza/geoserver:2.25.2 .
 ```
 
 **Note:** Please check the [GeoServer documentation](https://docs.geoserver.org/stable/en/user/production/index.html) 
@@ -200,13 +200,13 @@ The environment variable `STABLE_EXTENSIONS` is used to activate extensions list
 Example
 
 ```
-ie VERSION=2.25.1
+ie VERSION=2.25.2
 docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,db2-plugin kartoza/geoserver:${VERSION}
 
 ```
 You can pass any comma-separated extensions as defined in [stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
 
-**Note**  If an extension is defined in [GeoServer list](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.1/extensions/)
+**Note**  If an extension is defined in [GeoServer list](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.2/extensions/)
 but is missing from [stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
 you can still pass the env variable referencing that image, and it will be downloaded and activated during container initialisation.
 
@@ -218,7 +218,7 @@ The environment variable `COMMUNITY_EXTENSIONS` can be used to activate extensio
 Example
 
 ```
-ie VERSION=2.25.1
+ie VERSION=2.25.2
 docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-plugin,ogr-datastore-plugin kartoza/geoserver:${VERSION}
 ```
 
@@ -235,7 +235,7 @@ Geoserver ships with sample data which can be used by users to familiarize them 
 This is not activated by default. You can activate it using the environment variable `boolean SAMPLE_DATA`.
 
 ```
-ie VERSION=2.25.1
+ie VERSION=2.25.2
 docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserver:${VERSION}
 ```
 
@@ -307,14 +307,14 @@ If you set the environment variable `SSL=true` but do not provide the pem files 
 the container will generate self-signed SSL certificates.
 
 ```
-ie VERSION=2.25.1
+ie VERSION=2.25.2
 docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
 ```
 
 If you already have your perm files (`fullchain.pem` and `privkey.pem`) you can mount the directory containing your keys as:
 
 ```
-ie VERSION=2.25.1
+ie VERSION=2.25.2
 docker run -it --name geo -v /etc/certs:/etc/certs  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
 
 ```
@@ -370,7 +370,7 @@ To include Tomcat extras including docs, examples, and the manager web app, set 
 to use a strong password otherwise a randomly generated password is used.
 
 ```
-ie VERSION=2.25.1
+ie VERSION=2.25.2
 docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION}
 ```
 
@@ -394,7 +394,7 @@ If you have downloaded extra fonts you can mount the folder to the path
 path during initialisation. This is useful for styling layers i.e. labeling using specific fonts.
 
 ```
-ie VERSION=2.25.1
+ie VERSION=2.25.2
 docker run -v fonts:/opt/fonts -p 8080:8080 -t kartoza/geoserver:${VERSION}
 ```
 
@@ -404,7 +404,7 @@ You can use the environment variable `GOOGLE_FONTS_NAMES` to activate fonts defi
 i.e.
 
 ```bash
-ie VERSION=2.25.1
+ie VERSION=2.25.2
 docker run -e GOOGLE_FONTS_NAMES=actor,akronim -p 8080:8080 -t kartoza/geoserver:${VERSION}
 ```
 
@@ -650,7 +650,7 @@ For community extensions run the command below:
 For stable extensions run the command below:
 ```bash
 cd ./build_data
-python3 stable_plugins.py 2.25.1 https://sourceforge.net/projects/geoserver/files/GeoServer
+python3 stable_plugins.py 2.25.2 https://sourceforge.net/projects/geoserver/files/GeoServer
     
 ```
 

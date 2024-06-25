@@ -63,7 +63,7 @@ jobs:
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 25
-            patch: 1
+            patch: 2
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:

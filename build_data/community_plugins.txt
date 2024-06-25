@@ -1,6 +1,9 @@
 activeMQ-broker-plugin
 backup-restore-plugin
-cog-plugin
+cog-azure-plugin
+cog-google-plugin
+cog-http-plugin
+cog-s3-plugin
 colormap-plugin
 cov-json-plugin
 datadir-catalog-loader-plugin
@@ -27,6 +30,7 @@ jdbc-metrics-plugin
 jdbcconfig-plugin
 jdbcstore-plugin
 jms-cluster-plugin
+jwt-headers-plugin
 libdeflate-plugin
 mbtiles-plugin
 mbtiles-store-plugin
