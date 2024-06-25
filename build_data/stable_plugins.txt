@@ -30,6 +30,7 @@ oracle-plugin
 params-extractor-plugin
 printing-plugin
 querylayer-plugin
+rat-plugin
 sldservice-plugin
 sqlserver-plugin
 wcs2_0-eo-plugin
