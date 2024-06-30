@@ -39,7 +39,7 @@ ADD \
     build_data/plugin_download.sh \
     /work/
 
-RUN chmod 0755 /work/extensions.sh && /work/extensions.sh
+RUN echo $GS_VERSION > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh
 
 RUN /work/plugin_download.sh
 
