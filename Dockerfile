@@ -3,8 +3,6 @@
 ARG IMAGE_VERSION=9.0.89-jdk11-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
 
-
-
 ##############################################################################
 # Plugin downloader                                                          #
 ##############################################################################
@@ -23,20 +21,26 @@ ARG JAVA_HOME=/opt/java/openjdk
 
 # Use $BUILDPLATFORM because plugin archives are architecture-neutral, and use
 # alpine because it's smaller.
-FROM --platform=$BUILDPLATFORM alpine:3.19 AS geoserver-plugin-downloader
-ARG GS_VERSION=2.25.2
+
+FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
+ARG GS_VERSION=2.25.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 
-RUN apk update && apk add curl
+RUN apk update && apk add curl py3-pip
+RUN pip3 install beautifulsoup4 requests
 
 WORKDIR /work
 ADD \
+    build_data/community_plugins.py \
+    build_data/stable_plugins.py \
+    build_data/extensions.sh \
     build_data/required_plugins.txt \
-    build_data/stable_plugins.txt \
-    build_data/community_plugins.txt \
     build_data/plugin_download.sh \
     /work/
+
+RUN chmod 0755 /work/extensions.sh && /work/extensions.sh
+
 RUN /work/plugin_download.sh
 
 ##############################################################################
@@ -45,7 +49,7 @@ RUN /work/plugin_download.sh
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.25.2
+ARG GS_VERSION=2.25.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ENV DEBIAN_FRONTEND=noninteractive

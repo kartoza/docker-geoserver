@@ -521,14 +521,27 @@ EOF
 
 }
 
+function prepare_jdbc_db_config_scripts() {
+    download_lists=(dropdb.h2.sql dropdb.mssql.sql dropdb.mysql.sql dropdb.oracle.sql dropdb.postgres.sql initdb.h2.sql initdb.mssql.sql initdb.mysql.sql)
+    download_base_url="https://raw.githubusercontent.com/geoserver/geoserver/"${GS_VERSION:0:5}"x/src/community/jdbcconfig/src/main/resources/org/geoserver/jdbcconfig/internal"
+    for file in "${download_lists[@]}"; do
+      curl --progress-bar -fLvo "${GEOSERVER_DATA_DIR}"/jdbcconfig/scripts/${file} "${download_base_url}"/${file}
+      if [[ ! -f "${GEOSERVER_DATA_DIR}"/jdbcconfig/scripts/${file} ]];then
+        cp -rn /build_data/jdbcconfig/scripts/${file} "${GEOSERVER_DATA_DIR}"/jdbcconfig/scripts/
+      fi
+    done
+}
+
 function setup_jdbc_db_config() {
     if [[ ${ext} == 'jdbcconfig-plugin' ]];then
         if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
             PGPASSWORD="${POSTGRES_PASS}"
             export PGPASSWORD
             postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB"
-            create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
-            cp -rn /build_data/jdbcconfig/scripts "${GEOSERVER_DATA_DIR}"/jdbcconfig/
+            create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig/scripts
+            # Download scripts from repo otherwise revert to downloaded ones
+            prepare_jdbc_db_config_scripts
+
             postgres_ssl_setup
             export SSL_PARAMETERS=${PARAMS}
             if [[ -f "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties ]]; then
@@ -554,10 +567,18 @@ function setup_jdbc_db_store() {
         export PGPASSWORD
         postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB"
         if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
-            create_dir "${GEOSERVER_DATA_DIR}"/jdbcstore
-            create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig
-            cp -rn /build_data/jdbcstore/scripts "${GEOSERVER_DATA_DIR}"/jdbcstore/
-            cp -rn /build_data/jdbcconfig/scripts "${GEOSERVER_DATA_DIR}"/jdbcconfig/
+            create_dir "${GEOSERVER_DATA_DIR}"/jdbcstore/scripts
+            create_dir "${GEOSERVER_DATA_DIR}"/jdbcconfig/scripts
+            # Download scripts from repo otherwise revert to downloaded ones
+            prepare_jdbc_db_config_scripts
+            download_lists=(drop.h2.sql drop.postgres.sql init.h2.sql init.postgres.sql)
+            download_base_url="https://raw.githubusercontent.com/geoserver/geoserver/"${GS_VERSION:0:5}"x/src/community/jdbcstore/src/main/resources/org/geoserver/jdbcstore/internal"
+            for file in "${download_lists[@]}"; do
+              curl --progress-bar -fLvo "${GEOSERVER_DATA_DIR}"/jdbcconfig/scripts/${file} "${download_base_url}"/${file}
+              if [[ ! -f "${GEOSERVER_DATA_DIR}"/jdbcconfig/scripts/${file} ]];then
+                cp -rn /build_data/jdbcstore/scripts/${file} "${GEOSERVER_DATA_DIR}"/jdbcstore/scripts/
+              fi
+            done
             postgres_ssl_setup
             export SSL_PARAMETERS=${PARAMS}
             if [[ -f "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties ]]; then
@@ -586,6 +607,7 @@ function setup_jdbc_db_store() {
         fi
     fi
 }
+
 
 function setup_hz_cluster() {
     # TODO Add http://og.cens.am:8081/opengeo-docs/sysadmin/clustering/setup.html#session-sharing
