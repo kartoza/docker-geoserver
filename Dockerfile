@@ -52,6 +52,7 @@ LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.25.2
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
+ARG ACTIVATE_GDAL_PLUGIN=true
 ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
@@ -60,13 +61,16 @@ RUN set -eux; \
         locales gnupg2 ca-certificates software-properties-common  iputils-ping \
         apt-transport-https  gettext fonts-cantarell fonts-liberation lmodern ttf-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
-        zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin libgdal-java; \
+        zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu ; \
       dpkg-divert --local --rename --add /sbin/initctl \
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*; \
       # verify that the binary works
 	  gosu nobody true
 
+RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
+    apt update -y && apt install -y gdal-bin libgdal-java; \
+fi
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
