@@ -61,13 +61,14 @@ RUN set -eux; \
         locales gnupg2 ca-certificates software-properties-common  iputils-ping \
         apt-transport-https  gettext fonts-cantarell fonts-liberation lmodern ttf-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
-        zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu ; \
+        zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
       dpkg-divert --local --rename --add /sbin/initctl \
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*; \
       # verify that the binary works
 	  gosu nobody true
 
+# New versions of tomcat doesn't support gdal java bindings, so gdal plugin will be inactive
 RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
     apt update -y && apt install -y gdal-bin libgdal-java; \
 fi

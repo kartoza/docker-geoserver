@@ -1,5 +1,3 @@
-version: "3.9"
-
 # Common template for ActiveMQ services below
 x-common-activemq:
   &default-common-activemq
