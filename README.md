@@ -45,7 +45,7 @@
 * The image has environment variables that allow users to configure GeoServer based on [running-in-production](https://docs.geoserver.org/latest/en/user/production/index.html)
 * The image uses [kartoza/postgis](https://github.com/kartoza/docker-postgis/) as a
  database backend. You can use any other PostgreSQL image
-out there but make sure you adjust the environment variables accordingly.
+but adjust the environment variables accordingly.
 
 
 ## Getting the image
@@ -60,7 +60,7 @@ There are various ways to get the image onto your system:
 The preferred way (but using the most bandwidth for the initial image) is to
 get our docker-trusted build like this:
 
-```shell
+``` shell
 VERSION=2.25.2
 docker pull kartoza/geoserver:$VERSION
 ```
@@ -68,7 +68,7 @@ docker pull kartoza/geoserver:$VERSION
 it is recommended to use tagged versions with dates i.e. 
 `kartoza/geoserver:$VERSION--v2024.03.31`.The first date available
 from [dockerhub](https://hub.docker.com/repository/docker/kartoza/geoserver/tags?page=1&ordering=last_updated)
-would be the first version for that series. Successive builds that fix [issues](https://github.com/kartoza/docker-geoserver/issues) 
+It would be the first version for that series. Successive builds that fix [issues](https://github.com/kartoza/docker-geoserver/issues) 
 tend to override the tagged images and also produce dated images.
 
 ### Building the image
@@ -80,13 +80,13 @@ To build yourself with a local checkout using the docker-compose-build.yml:
 
 1. Clone the GitHub repository:
 
-   ```shell
+   ``` shell
    git clone https://github.com/kartoza/docker-geoserver
    ```
 2. Edit the [build arguments](https://github.com/kartoza/docker-geoserver/blob/master/.env) in the `.env` file:
 
 3. Build the container and spin up the services
-   ```shell
+   ``` shell
    cd docker-geoserver
    docker-compose -f docker-compose-build.yml up -d geoserver-prod --build
    ```
@@ -116,7 +116,7 @@ to see which Tomcat versions are supported.
 The current build uses the base image `tomcat:9.0.89-jdk11-temurin-focal` because of the dependency on
 `libgdal-java`. The tomcat base images > focal will not
 have the java bindings for the [GDAL plugin](https://osgeo-org.atlassian.net/browse/GEOT-7412?focusedCommentId=84733)
-hence the container will not support the gdal plugin working is you build using base image > focal.
+hence the container will not support the gdal plugin working if you build using base image > focal.
 
 ### Building on Windows
 
@@ -231,8 +231,7 @@ following the guidelines from [GeoServer develop guidelines](https://docs.geoser
 
 ### Using sample data
 
-Geoserver ships with sample data which can be used by users to familiarize them with software.
-This is not activated by default. You can activate it using the environment variable `boolean SAMPLE_DATA`.
+The image ships with sample data. This can be used to familiarize yourself with GeoServer. This is not activated by default. You can activate it using the environment variable `boolean SAMPLE_DATA`.
 
 ```
 ie VERSION=2.25.2
@@ -242,8 +241,7 @@ docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserve
 ### Enable disk quota storage in PostgreSQL backend
 
 GeoServer defaults to using HSQL datastore for configuring disk quota. You can alternatively use 
-a PostgreSQL backend as a disk quota store. You will need to run a PostgreSQL DB and link it to a GeoServer instance.
-
+a PostgreSQL backend as a disk quota store. When using a PostgreSQL backend, you need to have a running instance of the database which can be connected to. 
 
 If you want to test it locally with docker-compose postgres db you need to specify these env variables:
 ```bash
@@ -280,8 +278,7 @@ SSL_CA_FILE=/etc/certs/root.crt
 ```
 
 ### Activating JNDI PostgreSQL connector
-When defining vector stores you can use the JNDI pooling. To set
-this up you will need to activate the following environment 
+When defining vector stores you can use the JNDI pooling. To activate this, adjust the following environment 
 variable `POSTGRES_JNDI=TRUE`. By default, the environment the 
 variable is set to `FALSE`. Additionally, you will need to 
 define parameters to connect to an existing PostgreSQL database
@@ -299,8 +296,7 @@ When defining the parameters for the store in GeoServer you will need to set
 
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
-Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for providing the solution to
-run under SSL.
+Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for the solution to run under SSL.
 
 
 If you set the environment variable `SSL=true` but do not provide the pem files (`fullchain.pem` and `privkey.pem`)
@@ -353,7 +349,7 @@ HTTP_SCHEME=https
 This will prevent the login form from sending insecure http post requests as experienced
 in [login issue](https://github.com/kartoza/docker-geoserver/issues/293)
 
-For SSL-based connections the env variables are:
+For SSL-based connections, the env variables are:
 
 ```
 HTTPS_PROXY_NAME
@@ -425,8 +421,8 @@ Always consult the `.env` file to check possible values.
 * GEOSERVER_ADMIN_USER=`username`
 * GEOSERVER_FILEBROWSER_HIDEFS=`false or true`
 * XFRAME_OPTIONS=`"true"` - Based on [Xframe-options](https://docs.geoserver.org/latest/en/user/production/config.html#x-frame-options-policy)
-* INITIAL_MEMORY=`size` : Initial Memory that Java can allocate, default `2G`
-* MAXIMUM_MEMORY=`size` : Maximum Memory that Java can allocate, default `4G`
+* INITIAL_MEMORY=`size`: Initial Memory that Java can allocate, default `2G`
+* MAXIMUM_MEMORY=`size`: Maximum Memory that Java can allocate, default `4G`
 
 
 ### Control flow properties
@@ -544,7 +540,7 @@ Example
 **Note:** The files `users.xml` and `roles.xml` should be mounted together to prevent errors
 during container start. Mounting these two files will overwrite `GEOSERVER_ADMIN_PASSWORD` and `GEOSERVER_ADMIN_USER`
 
-### Running SQL scripts on container startup.
+### Running scripts on container startup.
 
 You can run some bash script to correct some missing dependencies i.e. in 
 community extension like [cluster issue](https://github.com/kartoza/docker-geoserver/issues/514)
@@ -562,7 +558,7 @@ can mount `web.xml` to `/settings/` directory.
 
 ### JMS Clustering
 
-GeoServer supports clustering using JMS cluster plugin .
+GeoServer supports clustering using the JMS cluster plugin.
 
 You can read more about how to set up clustering in [kartoza clustering](https://github.com/kartoza/docker-geoserver/blob/master/clustering/README.md)
 
@@ -582,7 +578,7 @@ If you are interested in the backups, add a section in the `docker-compose.yml`
 following instructions from [docker-pg-backup](https://github.com/kartoza/docker-pg-backup/blob/master/docker-compose.yml#L23).
 
 Start the services using:
-```shell
+``` shell
 docker-compose up -d
 ```
 
@@ -601,7 +597,7 @@ You can also put Nginx in front of GeoServer to receive the http request and tra
 
 A sample `docker-compose-nginx.yml` is provided for running GeoServer and Nginx
 
-```shell
+``` shell
 docker-compose -f docker-compose-nginx.yml  up -d
 ```
 Once the services are running GeoServer will be available from
@@ -615,7 +611,7 @@ You can run the image in Kubernetes following the [recipe](https://github.com/ka
 
 
 ## Contributing to the image
-We welcome users who want to contribute enriching this service. We follow
+We welcome users who want to contribute to enriching this service. We follow
 the git principles and all pull requests should be against the develop branch so that
 we can test them and when we are happy we push them to the master branch.
 
