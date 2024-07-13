@@ -4,6 +4,7 @@ from psycopg2 import connect, OperationalError
 from requests import get
 from PIL import Image
 
+
 class TestGeoServerJDBCONFIG(unittest.TestCase):
 
     def setUp(self):
@@ -32,7 +33,7 @@ class TestGeoServerJDBCONFIG(unittest.TestCase):
                 &LAYERS=topp:states&STYLES=&FORMAT=image/png&DPI=96 &TILED=true \
                 &MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
         response = get(wms_request)
-        with open('output.jpg', 'wb') as f:
+        with open('output.png', 'wb') as f:
             f.write(response.content)
 
         try:
