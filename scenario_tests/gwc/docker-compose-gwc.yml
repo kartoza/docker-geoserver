@@ -16,10 +16,6 @@ services:
       GEOSERVER_ADMIN_USER: admin
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
-      HOST: db
-      POSTGRES_DB: gis
-      POSTGRES_USER: docker
-      POSTGRES_PASS: docker
       RECREATE_DATADIR: TRUE
       SAMPLE_DATA: true
       TEST_CLASS: test_gwc.TestGeoServerGWC

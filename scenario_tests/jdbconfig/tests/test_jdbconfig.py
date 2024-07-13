@@ -1,7 +1,8 @@
 import unittest
-from os import environ
+from os import environ, remove
 from psycopg2 import connect, OperationalError
 from requests import get
+from PIL import Image
 
 class TestGeoServerJDBCONFIG(unittest.TestCase):
 
@@ -31,9 +32,20 @@ class TestGeoServerJDBCONFIG(unittest.TestCase):
                 &LAYERS=topp:states&STYLES=&FORMAT=image/png&DPI=96 &TILED=true \
                 &MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
         response = get(wms_request)
+        with open('output.jpg', 'wb') as f:
+            f.write(response.content)
+
+        try:
+            img = Image.open('output.png')
+            img.verify()
+            valid_image = True
+        except (IOError, Image.DecompressionBombError):
+            valid_image = False
+        remove('output.png')
 
         # Verify that the seeding was successful
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(valid_image)
 
     def tearDown(self):
         self.db_conn.close()

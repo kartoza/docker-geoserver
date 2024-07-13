@@ -29,13 +29,9 @@ class TestGeoServerGDAL(unittest.TestCase):
         auth = HTTPBasicAuth(self.geo_username, self.geo_password)
 
         # Create a workspace if it doesn't exist
-        try:
-            rest_url = f'{self.gs_url}/rest/workspaces/{self.geo_workspace_name}.json'
-            response = get(rest_url, auth=auth)
-            response.raise_for_status()
-        except exceptions.HTTPError:
-            geo.create_workspace(workspace=self.geo_workspace_name)
-            geo.set_default_workspace(self.geo_workspace_name)
+
+        geo.create_workspace(workspace=self.geo_workspace_name)
+        geo.set_default_workspace(self.geo_workspace_name)
 
         # Create a GDAL store
         store_data = f'''

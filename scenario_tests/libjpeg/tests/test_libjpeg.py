@@ -1,7 +1,8 @@
 import unittest
 from requests import get
 from parameterized import parameterized
-
+from PIL import Image
+from os import remove
 
 class TestGeoServerTURBO(unittest.TestCase):
 
@@ -23,8 +24,20 @@ class TestGeoServerTURBO(unittest.TestCase):
             &MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE' % (layer_name, output)
         response = get(wms_request)
 
+        # Save the response as a JPEG file
+        with open('output.jpg', 'wb') as f:
+            f.write(response.content)
+
+        try:
+            img = Image.open('output.jpg')
+            img.verify()
+            valid_image = True
+        except (IOError, Image.DecompressionBombError):
+            valid_image = False
+        remove('output.jpg')
         # Verify that the wms request was successful
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(valid_image)
 
 
 if __name__ == '__main__':

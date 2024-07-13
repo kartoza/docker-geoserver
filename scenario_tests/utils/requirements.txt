@@ -2,4 +2,4 @@ geoserver-rest
 psycopg2-binary
 requests
 parameterized
-
+pillow
