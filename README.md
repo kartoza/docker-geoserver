@@ -195,7 +195,7 @@ will be enabled : [list of default plugins](https://github.com/kartoza/docker-ge
 ####  Activate stable extensions during the contain startup
 
 The environment variable `STABLE_EXTENSIONS` is used to activate extensions listed in
-[stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
+[stable_plugins.txt](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.2/extensions/)
 
 Example
 
@@ -204,16 +204,12 @@ ie VERSION=2.25.2
 docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,db2-plugin kartoza/geoserver:${VERSION}
 
 ```
-You can pass any comma-separated extensions as defined in [stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
-
-**Note**  If an extension is defined in [GeoServer list](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.2/extensions/)
-but is missing from [stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
-you can still pass the env variable referencing that image, and it will be downloaded and activated during container initialisation.
+You can pass any comma-separated extensions as defined in [stable_plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.2/extensions/)
 
 ####  Activate community extensions during contain startup
 
 The environment variable `COMMUNITY_EXTENSIONS` can be used to activate extensions listed in
-[community_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/community_plugins.txt)
+[community_plugins](https://build.geoserver.org/geoserver/2.25.x/community-latest/)
 
 Example
 
@@ -623,36 +619,11 @@ we can test them and when we are happy we push them to the master branch.
 GeoServer releases and bug fixes are done frequently. We provide a helper script 
 `upgrade_geoserver_version.sh` which can be run to update the 
 respective files which mention the GeoServer version. To upgrade to
-a new version involves two steps:
+a new version involves:
 
-1. Upgrade text files `stable_plugins.txt` and `community_plugins.txt` as 
-new versions usually have extensions promoted/demoted from community/stable
-extensions.
-2. Run the upgrade script that updates some env variables.
-
-#### Upgrade extensions files
-
-In the `build_data` directory, two helper files are provided that generate a list of extensions
-for `stable_plugins.txt` and `community_plugins.txt`. 
-Before running these scripts you need to install the following Python packages
-```bash
-    pip3 install beautifulsoup4
-    pip3 install requests
-```
-Then execute the scripts as below:
-
-For community extensions run the command below:
-
-```bash
-    cd ./build_data
-    python3 community_plugins.py 2.23.x
-```
-For stable extensions run the command below:
-```bash
-cd ./build_data
-python3 stable_plugins.py 2.25.2 https://sourceforge.net/projects/geoserver/files/GeoServer
-    
-```
+1. Run the upgrade script that updates some env variables.
+2. Update the [github workflows](https://github.com/kartoza/docker-geoserver/tree/develop/.github/workflows) files to.
+match the specific versions.
 
 #### Run upgrade helper script
 

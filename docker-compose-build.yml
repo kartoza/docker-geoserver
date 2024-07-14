@@ -1,4 +1,3 @@
-version: '3.9'
 volumes:
    geoserver-data:
    settings:
@@ -38,6 +37,7 @@ services:
         GS_VERSION: ${GS_VERSION}
         WAR_URL: ${WAR_URL}
         STABLE_PLUGIN_BASE_URL: ${STABLE_PLUGIN_BASE_URL}
+        ACTIVATE_GDAL_PLUGIN: ${ACTIVATE_GDAL_PLUGIN}
       target: geoserver-prod
 
   geoserver-test:

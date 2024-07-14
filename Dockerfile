@@ -3,8 +3,6 @@
 ARG IMAGE_VERSION=9.0.89-jdk11-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
 
-
-
 ##############################################################################
 # Plugin downloader                                                          #
 ##############################################################################
@@ -23,20 +21,26 @@ ARG JAVA_HOME=/opt/java/openjdk
 
 # Use $BUILDPLATFORM because plugin archives are architecture-neutral, and use
 # alpine because it's smaller.
-FROM --platform=$BUILDPLATFORM alpine:3.19 AS geoserver-plugin-downloader
+
+FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
 ARG GS_VERSION=2.25.2
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 
-RUN apk update && apk add curl
+RUN apk update && apk add curl py3-pip
+RUN pip3 install beautifulsoup4 requests
 
 WORKDIR /work
 ADD \
+    build_data/community_plugins.py \
+    build_data/stable_plugins.py \
+    build_data/extensions.sh \
     build_data/required_plugins.txt \
-    build_data/stable_plugins.txt \
-    build_data/community_plugins.txt \
     build_data/plugin_download.sh \
     /work/
+
+RUN echo $GS_VERSION > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh
+
 RUN /work/plugin_download.sh
 
 ##############################################################################
@@ -48,6 +52,7 @@ LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.25.2
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
+ARG ACTIVATE_GDAL_PLUGIN=true
 ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
@@ -56,13 +61,17 @@ RUN set -eux; \
         locales gnupg2 ca-certificates software-properties-common  iputils-ping \
         apt-transport-https  gettext fonts-cantarell fonts-liberation lmodern ttf-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
-        zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin libgdal-java; \
+        zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
       dpkg-divert --local --rename --add /sbin/initctl \
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*; \
       # verify that the binary works
 	  gosu nobody true
 
+# New versions of tomcat doesn't support gdal java bindings, so gdal plugin will be inactive
+RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
+    apt update -y && apt install -y gdal-bin libgdal-java; \
+fi
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \

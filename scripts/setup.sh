@@ -117,6 +117,16 @@ else
     rm -r /tomcat_apps
 fi
 
+pushd ${CATALINA_HOME}/lib  || exit
+create_dir org/apache/catalina/util/ && \
+unzip -j catalina.jar org/apache/catalina/util/ServerInfo.properties -d org/apache/catalina/util/ && \
+sed -i 's/server.info=.*/server.info=Apache Tomcat/g' org/apache/catalina/util/ServerInfo.properties && \
+zip -ur catalina.jar org/apache/catalina/util/ServerInfo.properties && rm -rf org
+# Setting restrictive umask container-wide
+echo "session optional pam_umask.so" >> /etc/pam.d/common-session && \
+sed -i 's/UMASK.*022/UMASK           007/g' /etc/login.defs
+
+pushd /scripts || exit
 # Delete resources after installation
 rm -rf /tmp/resources
 
