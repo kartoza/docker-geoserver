@@ -30,13 +30,8 @@ class TestGeoServerJNDI(unittest.TestCase):
 
         auth = HTTPBasicAuth('%s' % self.geo_username, '%s' % self.geo_password)
         # create workspace
-        try:
-            rest_url = '%s/rest/workspaces/%s.json' % (self.gs_url, self.geo_workspace_name)
-            response = get(rest_url, auth=auth)
-            response.raise_for_status()
-        except exceptions.HTTPError:
-            geo.create_workspace(workspace='%s' % self.geo_workspace_name)
-            geo.set_default_workspace('%s' % self.geo_workspace_name)
+        geo.create_workspace(workspace='%s' % self.geo_workspace_name)
+        geo.set_default_workspace('%s' % self.geo_workspace_name)
 
         # Create the XML payload for the JNDI store configuration
         xml = """
@@ -66,18 +61,11 @@ class TestGeoServerJNDI(unittest.TestCase):
         response = post(self.gs_url + '/rest/workspaces/%s/datastores' % self.geo_workspace_name, auth=auth,
                         headers={'Content-type': 'text/xml'},
                         data=xml)
-        # TODO publish a layer into the db and then in geoserver, then test
 
         # Publish layer into geoserver
-        try:
-            rest_url = '%s/rest/workspaces/%s/datastores/%s/featuretypes/states.json' % (
-                self.gs_url, self.geo_workspace_name, self.jndi_store_name)
-            publish_response = get(rest_url, auth=auth)
-            publish_response.raise_for_status()
-        except exceptions.HTTPError:
-            geo.publish_featurestore(workspace='%s'
-                                               % self.geo_workspace_name, store_name='%s' % self.jndi_store_name,
-                                     pg_table='states')
+        geo.publish_featurestore(workspace='%s'
+                                           % self.geo_workspace_name, store_name='%s' % self.jndi_store_name,
+                                 pg_table='states')
         # Check that the response has a status code of 201 (Created)
         self.assertEqual(response.status_code, 201)
 

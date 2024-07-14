@@ -1,7 +1,7 @@
 import time
 import unittest
-from os import environ
-
+from os import environ, remove
+from PIL import Image
 from requests import get, post
 from requests.auth import HTTPBasicAuth
 
@@ -39,8 +39,21 @@ class TestGeoServerGWC(unittest.TestCase):
         &MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE' % layer_name
         response = get(wms_request)
 
+        # Save the response as a JPEG file
+        with open('output.png', 'wb') as f:
+            f.write(response.content)
+
+        try:
+            img = Image.open('output.png')
+            img.verify()
+            valid_image = True
+        except (IOError, Image.DecompressionBombError):
+            valid_image = False
+        remove('output.png')
+
         # Verify that the seeding was successful
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(valid_image)
 
 
 if __name__ == '__main__':

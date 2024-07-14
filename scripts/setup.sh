@@ -32,7 +32,8 @@ pushd "${STABLE_PLUGINS_DIR}" || exit
 
 # Install libjpeg-turbo
 system_architecture=$(dpkg --print-architecture)
-libjpeg_version=3.0.3
+# Fixes https://github.com/kartoza/docker-geoserver/issues/673
+libjpeg_version=2.1.5.1
 libjpeg_deb_name="libjpeg-turbo-official_${libjpeg_version}_${system_architecture}.deb"
 libjpeg_deb="${resources_dir}/${libjpeg_deb_name}"
 if [[ ! -f "${libjpeg_deb}" ]]; then

@@ -169,6 +169,7 @@ jobs:
           - disk-quota
           - clustering
           - jdbconfig
+          - libjpeg
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact

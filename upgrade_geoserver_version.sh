@@ -20,5 +20,11 @@ sed -i "s/${GS_VERSION}/${GS_NEW_VERSION}/g" ".env"
 
 sed -i  "s/${GS_VERSION}/${GS_NEW_VERSION}/g" "clustering/docker-compose.yml"
 
+IFS='.' read -r MAJOR MINOR BUGFIX <<<"$GS_NEW_VERSION"
+
+sed -i '' "s/minor: .*/minor: $MINOR/g; s/patch: .*/patch: $BUGFIX/g" .github/workflows/deploy-image.yaml
+
+sed -i '' "s/minor: .*/minor: $MINOR/g; s/patch: .*/patch: $BUGFIX/g" .github/workflows//build-latest.yaml
+
 git commit -a -m "Upgraded GeoServer from version ${GS_VERSION} to ${GS_NEW_VERSION}"
 
