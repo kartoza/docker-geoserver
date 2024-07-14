@@ -12,7 +12,7 @@ on:
 #  contents: read
 jobs:
   deploy-image:
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]'  && !contains(github.event.comment.body, '/skiprelease') && !contains(github.event.comment.title, '[skiprelease]')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
