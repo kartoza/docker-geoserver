@@ -101,19 +101,19 @@ for available tags.
 
 ```
 VERSION=2.25.2
-IMAGE_VERSION=9.0.89-jdk11-temurin-focal
+IMAGE_VERSION=9.0.91-jdk11-temurin-focal
 docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} --build-arg GS_VERSION=${VERSION} -t kartoza/geoserver:${VERSION} .
 ```
 
 For some recent builds, it is necessary to set the JAVA_PATH as well (e.g. Apache Tomcat/9.0.36)
 ```
-docker build --build-arg IMAGE_VERSION=9.0.89-jdk11-temurin-focal --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.25.2 -t kartoza/geoserver:2.25.2 .
+docker build --build-arg IMAGE_VERSION=9.0.91-jdk11-temurin-focal --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.25.2 -t kartoza/geoserver:2.25.2 .
 ```
 
 **Note:** Please check the [GeoServer documentation](https://docs.geoserver.org/stable/en/user/production/index.html) 
 to see which Tomcat versions are supported.
 
-The current build uses the base image `tomcat:9.0.89-jdk11-temurin-focal` because of the dependency on
+The current build uses the base image `tomcat:9.0.91-jdk11-temurin-focal` because of the dependency on
 `libgdal-java`. The tomcat base images > focal will not
 have the java bindings for the [GDAL plugin](https://osgeo-org.atlassian.net/browse/GEOT-7412?focusedCommentId=84733)
 hence the container will not support the gdal plugin working is you build using base image > focal.
