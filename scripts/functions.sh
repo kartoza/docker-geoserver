@@ -263,7 +263,7 @@ function install_plugin() {
   EXT=$2
 
   if [[ -f "${DATA_PATH}/${EXT}.zip" ]]; then
-     unzip "${DATA_PATH}/${EXT}.zip" -d /tmp/gs_plugin
+     unzip -qq "${DATA_PATH}/${EXT}.zip" -d /tmp/gs_plugin
      echo -e "\e[32m Enabling ${EXT} for GeoServer \033[0m"
      GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
      cp -r -u -p /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
