@@ -56,6 +56,10 @@ if [[ ! -z  ${GOOGLE_FONTS_NAMES}  ]];then
   rm -rf fonts
 fi
 
+if [[ ${LOGGING_STDOUT} =~ [Tt][Rr][Uu][Ee] ]];then
+  export CONSOLE_HANDLER_LEVEL
+  tomcat_logging
+fi
 
 # Add custom espg properties file or the default one
 create_dir "${GEOSERVER_DATA_DIR}"/user_projections
@@ -164,14 +168,14 @@ export S3_SERVER_URL S3_USERNAME S3_PASSWORD S3_ALIAS
 # Pass an additional startup argument i.e -Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties
 if [[ -z "${S3_SERVER_URL}" || -z "${S3_USERNAME}" || -z "${S3_PASSWORD}" || -z "${S3_ALIAS}" ]]; then
   echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
-  echo -e "[Entrypoint] One or more variables needed for S3 community extensions are empty, skipping configuration of: \e[1;31m s3.properties \033[0m"
+  echo -e "\e[32m [Entrypoint] One or more variables needed for S3 community extensions are empty, skipping configuration of:\033[0m \e[1;31m s3.properties \033[0m"
 
 else
   if [[ "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" == *"-Ds3.properties.location"* ]]; then
     s3_config
 else
     echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
-    echo -e "[Entrypoint] -Ds3.properties.location is not setup in: \e[1;31m ${ADDITIONAL_JAVA_STARTUP_OPTIONS} \033[0m"
+    echo -e "\e[32m [Entrypoint] -Ds3.properties.location is not setup in:\033[0m \e[1;31m ${ADDITIONAL_JAVA_STARTUP_OPTIONS} \033[0m"
 fi
 
 
@@ -342,6 +346,7 @@ if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
         fi
         echo "${TOMCAT_PASSWORD}" >"${GEOSERVER_DATA_DIR}"/tomcat_pass.txt
         # Setup tomcat apps manager
+        delete_file "${CATALINA_HOME}"/conf/tomcat-users.xml
         tomcat_user_config
         # Unset random generated password
         unset TOMCAT_PASSWORD
@@ -587,6 +592,10 @@ else
 fi
 
 
+
+# Security hardening of tomcat
+sed -i 's/8005/-1/g' "${CATALINA_HOME}"/conf/server.xml
+
 # Cleanup temp file
 delete_file "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
 
@@ -604,5 +613,5 @@ fi
 # Run some extra bash script to fix issues i.e missing dependencies in lib caused by community extensions
 entry_point_script
 
-setup_logging
+log4j_logging
 

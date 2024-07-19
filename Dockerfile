@@ -39,7 +39,7 @@ ADD \
     build_data/plugin_download.sh \
     /work/
 
-RUN echo $GS_VERSION > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh
+RUN echo ${GS_VERSION} > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh
 
 RUN /work/plugin_download.sh
 
@@ -59,7 +59,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get -y --no-install-recommends install \
         locales gnupg2 ca-certificates software-properties-common  iputils-ping \
-        apt-transport-https  gettext fonts-cantarell fonts-liberation lmodern ttf-aenigma \
+        apt-transport-https  fonts-cantarell fonts-liberation lmodern ttf-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
         zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
       dpkg-divert --local --rename --add /sbin/initctl \
@@ -102,12 +102,12 @@ COPY --from=geoserver-plugin-downloader /work/stable_plugins/*.zip ${STABLE_PLUG
 COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNITY_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/geoserver_war/geoserver.* ${REQUIRED_PLUGINS_DIR}/
 
-RUN echo $GS_VERSION > /scripts/geoserver_version.txt && echo $STABLE_PLUGIN_BASE_URL > /scripts/geoserver_gs_url.txt ;\
+RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_BASE_URL} > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
-EXPOSE  $HTTPS_PORT
+EXPOSE  ${HTTPS_PORT}
 
 
 RUN echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc

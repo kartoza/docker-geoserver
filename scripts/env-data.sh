@@ -432,3 +432,14 @@ fi
 if [ -z "${GEOSERVER_DISABLE_STATIC_WEB_FILES}" ];then
   GEOSERVER_DISABLE_STATIC_WEB_FILES=true
 fi
+
+
+# Values can be INFO,SEVER,WARNING,CONFIG,FINE,FINER,FINEST,ALL
+if [ -z "${CONSOLE_HANDLER_LEVEL}" ];then
+  CONSOLE_HANDLER_LEVEL=INFO
+fi
+
+# Allows loging to files, default is to stdout
+if [ -z "${LOGGING_STDOUT}" ];then
+  LOGGING_STDOUT=true
+fi

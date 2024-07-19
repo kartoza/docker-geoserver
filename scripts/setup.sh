@@ -26,7 +26,6 @@ package_geoserver
 cp /build_data/stable_plugins.txt "${STABLE_PLUGINS_DIR}"
 cp /build_data/community_plugins.txt "${COMMUNITY_PLUGINS_DIR}"
 cp /build_data/letsencrypt-tomcat.xsl "${CATALINA_HOME}"/conf/ssl-tomcat.xsl
-cp /build_data/logging.properties "${CATALINA_HOME}/conf/logging.properties"
 
 pushd "${STABLE_PLUGINS_DIR}" || exit
 
@@ -132,6 +131,4 @@ pushd /scripts || exit
 rm -rf /tmp/resources
 
 # Delete resources which will be setup on first run
-
-delete_file "${CATALINA_HOME}"/conf/tomcat-users.xml
 delete_file "${CATALINA_HOME}"/conf/web.xml
