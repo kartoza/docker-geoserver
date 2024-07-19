@@ -195,7 +195,12 @@ will be enabled : [list of default plugins](https://github.com/kartoza/docker-ge
 ####  Activate stable extensions during the contain startup
 
 The environment variable `STABLE_EXTENSIONS` is used to activate extensions listed in
-[stable_plugins.txt](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.2/extensions/)
+[stable_plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.2/extensions/)
+
+**Note:** The plugins listed in the url is of the format `geoserver-2.25.2-wps-plugin.zip`, but the env
+variable expects the env to be of the format `wps-plugin`. Always consult the url to see which plugins 
+are available. The text file [stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
+contains a curated list of plugins but might be out of date in some cases.
 
 Example
 
@@ -210,6 +215,11 @@ You can pass any comma-separated extensions as defined in [stable_plugins](https
 
 The environment variable `COMMUNITY_EXTENSIONS` can be used to activate extensions listed in
 [community_plugins](https://build.geoserver.org/geoserver/2.25.x/community-latest/)
+
+**Note:** The plugins listed in the url is of the format `geoserver-2.25-SNAPSHOT-cog-http-plugin.zip `, but the env
+variable expects the env to be of the format `cog-http-plugin`. Always consult the url to see which plugins 
+are available. The text file [community_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
+contains a curated list of community plugins but might be out of date in some cases.
 
 Example
 
@@ -419,6 +429,7 @@ Always consult the `.env` file to check possible values.
 * XFRAME_OPTIONS=`"true"` - Based on [Xframe-options](https://docs.geoserver.org/latest/en/user/production/config.html#x-frame-options-policy)
 * INITIAL_MEMORY=`size`: Initial Memory that Java can allocate, default `2G`
 * MAXIMUM_MEMORY=`size`: Maximum Memory that Java can allocate, default `4G`
+* 
 
 
 ### Control flow properties
@@ -526,6 +537,7 @@ The configs that can be mounted are
 * broker.xml
 * users.xml - for Geoserver users.
 * roles.xml - To define roles users should have in GeoServer
+* logging.properties - Controls logging to sdtout parameters
 
 
 Example

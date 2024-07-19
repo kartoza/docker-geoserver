@@ -41,6 +41,7 @@ services:
         - COMMUNITY_EXTENSIONS=${COMMUNITY_EXTENSIONS}
         - GEOSERVER_CONTEXT_ROOT=${GEOSERVER_CONTEXT_ROOT}
         - ROOT_WEBAPP_REDIRECT=true
+        - CONSOLE_HANDLER_LEVEL=${CONSOLE_HANDLER_LEVEL}
       depends_on:
         db:
           condition: service_healthy

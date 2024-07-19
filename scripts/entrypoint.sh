@@ -59,7 +59,7 @@ log MONITOR_AUDIT_PATH="${MONITOR_AUDIT_PATH}"
 
 export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
-       -XX:SoftRefLRUPolicyMSPerMB=36000  -XX:NewRatio=2 \
+       -XX:SoftRefLRUPolicyMSPerMB=36000   \
        -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 \
        -XX:InitiatingHeapOccupancyPercent=${INITIAL_HEAP_OCCUPANCY_PERCENT}  \
        -Djts.overlay=ng \

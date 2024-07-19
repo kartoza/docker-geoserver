@@ -264,7 +264,7 @@ function install_plugin() {
 
   if [[ -f "${DATA_PATH}/${EXT}.zip" ]]; then
      unzip -qq "${DATA_PATH}/${EXT}.zip" -d /tmp/gs_plugin
-     echo -e "\e[32m Enabling ${EXT} for GeoServer \033[0m"
+     echo -e "\e[32m [Entrypoint] Enabling extension :\033[0m \e[1;31m ${EXT} \033[0m"
      GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
      cp -r -u -p /tmp/gs_plugin/*.jar "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
      rm -rf /tmp/gs_plugin
@@ -325,7 +325,7 @@ function setup_control_flow() {
 
 }
 
-function setup_logging() {
+function log4j_logging() {
   if [[ ! -f "${CATALINA_HOME}"/log4j.properties ]]; then
     # If it doesn't exists, copy from ${EXTRA_CONFIG_DIR} directory if exists
     if [[ -f "${EXTRA_CONFIG_DIR}"/log4j.properties ]]; then
@@ -362,6 +362,18 @@ function geoserver_logging() {
   if [[ ! -f ${LOG_PATH} ]];then
     touch "${LOG_PATH}"
   fi
+}
+
+
+function tomcat_logging() {
+  # If it doesn't exists, copy from /settings directory if exists
+  if [[ -f "${EXTRA_CONFIG_DIR}"/logging.properties ]]; then
+    envsubst < "${EXTRA_CONFIG_DIR}"/logging.properties > "${CATALINA_HOME}"/conf/logging.properties
+  else
+    # default value
+    envsubst < /build_data/logging.properties > "${CATALINA_HOME}"/conf/logging.properties
+  fi
+
 }
 
 # Function to read env variables from secrets
@@ -461,25 +473,25 @@ function gwc_file_perms() {
   GWC_USER_PERM=$(stat -c '%U' "${GEOWEBCACHE_CACHE_DIR}")
   GWC_GRP_PERM=$(stat -c '%G' "${GEOWEBCACHE_CACHE_DIR}")
   case "${GEOWEBCACHE_CACHE_DIR}" in ${GEOSERVER_DATA_DIR}/*)
-    echo "${GEOWEBCACHE_CACHE_DIR} is nested in ${GEOSERVER_DATA_DIR}"
+    echo -e " \e[32m [Entrypoint] \033[0m \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m \e[32m is nested in \033[0m \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
     if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
       if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
-        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
+        echo -e "\e[32m [Entrypoint] Changing folder permission for:\033[0m \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
         chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
       fi
     fi
     ;;
   *)
-    echo "${GEOWEBCACHE_CACHE_DIR} is not nested in ${GEOSERVER_DATA_DIR}"
+    echo -e "\e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m is not nested in \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
     if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
       if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
-        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
+        echo -e "\e[32m [Entrypoint] Changing folder permission for:\033[0m \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
         chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
       fi
     fi
     if [[ ${CHOWN_GWC_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
       if [[ ${GWC_USER_PERM} != "${USER_NAME}" ]] &&  [[ ${GWC_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
-        echo -e "[Entrypoint] Changing folder permission for: \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m"
+        echo -e "\e[32m [Entrypoint] Changing folder permission for:\033[0m \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m"
         chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOWEBCACHE_CACHE_DIR}"
       fi
     fi
