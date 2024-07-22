@@ -68,8 +68,8 @@ jobs:
           - image: 9.0.91-jdk11-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 25
-            patch: 2
+#          - minor: 25
+#            patch: 2
           - minor: 24
             patch: 4
         stablePluginBaseURL:
