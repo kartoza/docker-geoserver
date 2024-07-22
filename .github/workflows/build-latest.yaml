@@ -23,7 +23,10 @@ jobs:
   build-activemq-docker-image:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: github.actor != 'dependabot[bot]' && contains(github.event.comment.body, '/skiprelease') && contains(github.event.comment.title, '[skiprelease]')
+    if: |
+      github.actor != 'dependabot[bot]' &&
+      (!contains(github.event.comment.body, '/skiprelease') ||
+      !contains(github.event.comment.title, '[skiprelease]'))
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
@@ -53,7 +56,10 @@ jobs:
   build-geoserver-docker-image:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: github.actor != 'dependabot[bot]'  && contains(github.event.comment.body, '/skiprelease') && contains(github.event.comment.title, '[skiprelease]')
+    if: |
+      github.actor != 'dependabot[bot]' &&
+      (!contains(github.event.comment.body, '/skiprelease') ||
+      !contains(github.event.comment.title, '[skiprelease]'))
     strategy:
       matrix:
         geoserverMajorVersion:
@@ -129,7 +135,10 @@ jobs:
   scan_image:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: github.actor != 'dependabot[bot]'  && contains(github.event.comment.body, '/skiprelease') && contains(github.event.comment.title, '[skiprelease]')
+    if: |
+      github.actor != 'dependabot[bot]' &&
+      (!contains(github.event.comment.body, '/skiprelease') ||
+      !contains(github.event.comment.title, '[skiprelease]'))
     needs: [build-geoserver-docker-image, run-scenario-tests]
     steps:
       - uses: actions/checkout@v4
@@ -159,7 +168,10 @@ jobs:
   run-scenario-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: github.actor != 'dependabot[bot]'  && contains(github.event.comment.body, '/skiprelease') && contains(github.event.comment.title, '[skiprelease]')
+    if: |
+      github.actor != 'dependabot[bot]' &&
+      (!contains(github.event.comment.body, '/skiprelease') ||
+      !contains(github.event.comment.title, '[skiprelease]'))
     needs: [ build-geoserver-docker-image, build-activemq-docker-image]
     strategy:
       matrix:
@@ -202,7 +214,12 @@ jobs:
           bash ./test.sh
 
   push-internal-pr-images:
-    if: github.event_name == 'pull_request' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url && github.actor != 'dependabot[bot]'  && contains(github.event.comment.body, '/skiprelease') && contains(github.event.comment.title, '[skiprelease]')
+    if: |
+      github.event_name == 'pull_request' && 
+      github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url && 
+      github.actor != 'dependabot[bot]'  &&
+      (!contains(github.event.comment.body, '/skiprelease') ||
+      !contains(github.event.comment.title, '[skiprelease]'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [ build-geoserver-docker-image, run-scenario-tests ]
