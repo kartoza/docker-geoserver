@@ -64,6 +64,8 @@ jobs:
         geoserverMinorVersion:
           - minor: 25
             patch: 2
+          - minor: 24
+            patch: 4
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
