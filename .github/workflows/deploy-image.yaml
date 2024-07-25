@@ -12,7 +12,10 @@ on:
 #  contents: read
 jobs:
   deploy-image:
-    if: github.actor != 'dependabot[bot]'  && contains(github.event.comment.body, '/skiprelease') && contains(github.event.comment.title, '[skiprelease]')
+    if: |
+      github.actor != 'dependabot[bot]' &&
+      (!contains(github.event.comment.body, '/skiprelease') ||
+      !contains(github.event.comment.title, '[skiprelease]'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -25,8 +28,10 @@ jobs:
           - image: 9.0.91-jdk11-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 25
-            patch: 2
+#          - minor: 25
+#            patch: 2
+          - minor: 24
+            patch: 4
         stablePluginBaseURL:
           # empty because it often changes, so it's better
           # to use the default one described in the Dockerfile
