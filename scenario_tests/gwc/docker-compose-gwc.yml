@@ -18,6 +18,7 @@ services:
       MAXIMUM_MEMORY: 4G
       RECREATE_DATADIR: TRUE
       SAMPLE_DATA: true
+      CONSOLE_HANDLER_LEVEL: WARNING
       TEST_CLASS: test_gwc.TestGeoServerGWC
     ports:
       - "8080:8080"

@@ -110,6 +110,7 @@ services:
       - RUN_AS_ROOT=TRUE
       - GEOSERVER_ADMIN_USER=admin
       - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
+      - CONSOLE_HANDLER_LEVEL=WARNING
       - STABLE_EXTENSIONS=
       - COMMUNITY_EXTENSIONS=jms-cluster-plugin
       - TEST_CLASS=test_clustering_master.GeoServerClusteringMaster
@@ -146,6 +147,7 @@ services:
       - RUN_AS_ROOT=TRUE
       - GEOSERVER_ADMIN_USER=admin
       - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
+      - CONSOLE_HANDLER_LEVEL=WARNING
       - STABLE_EXTENSIONS=
       - COMMUNITY_EXTENSIONS=jms-cluster-plugin
       - TEST_CLASS=test_clustering_node.GeoServerClusteringNode

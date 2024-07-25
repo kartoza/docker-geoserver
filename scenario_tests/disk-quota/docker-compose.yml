@@ -42,6 +42,7 @@ services:
       DISK_QUOTA_SIZE: 5
       DB_BACKEND: POSTGRES
       SAMPLE_DATA: true
+      CONSOLE_HANDLER_LEVEL: WARNING
       TEST_CLASS: test_disk_quota.TestGeoServerDISKQUOTA
     depends_on:
       db:

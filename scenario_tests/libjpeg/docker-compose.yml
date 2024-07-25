@@ -17,6 +17,7 @@ services:
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
       SAMPLE_DATA: true
+      CONSOLE_HANDLER_LEVEL: WARNING
       TEST_CLASS: test_libjpeg.TestGeoServerTURBO
     ports:
       - "8080:8080"

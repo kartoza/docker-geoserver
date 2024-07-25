@@ -40,6 +40,7 @@ services:
       DISK_QUOTA_SIZE: 5
       DB_BACKEND: POSTGRES
       SAMPLE_DATA: true
+      CONSOLE_HANDLER_LEVEL: WARNING
       COMMUNITY_EXTENSIONS: jdbcconfig-plugin,jdbcstore-plugin
       TEST_CLASS: test_jdbconfig.TestGeoServerJDBCONFIG
     depends_on:
