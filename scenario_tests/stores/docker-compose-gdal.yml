@@ -13,6 +13,7 @@ services:
     environment:
       GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
       GEOSERVER_ADMIN_USER: admin
+      CONSOLE_HANDLER_LEVEL: WARNING
       TEST_CLASS: test_gdal.TestGeoServerGDAL
     ports:
       - "8080:8080"
