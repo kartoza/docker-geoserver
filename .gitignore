@@ -15,4 +15,5 @@ scenario_tests/disk-quota/tests/__pycache__*
 scenario_tests/gwc/tests/__pycache__*
 scenario_tests/login/tests/__pycache__*
 scenario_tests/stores/tests/__pycache__*
+scenario_tests/libjpeg/tests/__pycache__*
 .DS_Store
