@@ -153,18 +153,7 @@ fi
 
 # A little logic that will fetch the geoserver war zip file if it is not available locally in the resources dir
 function package_geoserver() {
-  # Check if resource file exists otherwise use the default downloaded
-  if [[  -f /tmp/resources/geoserver-${GS_VERSION}.zip ]];then
-    unzip /tmp/resources/geoserver-"${GS_VERSION}".zip -d /tmp/geoserver && \
-    unzip_geoserver
-  elif [[  -f /tmp/resources/geoserver-${GS_VERSION}-bin.zip  ]];then
-    unzip /tmp/resources/geoserver-"${GS_VERSION}".zip -d /tmp/geoserver && \
-    unzip_geoserver
-  elif [[  -f /tmp/resources/geoserver.war  ]];then
-    mkdir -p /tmp/geoserver
-    cp /tmp/resources/geoserver.war /tmp/geoserver/geoserver.war
-    unzip_geoserver
-  else
+
     if [[ -f ${REQUIRED_PLUGINS_DIR}/geoserver.zip ]]; then
       unzip ${REQUIRED_PLUGINS_DIR}/geoserver.zip -d /tmp/geoserver && \
       unzip_geoserver
@@ -176,9 +165,8 @@ function package_geoserver() {
       echo "GeoServer bin/war file missing, exiting installation"
       exit 1
     fi
-  fi
-}
 
+}
 
 # Helper function to setup cluster config for the clustering plugin
 # https://docs.geoserver.org/stable/en/user/community/jms-cluster/index.html

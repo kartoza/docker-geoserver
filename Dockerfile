@@ -1,4 +1,3 @@
-
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 ARG IMAGE_VERSION=9.0.91-jdk11-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
@@ -23,9 +22,9 @@ ARG JAVA_HOME=/opt/java/openjdk
 # alpine because it's smaller.
 
 FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
-ARG GS_VERSION=2.25.2
+ARG GS_VERSION=2.24.4
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
-ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+ARG WAR_URL=https://artifacts.geonode.org/geoserver/${GS_VERSION}/geoserver.war
 
 RUN apk update && apk add curl py3-pip
 RUN pip3 install beautifulsoup4 requests
@@ -49,7 +48,7 @@ RUN /work/plugin_download.sh
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.25.2
+ARG GS_VERSION=2.24.4
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG ACTIVATE_GDAL_PLUGIN=true
@@ -107,6 +106,20 @@ COPY --from=geoserver-plugin-downloader /work/stable_plugins.txt ${STABLE_PLUGIN
 RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_BASE_URL} > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# GeoNode
+ADD  geonode_scripts /usr/local/tomcat/tmp
+
+WORKDIR /usr/local/tomcat/tmp
+COPY ./templates /templates
+
+RUN chmod +x \
+        /usr/local/tomcat/tmp/set_geoserver_auth.sh \
+        /usr/local/tomcat/tmp/entrypoint.sh
+
+RUN apt update -y;apt-get -y --no-install-recommends install python3-pip procps libpython3-dev
+
+RUN pip install j2cli invoke==2.2.0 requests==2.31.0
 
 
 EXPOSE  ${HTTPS_PORT}
