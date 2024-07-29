@@ -443,3 +443,7 @@ fi
 if [ -z "${LOGGING_STDOUT}" ];then
   LOGGING_STDOUT=true
 fi
+
+if [ -z "${PRINT_BASE_URL}" ];then
+  PRINT_BASE_URL=http://geoserver:8080/geoserver/pdf
+fi
