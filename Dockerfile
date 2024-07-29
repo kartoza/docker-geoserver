@@ -102,6 +102,7 @@ COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNIT
 COPY --from=geoserver-plugin-downloader /work/geoserver_war/geoserver.* ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/community_plugins.txt ${COMMUNITY_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins.txt ${STABLE_PLUGINS_DIR}/
+COPY --from=geoserver-plugin-downloader /work/geoserver_war/geonode-geoserver-ext-web-app-data.zip ${REQUIRED_PLUGINS_DIR}/
 
 RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_BASE_URL} > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \

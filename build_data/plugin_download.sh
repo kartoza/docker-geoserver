@@ -27,5 +27,6 @@ if [[ "${WAR_URL}" == *\.zip ]]; then
     curl --progress-bar -fLvo "${destination}" "${WAR_URL}" || exit 1
 fi
 
+curl --progress-bar -fLvo  /work/geoserver_war/geonode-geoserver-ext-web-app-data.zip https://artifacts.geonode.org/geoserver/$GS_VERSION/geonode-geoserver-ext-web-app-data.zip
 # Download everything!
 curl  --progress-bar -vK /work/curl.cfg

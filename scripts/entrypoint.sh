@@ -260,7 +260,12 @@ set_vars
 export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
 export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING  CLUSTER_CONNECTION_RETRY_COUNT CLUSTER_CONNECTION_MAX_WAIT
 
-
+# GeoNode data dir
+unzip ${REQUIRED_PLUGINS_DIR}/geonode-geoserver-ext-web-app-data.zip -d /tmp/geonode_data
+rm -rf "${CATALINA_HOME}"/security
+mv /tmp/geonode_data/data/security "${CATALINA_HOME}"/
+cp -r -v /tmp/geonode_data/data/geofence "${GEOSERVER_DATA_DIR}"/
+# End copy settings
 /bin/bash /scripts/start.sh
 
 
