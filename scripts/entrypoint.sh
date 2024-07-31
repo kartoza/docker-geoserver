@@ -264,7 +264,7 @@ done
 
 
 
-if [ ${FORCE_REINIT} = "true" ]  || [ ${FORCE_REINIT} = "True" ] || [ ! -e "${GEOSERVER_DATA_DIR}/geoserver_init.lock" ]; then
+if [ "${FORCE_REINIT}" = "true" ]  || [ "${FORCE_REINIT}" = "True" ] || [ ! -e "${GEOSERVER_DATA_DIR}/geoserver_init.lock" ]; then
     # Run async configuration, it needs Geoserver to be up and running
     nohup sh -c "invoke configure-geoserver" &
 fi
