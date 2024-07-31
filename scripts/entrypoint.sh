@@ -20,6 +20,44 @@ if ! id -u "${USER_NAME}" >/dev/null 2>&1; then
     useradd -l -m -d /home/"${USER_NAME}"/ -u "${USER_ID}" --gid "${GROUP_ID}" -s /bin/bash -G "${GEO_GROUP_NAME}" "${USER_NAME}"
 fi
 
+
+
+# Import env and functions
+source /scripts/functions.sh
+source /scripts/env-data.sh
+
+# Create directories
+dir_creation=("${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}"
+"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}" "/docker-entrypoint-geoserver.d")
+for directory in "${dir_creation[@]}"; do
+  create_dir "${directory}"
+done
+
+# Rename to match wanted context-root and so that we can unzip plugins to
+# existing directory.
+if [ x"${GEOSERVER_CONTEXT_ROOT}" != xgeoserver ]; then
+  echo "INFO: changing context-root to '${GEOSERVER_CONTEXT_ROOT}'."
+  GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
+  if [ -e "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" ]; then
+    mkdir -p "$(dirname -- "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}")"
+    mv "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}"
+  else
+    echo "WARN: '${GEOSERVER_INSTALL_DIR}/webapps/geoserver' not found, probably already renamed as this is probably a container restart and not first run."
+  fi
+fi
+
+# Credits https://github.com/kartoza/docker-geoserver/pull/371
+set_vars
+export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
+export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING  CLUSTER_CONNECTION_RETRY_COUNT CLUSTER_CONNECTION_MAX_WAIT
+
+# GeoNode data dir
+unzip ${REQUIRED_PLUGINS_DIR}/geonode-geoserver-ext-web-app-data.zip -d /tmp/geonode_data
+rm -rf "${CATALINA_HOME}"/security
+mv /tmp/geonode_data/data/security "${CATALINA_HOME}"/
+cp -r -v /tmp/geonode_data/data/geofence "${GEOSERVER_DATA_DIR}"/
+# End copy settings
+
 # GeoNode
 source /root/.bashrc
 
@@ -231,41 +269,6 @@ if [ ${FORCE_REINIT} = "true" ]  || [ ${FORCE_REINIT} = "True" ] || [ ! -e "${GE
     nohup sh -c "invoke configure-geoserver" &
 fi
 
-# Import env and functions
-source /scripts/functions.sh
-source /scripts/env-data.sh
-
-# Create directories
-dir_creation=("${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}"
-"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}" "/docker-entrypoint-geoserver.d")
-for directory in "${dir_creation[@]}"; do
-  create_dir "${directory}"
-done
-
-# Rename to match wanted context-root and so that we can unzip plugins to
-# existing directory.
-if [ x"${GEOSERVER_CONTEXT_ROOT}" != xgeoserver ]; then
-  echo "INFO: changing context-root to '${GEOSERVER_CONTEXT_ROOT}'."
-  GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
-  if [ -e "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" ]; then
-    mkdir -p "$(dirname -- "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}")"
-    mv "${GEOSERVER_INSTALL_DIR}/webapps/geoserver" "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}"
-  else
-    echo "WARN: '${GEOSERVER_INSTALL_DIR}/webapps/geoserver' not found, probably already renamed as this is probably a container restart and not first run."
-  fi
-fi
-
-# Credits https://github.com/kartoza/docker-geoserver/pull/371
-set_vars
-export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
-export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING  CLUSTER_CONNECTION_RETRY_COUNT CLUSTER_CONNECTION_MAX_WAIT
-
-# GeoNode data dir
-unzip ${REQUIRED_PLUGINS_DIR}/geonode-geoserver-ext-web-app-data.zip -d /tmp/geonode_data
-rm -rf "${CATALINA_HOME}"/security
-mv /tmp/geonode_data/data/security "${CATALINA_HOME}"/
-cp -r -v /tmp/geonode_data/data/geofence "${GEOSERVER_DATA_DIR}"/
-# End copy settings
 /bin/bash /scripts/start.sh
 
 
