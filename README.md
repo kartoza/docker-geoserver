@@ -352,6 +352,8 @@ HTTP_PROXY_NAME=foo.org
 HTTP_SCHEME=https
 ```
 
+> Note: if you're running this on Fargate behind a load balancer that already terminates SSL, you only need `HTTP_SCHEME=https`.
+
 This will prevent the login form from sending insecure http post requests as experienced
 in [login issue](https://github.com/kartoza/docker-geoserver/issues/293)
 
