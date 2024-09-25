@@ -240,6 +240,14 @@ if [ -z "${WPS_REQUEST}" ]; then
     WPS_REQUEST='1000/d;30s'
 fi
 
+if [ -z "${USER_WMS_REQUEST}" ]; then
+    USER_WMS_REQUEST='30/s'
+fi
+
+if [ -z "${THROTTLE_REQUEST_PER_IP}" ]; then
+    THROTTLE_REQUEST_PER_IP=10
+fi
+
 file_env S3_SERVER_URL
 if [ -z "${S3_SERVER_URL}" ]; then
     S3_SERVER_URL=''
