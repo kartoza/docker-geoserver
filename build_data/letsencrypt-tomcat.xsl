@@ -11,6 +11,8 @@
     <xsl:param name="http.compression"/>
     <xsl:param name="http.scheme"/>
     <xsl:param name="http.maxHttpHeaderSize"/>
+    <xsl:param name="http.relaxedPathChars"/>
+    <xsl:param name="http.relaxedQueryChars"/>
     <xsl:param name="https.scheme"/>
     <xsl:param name="https.port"/>
     <xsl:param name="https.maxThreads"/>
@@ -74,6 +76,16 @@
             <xsl:if test="$http.maxHttpHeaderSize">
                 <xsl:attribute name="maxHttpHeaderSize">
                     <xsl:value-of select="$http.maxHttpHeaderSize"/>
+                </xsl:attribute>
+            </xsl:if>
+            <xsl:if test="$http.relaxedPathChars">
+                <xsl:attribute name="relaxedPathChars">
+                    <xsl:value-of select="$http.relaxedPathChars"/>
+                </xsl:attribute>
+            </xsl:if>
+            <xsl:if test="$http.relaxedQueryChars">
+                <xsl:attribute name="relaxedQueryChars">
+                    <xsl:value-of select="$http.relaxedQueryChars"/>
                 </xsl:attribute>
             </xsl:if>
 
