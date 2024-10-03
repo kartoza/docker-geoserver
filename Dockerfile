@@ -108,6 +108,11 @@ RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_
     chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Download the Keycloak plugin
+RUN curl -L -o /tmp/keycloak-plugin.zip https://build.geoserver.org/geoserver/2.26.x/community-latest/geoserver-2.26-SNAPSHOT-sec-keycloak-plugin.zip \
+    && unzip /tmp/keycloak-plugin.zip -d ${COMMUNITY_PLUGINS_DIR}/ \
+    && rm /tmp/keycloak-plugin.zip
+
 
 EXPOSE  ${HTTPS_PORT}
 
