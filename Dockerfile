@@ -23,7 +23,7 @@ ARG JAVA_HOME=/opt/java/openjdk
 # alpine because it's smaller.
 
 FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
-ARG GS_VERSION=2.26.0
+ARG GS_VERSION=2.25.3
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 
@@ -49,7 +49,7 @@ RUN /work/plugin_download.sh
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.26.0
+ARG GS_VERSION=2.25.3
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG ACTIVATE_GDAL_PLUGIN=true
@@ -110,7 +110,7 @@ RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download the Keycloak plugin
-RUN curl -L -o /tmp/keycloak-plugin.zip https://build.geoserver.org/geoserver/2.26.x/community-latest/geoserver-2.26-SNAPSHOT-sec-keycloak-plugin.zip \
+RUN curl -L -o /tmp/keycloak-plugin.zip https://build.geoserver.org/geoserver/2.25.x/community-latest/geoserver-2.25-SNAPSHOT-sec-keycloak-plugin.zip \
     && unzip -o /tmp/keycloak-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
 
