@@ -117,8 +117,8 @@ RUN curl -L -o /tmp/openid-plugin.zip https://build.geoserver.org/geoserver/2.25
     && unzip -o /tmp/openid-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
 
-RUN curl -L -o /tmp/geofence.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.3/extensions/geoserver-2.25.3-geofence-plugin.zip/download \
-    && unzip -o /tmp/geofence.zip -d ${GEOSERVER_WEBAPP}/
+# RUN curl -L -o /tmp/geofence.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.3/extensions/geoserver-2.25.3-geofence-plugin.zip/download \
+#     && unzip -o /tmp/geofence.zip -d ${GEOSERVER_WEBAPP}/
 
 EXPOSE  ${HTTPS_PORT} 
 
