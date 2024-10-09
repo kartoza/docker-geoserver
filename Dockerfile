@@ -113,6 +113,10 @@ RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_
 RUN curl -L -o /tmp/keycloak-plugin.zip https://build.geoserver.org/geoserver/2.26.x/community-latest/geoserver-2.26-SNAPSHOT-sec-keycloak-plugin.zip \
     && unzip -o /tmp/keycloak-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
+RUN curl -L -o /tmp/openid-plugin.zip https://build.geoserver.org/geoserver/2.26.x/community-latest/geoserver-2.26-SNAPSHOT-sec-oauth2-openid-connect-plugin.zip \
+    && unzip -o /tmp/openid-plugin.zip -d ${GEOSERVER_WEBAPP}/
+    
+
 RUN curl -L -o /tmp/geofence.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-plugin.zip/download \
     && unzip -o /tmp/geofence.zip -d ${GEOSERVER_WEBAPP}/
 
