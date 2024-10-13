@@ -2,12 +2,11 @@ FROM bellsoft/liberica-openjdk-alpine:13 AS activemq-prod
 
 LABEL maintainer="Alessio Fabiani <alessio.fabiani@geosolutionsgroup.com>"
 
-ENV \
-    ACTIVEMQ_VERSION=5.17.1 \
-    ACTIVEMQ=apache-activemq-$ACTIVEMQ_VERSION \
-    ACTIVEMQ_HOME=/opt/activemq/ \
-    ACTIVEMQ_CONF=$ACTIVEMQ_HOME/conf/ \
-    ACTIVEMQ_LIB=$ACTIVEMQ_HOME/lib/optional/
+ENV ACTIVEMQ_VERSION=5.17.1
+ENV ACTIVEMQ=apache-activemq-$ACTIVEMQ_VERSION
+ENV ACTIVEMQ_HOME=/opt/activemq/
+ENV ACTIVEMQ_CONF=$ACTIVEMQ_HOME/conf/
+ENV ACTIVEMQ_LIB=$ACTIVEMQ_HOME/lib/optional/
 
 
 RUN apk add --update curl && \
