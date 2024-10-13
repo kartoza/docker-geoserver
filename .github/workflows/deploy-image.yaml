@@ -28,8 +28,8 @@ jobs:
           - image: 9.0.91-jdk11-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 25
-            patch: 2
+          - minor: 26
+            patch: 0
         stablePluginBaseURL:
           # empty because it often changes, so it's better
           # to use the default one described in the Dockerfile
