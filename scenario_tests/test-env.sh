@@ -25,14 +25,15 @@ function test_url_availability() {
     elapsed_time=$((current_time - start_time))
 
     if [ $elapsed_time -ge $timeout ]; then
-      echo "Timeout reached. Exiting."
+      echo "Timeout reached. Exiting trying to connect to service endpoint."
       exit 1
     fi
+
     if [[ $(wget -S --spider --user admin --password ${PASS} ${URL}  2>&1 | grep 'HTTP/1.1 200') ]]; then
-      echo "Rest endpoint ${URL} is available"
+      echo "Rest endpoint ${URL} is accessible with the provided credentials"
       break
     else
-      echo "Rest endpoint ${URL} is not available, retrying in 5 seconds"
+      echo "Access to ${URL}, with credentials username admin and password ${PASS} did not succeed, retrying in 5 seconds"
       sleep 5
     fi
   done

@@ -15,7 +15,7 @@ fi
 ####################################
 #Test using default created password
 #####################################
-echo -e "[Unit Test] Running tests using password from env Geoserver password"
+echo -e "[Unit Test] Running GEOSERVER_CONTEXT_ROOT tests with GEOSERVER_CONTEXT_ROOT set to  foobar"
 
 ${VERSION} up -d
 
@@ -31,7 +31,7 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8080/foobar/rest/about/version.xml foobargeoserver
+  test_url_availability http://localhost:8080/foobar/rest/about/version.xml myawesomegeoserver
   echo "Execute test for $service"
   ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
 
@@ -42,7 +42,7 @@ ${VERSION} down -v
 ####################################
 #Test using updated password
 #####################################
-echo -e "[Unit Test] Running testing using updated password from env Geoserver password"
+echo -e "[Unit Test]  Running GEOSERVER_CONTEXT_ROOT tests with GEOSERVER_CONTEXT_ROOT set to foobar#geoserver"
 sed -i 's/foobar/foobar#geoserver/g' docker-compose.yml
 # Bring the services up again
 ${VERSION} up -d geoserver
