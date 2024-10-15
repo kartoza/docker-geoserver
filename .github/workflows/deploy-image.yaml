@@ -14,8 +14,10 @@ jobs:
   deploy-image:
     if: |
       github.actor != 'dependabot[bot]' &&
-      (!contains(github.event.comment.body, '/skiprelease') ||
-      !contains(github.event.comment.title, '[skiprelease]'))
+      !(
+        contains(github.event.pull_request.title, '[skip-release]') ||
+        contains(github.event.comment.body, '/skiprelease')
+      ) && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -83,8 +85,10 @@ jobs:
     timeout-minutes: 5
     if: |
       github.actor != 'dependabot[bot]' &&
-      (!contains(github.event.comment.body, '/skiprelease') ||
-      !contains(github.event.comment.title, '[skiprelease]'))
+      !(
+        contains(github.event.pull_request.title, '[skip-release]') ||
+        contains(github.event.comment.body, '/skiprelease') 
+      ) && github.event.workflow_run.conclusion == 'success'
     needs: [deploy-image]
     strategy:
       matrix:
