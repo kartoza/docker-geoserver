@@ -69,11 +69,11 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0.91-jdk11-temurin-focal
+          - image: 9.0.91-jdk17-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 25
-            patch: 3
+          - minor: 26
+            patch: 0
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:

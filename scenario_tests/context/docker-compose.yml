@@ -18,9 +18,8 @@ services:
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
       GEOSERVER_CONTEXT_ROOT: foobar
-      CONTAINER_NAME: geoserver
       CONSOLE_HANDLER_LEVEL: WARNING
-      TEST_CLASS: test_login.TestGeoServerREST
+      TEST_CLASS: test_context.TestGeoServerREST
     healthcheck:
       test: ["CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/foobar/rest/about/version.xml"]
       interval: 1m30s
