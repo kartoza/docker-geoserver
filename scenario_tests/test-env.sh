@@ -29,7 +29,10 @@ function test_url_availability() {
       exit 1
     fi
 
-    if [[ $(wget -S --spider --user admin --password ${PASS} ${URL}  2>&1 | grep 'HTTP/1.1 200') ]]; then
+
+    result=$(wget -S --spider --user admin --password ${PASS} --max-redirect=0 ${URL} 2>&1 | grep "HTTP/1.1 " | tail -n 1 | awk '{print $2}')
+
+    if [[ $result -eq 200 ]]; then
       echo "Rest endpoint ${URL} is accessible with the provided credentials"
       break
     else
