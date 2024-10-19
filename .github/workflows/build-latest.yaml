@@ -272,6 +272,11 @@ jobs:
           - minor: 26
             patch: 0
     steps:
+
+      - name: Checkout code
+        id: git_checkout
+        uses: actions/checkout@v3
+
       - name: Get Current Date
         id: current_date
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
