@@ -279,6 +279,7 @@ jobs:
 
       - name: Switch to develop branch
         run: |
+            cd $GITHUB_WORKSPACE
             git checkout develop
             git pull origin develop
 
