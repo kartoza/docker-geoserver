@@ -95,8 +95,8 @@ jobs:
         geoserverMajorVersion:
           - 2
         geoserverMinorVersion:
-          - minor: 25
-            patch: 2
+          - minor: 26
+            patch: 0
     steps:
       - name: Get Current Date
         id: current_date

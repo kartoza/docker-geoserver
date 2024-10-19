@@ -20,239 +20,271 @@ on:
 #permissions:
 #  contents: read
 jobs:
-  build-activemq-docker-image:
+#  build-activemq-docker-image:
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 5
+#    if: |
+#      github.actor != 'dependabot[bot]' &&
+#      !(
+#        contains(github.event.pull_request.title, '[skip-release]') ||
+#        contains(github.event.comment.body, '/skiprelease')
+#      )
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Set up QEMU
+#        uses: docker/setup-qemu-action@v3
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#      - name: Build image for testing activeqm
+#        id: docker_build_testing_image_activeqm
+#        uses: docker/build-push-action@v6
+#        with:
+#          context: ./clustering/activemq-docker/
+#          file: ./clustering/activemq-docker/Dockerfile
+#          push: false
+#          load: true
+#          tags: kartoza/activemq-docker:manual-build
+#          outputs: type=docker,dest=/tmp/activemq.tar
+#          cache-from: |
+#            type=gha,scope=test
+#            type=gha,scope=prod
+#          cache-to: type=gha,scope=test
+#          target: activemq-prod
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: kartoza-activemq
+#          path: /tmp/activemq.tar
+#  build-geoserver-docker-image:
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 15
+#    if: |
+#      github.actor != 'dependabot[bot]' &&
+#      !(
+#        contains(github.event.pull_request.title, '[skip-release]') ||
+#        contains(github.event.comment.body, '/skiprelease')
+#      )
+#    strategy:
+#      matrix:
+#        geoserverMajorVersion:
+#          - 2
+#        imageVersion:
+#          - image: 9.0.91-jdk17-temurin-focal
+#            javaHome: /opt/java/openjdk
+#        geoserverMinorVersion:
+#          - minor: 26
+#            patch: 0
+#        stablePluginBaseURL:
+#          - https://sourceforge.net/projects/geoserver/files/GeoServer
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Set up QEMU
+#        uses: docker/setup-qemu-action@v3
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#      - name: Build image for production
+#        id: docker_build_production_image
+#        uses: docker/build-push-action@v6
+#        with:
+#          context: .
+#          file: Dockerfile
+#          push: false
+#          load: true
+#          outputs: type=docker,dest=/tmp/geoserver_production.tar
+#          build-args: |
+#            IMAGE_VERSION=${{ matrix.imageVersion.image }}
+#            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+#            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+#            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+#            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
+#          cache-from: |
+#            type=gha,scope=prod
+#          cache-to: type=gha,scope=prod
+#          target: geoserver-prod
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: kartoza-geoserver-production
+#          path: /tmp/geoserver_production.tar
+#      - name: Build image for testing
+#        id: docker_build_testing_image
+#        uses: docker/build-push-action@v6
+#        with:
+#          context: .
+#          file: Dockerfile
+#          push: false
+#          load: true
+#          tags: kartoza/geoserver:manual-build
+#          outputs: type=docker,dest=/tmp/geoserver.tar
+#          build-args: |
+#            IMAGE_VERSION=${{ matrix.imageVersion.image }}
+#            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+#            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
+#            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+#            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
+#            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
+#            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
+#          cache-from: |
+#            type=gha,scope=prod
+#          cache-to: type=gha,scope=test
+#          target: geoserver-test
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: kartoza-geoserver
+#          path: /tmp/geoserver.tar
+#
+#  scan_image:
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 20
+#    if: |
+#      github.actor != 'dependabot[bot]' &&
+#      !(
+#        contains(github.event.pull_request.title, '[skip-release]') ||
+#        contains(github.event.comment.body, '/skiprelease')
+#      )
+#    needs: [build-geoserver-docker-image, run-scenario-tests]
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Download artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: kartoza-geoserver
+#          path: /tmp
+#      - name: Load image
+#        run: |
+#          docker load --input /tmp/geoserver.tar
+#      - name: Run Trivy vulnerability scanner
+#        uses: aquasecurity/trivy-action@master
+#        with:
+#          format: 'sarif'
+#          ignore-unfixed: true
+#          image-ref: kartoza/geoserver:manual-build
+#          output: 'trivy-results.sarif'
+#          severity: 'CRITICAL,HIGH'
+#          vuln-type: 'os,library'
+#
+#      - name: Upload Trivy scan results to GitHub Security tab
+#        uses: github/codeql-action/upload-sarif@v3
+#        with:
+#          sarif_file: 'trivy-results.sarif'
+#
+#  run-scenario-tests:
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 20
+#    if: |
+#      github.actor != 'dependabot[bot]' &&
+#      !(
+#        contains(github.event.pull_request.title, '[skip-release]') ||
+#        contains(github.event.comment.body, '/skiprelease')
+#      )
+#    needs: [ build-geoserver-docker-image, build-activemq-docker-image]
+#    strategy:
+#      matrix:
+#        scenario:
+#          - gwc
+#          - login
+#          - stores
+#          - context
+#          - disk-quota
+##          - clustering
+#          - jdbconfig
+#          - libjpeg
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Download artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: kartoza-geoserver
+#          path: /tmp
+#      - name: Load image
+#        run: |
+#          docker load --input /tmp/geoserver.tar
+#      - name: Download ActiveMQ artifact
+#        if: matrix.scenario == 'clustering'
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: kartoza-activemq
+#          path: /tmp
+#      - name: Load ActiveMQ image
+#        if: matrix.scenario == 'clustering'
+#        run: |
+#          docker load --input /tmp/activemq.tar
+#      - name: Run scenario test ${{ matrix.scenario }}
+#        working-directory: scenario_tests/${{ matrix.scenario }}
+#        env:
+#          COMPOSE_INTERACTIVE_NO_CLI: 1
+#          PRINT_TEST_LOGS: 1
+#        run: |
+#          # Use the built Docker image to run scenario tests
+#          bash ./test.sh
+#
+#  push-internal-pr-images:
+#    if: |
+#      github.event_name == 'pull_request' &&
+#      github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url &&
+#      github.actor != 'dependabot[bot]'  &&
+#      !(
+#        contains(github.event.pull_request.title, '[skip-release]') ||
+#        contains(github.event.comment.body, '/skiprelease')
+#      )
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 20
+#    needs: [ build-geoserver-docker-image, run-scenario-tests ]
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Download artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: kartoza-geoserver-production
+#          path: /tmp
+#      - name: Load image
+#        run: |
+#          docker load --input /tmp/geoserver_production.tar
+#      - name: Login to DockerHub
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+#      - name: Docker meta
+#        id: docker_meta
+#        uses: docker/metadata-action@v5
+#        with:
+#          images: ${{ secrets.DOCKERHUB_REPO}}/geoserver
+#          tags: |
+#            type=semver,pattern=\d.\d.\d
+#            type=ref,event=branch
+  publish_release_artifacts:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: |
       github.actor != 'dependabot[bot]' &&
       !(
         contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease')
-      )
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build image for testing activeqm
-        id: docker_build_testing_image_activeqm
-        uses: docker/build-push-action@v6
-        with:
-          context: ./clustering/activemq-docker/
-          file: ./clustering/activemq-docker/Dockerfile
-          push: false
-          load: true
-          tags: kartoza/activemq-docker:manual-build
-          outputs: type=docker,dest=/tmp/activemq.tar
-          cache-from: |
-            type=gha,scope=test
-            type=gha,scope=prod
-          cache-to: type=gha,scope=test
-          target: activemq-prod
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kartoza-activemq
-          path: /tmp/activemq.tar
-  build-geoserver-docker-image:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    if: |
-      github.actor != 'dependabot[bot]' &&
-      !(
-        contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease')
-      )
+        contains(github.event.comment.body, '/skiprelease') 
+      ) &&  github.event.workflow_run.conclusion == 'success'
+    needs: [deploy-image]
     strategy:
       matrix:
         geoserverMajorVersion:
           - 2
-        imageVersion:
-          - image: 9.0.91-jdk17-temurin-focal
-            javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 26
             patch: 0
-        stablePluginBaseURL:
-          - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build image for production
-        id: docker_build_production_image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-          push: false
-          load: true
-          outputs: type=docker,dest=/tmp/geoserver_production.tar
-          build-args: |
-            IMAGE_VERSION=${{ matrix.imageVersion.image }}
-            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
-            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
-            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
-          cache-from: |
-            type=gha,scope=prod
-          cache-to: type=gha,scope=prod
-          target: geoserver-prod
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kartoza-geoserver-production
-          path: /tmp/geoserver_production.tar
-      - name: Build image for testing
-        id: docker_build_testing_image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-          push: false
-          load: true
-          tags: kartoza/geoserver:manual-build
-          outputs: type=docker,dest=/tmp/geoserver.tar
-          build-args: |
-            IMAGE_VERSION=${{ matrix.imageVersion.image }}
-            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
-            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
-            DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
-            DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
-            STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
-          cache-from: |
-            type=gha,scope=prod
-          cache-to: type=gha,scope=test
-          target: geoserver-test
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kartoza-geoserver
-          path: /tmp/geoserver.tar
+      - name: Get Current Date
+        id: current_date
+        run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
 
-  scan_image:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: |
-      github.actor != 'dependabot[bot]' &&
-      !(
-        contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease')
-      )
-    needs: [build-geoserver-docker-image, run-scenario-tests]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: kartoza-geoserver
-          path: /tmp
-      - name: Load image
-        run: |
-          docker load --input /tmp/geoserver.tar
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          format: 'sarif'
-          ignore-unfixed: true
-          image-ref: kartoza/geoserver:manual-build
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-          vuln-type: 'os,library'
+      - name: Get Latest Commit Hash
+        id: latest_commit_hash
+        run: echo "commit=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_OUTPUT
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-  run-scenario-tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: |
-      github.actor != 'dependabot[bot]' &&
-      !(
-        contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease')
-      )
-    needs: [ build-geoserver-docker-image, build-activemq-docker-image]
-    strategy:
-      matrix:
-        scenario:
-          - gwc
-          - login
-          - stores
-          - context
-          - disk-quota
-#          - clustering
-          - jdbconfig
-          - libjpeg
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: kartoza-geoserver
-          path: /tmp
-      - name: Load image
+      - name: publish_release
+        id: tag_releases
         run: |
-          docker load --input /tmp/geoserver.tar
-      - name: Download ActiveMQ artifact
-        if: matrix.scenario == 'clustering'
-        uses: actions/download-artifact@v4
-        with:
-          name: kartoza-activemq
-          path: /tmp
-      - name: Load ActiveMQ image
-        if: matrix.scenario == 'clustering'
-        run: |
-          docker load --input /tmp/activemq.tar
-      - name: Run scenario test ${{ matrix.scenario }}
-        working-directory: scenario_tests/${{ matrix.scenario }}
+          gh release create v${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}--${{ steps.latest_commit_hash.outputs.commit }} --generate-notes --target ${{ steps.latest_commit_hash.outputs.commit }} --repo $GITHUB_REPOSITORY
         env:
-          COMPOSE_INTERACTIVE_NO_CLI: 1
-          PRINT_TEST_LOGS: 1
-        run: |
-          # Use the built Docker image to run scenario tests
-          bash ./test.sh
-
-  push-internal-pr-images:
-    if: |
-      github.event_name == 'pull_request' && 
-      github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url && 
-      github.actor != 'dependabot[bot]'  &&
-      !(
-        contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease')
-      )
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: [ build-geoserver-docker-image, run-scenario-tests ]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: kartoza-geoserver-production
-          path: /tmp
-      - name: Load image
-        run: |
-          docker load --input /tmp/geoserver_production.tar
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Docker meta
-        id: docker_meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DOCKERHUB_REPO}}/geoserver
-          tags: |
-            type=semver,pattern=\d.\d.\d
-            type=ref,event=branch
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
 
