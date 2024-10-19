@@ -263,7 +263,7 @@ jobs:
         contains(github.event.pull_request.title, '[skip-release]') ||
         contains(github.event.comment.body, '/skiprelease') 
       ) &&  github.event.workflow_run.conclusion == 'success'
-    needs: [deploy-image]
+    #needs: [deploy-image]
     strategy:
       matrix:
         geoserverMajorVersion:
