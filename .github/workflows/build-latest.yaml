@@ -280,8 +280,10 @@ jobs:
       - name: Switch to develop branch
         run: |
             cd $GITHUB_WORKSPACE
+            echo $(pwd)
+            git status
+            git branch
             git checkout develop
-            git pull origin develop
 
       - name: Get Current Date
         id: current_date
