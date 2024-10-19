@@ -276,14 +276,9 @@ jobs:
       - name: Checkout code
         id: git_checkout
         uses: actions/checkout@v3
+        with:
+          ref: 'develop'
 
-      - name: Switch to develop branch
-        run: |
-            cd $GITHUB_WORKSPACE
-            echo $(pwd)
-            git status
-            git branch
-            git checkout develop
 
       - name: Get Current Date
         id: current_date
