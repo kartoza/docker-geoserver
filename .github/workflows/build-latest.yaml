@@ -291,7 +291,7 @@ jobs:
       - name: publish_release
         id: tag_releases
         run: |
-          gh release create v${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}.v${{ steps.current_date.outputs.formatted }}.${{ steps.latest_commit_hash.outputs.commit }} --generate-notes --target ${{ steps.latest_commit_hash.outputs.commit }} --repo $GITHUB_REPOSITORY
+          gh release create v${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}.v${{ steps.current_date.outputs.formatted }}.${{ steps.latest_commit_hash.outputs.commit }} --generate-notes --target develop --repo $GITHUB_REPOSITORY
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
