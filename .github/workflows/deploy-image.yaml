@@ -54,8 +54,21 @@ jobs:
       - name: Get Current Date
         id: current_date
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
+
+      - name: Check if image exists on Docker Hub
+        id: check_hub_image_exists
+        run: |
+          docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_PASSWORD }}
+          TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${{ secrets.DOCKERHUB_USERNAME }}'", "password": "'${{ secrets.DOCKERHUB_PASSWORD }}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+          check_image=$(curl --silent -f --head -lL https://hub.docker.com/v2/repositories/kartoza/geoserver/tags/${{ matrix.geoserverMajorVersion }}-${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/ | head -n 1 | cut -d ' ' -f2) >> $GITHUB_OUTPUT
+
       - name: Build prod image
-        if: github.actor != 'dependabot[bot]'
+        if: |
+          github.actor != 'dependabot[bot]' &&
+          !(
+            contains(github.event.pull_request.title, '[skip-release]') ||
+            contains(github.event.comment.body, '/skiprelease')
+          ) && github.event.workflow_run.conclusion == 'success'
         timeout-minutes: 15
         id: docker_build_prod
         uses: docker/build-push-action@v6
@@ -66,6 +79,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_REPO }}/geoserver
+            ${{ steps.check_hub_image_exists.outputs.check_image == 200 && format('{0}/postgis:{1}-{2}.{3}', secrets.DOCKERHUB_REPO,  matrix.geoserverMajorVersion, geoserverMinorVersion.minor, matrix.geoserverMinorVersion.patch) || null}}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
           build-args: |
