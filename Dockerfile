@@ -59,7 +59,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get -y --no-install-recommends install \
         locales gnupg2 ca-certificates software-properties-common  iputils-ping \
-        apt-transport-https  fonts-cantarell fonts-liberation lmodern ttf-aenigma \
+        apt-transport-https  fonts-cantarell fonts-liberation lmodern  \
         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
         zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
       dpkg-divert --local --rename --add /sbin/initctl \
