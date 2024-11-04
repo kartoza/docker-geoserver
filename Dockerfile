@@ -1,6 +1,6 @@
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0-debian-12
+ARG IMAGE_VERSION=9.0.90-jre17-temurin-focal
 ARG JAVA_HOME=/opt/java/openjdk
 
 ##############################################################################
@@ -23,15 +23,12 @@ ARG JAVA_HOME=/opt/java/openjdk
 # alpine because it's smaller.
 
 FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
-ARG GS_VERSION=2.26.0
+ARG GS_VERSION=2.25.3
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 
 RUN apk update && apk add curl py3-pip
 RUN pip3 install beautifulsoup4 requests
-
-USER root
-RUN mkdir -p /var/lib/apt/lists/partial
 
 WORKDIR /work
 ADD \
@@ -49,45 +46,32 @@ RUN /work/plugin_download.sh
 ##############################################################################
 # Production stage                                                           #
 ##############################################################################
-FROM bitnami/tomcat:$IMAGE_VERSION AS geoserver-prod
+FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.26.0
+ARG GS_VERSION=2.25.3
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG ACTIVATE_GDAL_PLUGIN=true
 ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
-# RUN set -eux; \
-#     apt-get update; \
-#     apt-get -y --no-install-recommends install \
-#         locales gnupg2 ca-certificates software-properties-common  iputils-ping \
-#         apt-transport-https  fonts-cantarell fonts-liberation lmodern  \
-#         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
-#         zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
-#       dpkg-divert --local --rename --add /sbin/initctl \
-#       && apt-get clean \
-#     #   && rm -rf /var/lib/apt/lists/*; \
-#       # verify that the binary works
-# 	  gosu nobody true
-
-# Install necessary packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository universe && \
-    apt-get update && \
-    apt-get install -y gdal-bin libgdal-java && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    apt-get update; \
+    apt-get -y --no-install-recommends install \
+        locales gnupg2 ca-certificates software-properties-common  iputils-ping \
+        apt-transport-https  fonts-cantarell fonts-liberation lmodern ttf-aenigma \
+        ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
+        zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
+      dpkg-divert --local --rename --add /sbin/initctl \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/*; \
+      # verify that the binary works
+	  gosu nobody true
 
 # New versions of tomcat doesn't support gdal java bindings, so gdal plugin will be inactive
-# RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
-#     apt-get update -y && \
-#     apt-get install -y software-properties-common && \
-#     add-apt-repository universe && \
-#     apt update -y && \
-#     apt install -y gdal-bin libgdal-java; \
-# fi
+RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
+    apt update -y && apt install -y gdal-bin libgdal-java; \
+fi
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
@@ -126,19 +110,19 @@ RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download the Keycloak plugin
-RUN curl -L -o /tmp/keycloak-plugin.zip https://build.geoserver.org/geoserver/2.26.x/community-latest/geoserver-2.26-SNAPSHOT-sec-keycloak-plugin.zip \
+RUN curl -L -o /tmp/keycloak-plugin.zip https://build.geoserver.org/geoserver/2.25.x/community-latest/geoserver-2.25-SNAPSHOT-sec-keycloak-plugin.zip \
     && unzip -o /tmp/keycloak-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
-RUN curl -L -o /tmp/openid-plugin.zip https://build.geoserver.org/geoserver/2.26.x/community-latest/geoserver-2.26-SNAPSHOT-sec-oauth2-openid-connect-plugin.zip \
+RUN curl -L -o /tmp/openid-plugin.zip https://build.geoserver.org/geoserver/2.25.x/community-latest/geoserver-2.25-SNAPSHOT-sec-oauth2-openid-connect-plugin.zip \
     && unzip -o /tmp/openid-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
-RUN curl -L -o /tmp/geofence-server-plugin.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-server-plugin.zip/download \
+RUN curl -L -o /tmp/geofence-server-plugin.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.3/extensions/geoserver-2.25.3-geofence-server-plugin.zip/download \
     && unzip -o /tmp/geofence-server-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
-RUN curl -L -o /tmp/geofence-wps-plugin.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-wps-plugin.zip/download \
+RUN curl -L -o /tmp/geofence-wps-plugin.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.3/extensions/geoserver-2.25.3-geofence-wps-plugin.zip/download \
     && unzip -o /tmp/geofence-wps-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
-RUN curl -L -o /tmp/geofence.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-plugin.zip/download \
+RUN curl -L -o /tmp/geofence.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.3/extensions/geoserver-2.25.3-geofence-plugin.zip/download \
     && unzip -o /tmp/geofence.zip -d ${GEOSERVER_WEBAPP}/
 
 EXPOSE  ${HTTPS_PORT} 
@@ -153,16 +137,16 @@ ENTRYPOINT ["/bin/bash", "/scripts/entrypoint.sh"]
 ##############################################################################
 # Testing Stage                                                           #
 ##############################################################################
-# FROM geoserver-prod AS geoserver-test
+FROM geoserver-prod AS geoserver-test
 
-# COPY ./scenario_tests/utils/requirements.txt /lib/utils/requirements.txt
+COPY ./scenario_tests/utils/requirements.txt /lib/utils/requirements.txt
 
-# RUN mkdir -p /var/lib/apt/lists/partial \
-# RUN set -eux \
-#     && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get update \
-#     && apt-get -y --no-install-recommends install python3-pip procps \
-#     && apt-get -y --purge autoremove \
-#     && apt-get clean 
+RUN set -eux \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install python3-pip procps \
+    && apt-get -y --purge autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# RUN pip3 install -r /lib/utils/requirements.txt;pip3 install numpy --upgrade
+RUN pip3 install -r /lib/utils/requirements.txt;pip3 install numpy --upgrade
