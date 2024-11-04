@@ -30,6 +30,8 @@ ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_V
 RUN apk update && apk add curl py3-pip
 RUN pip3 install beautifulsoup4 requests
 
+RUN mkdir  /var/lib/apt/lists/partial
+
 WORKDIR /work
 ADD \
     build_data/community_plugins.py \
