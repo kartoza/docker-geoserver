@@ -58,18 +58,18 @@ ARG HTTPS_PORT=8443
 ARG ACTIVATE_GDAL_PLUGIN=true
 ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
-RUN set -eux; \
-    apt-get update; \
-    apt-get -y --no-install-recommends install \
-        locales gnupg2 ca-certificates software-properties-common  iputils-ping \
-        apt-transport-https  fonts-cantarell fonts-liberation lmodern  \
-        ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
-        zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
-      dpkg-divert --local --rename --add /sbin/initctl \
-      && apt-get clean \
-    #   && rm -rf /var/lib/apt/lists/*; \
-      # verify that the binary works
-	  gosu nobody true
+# RUN set -eux; \
+#     apt-get update; \
+#     apt-get -y --no-install-recommends install \
+#         locales gnupg2 ca-certificates software-properties-common  iputils-ping \
+#         apt-transport-https  fonts-cantarell fonts-liberation lmodern  \
+#         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
+#         zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
+#       dpkg-divert --local --rename --add /sbin/initctl \
+#       && apt-get clean \
+#     #   && rm -rf /var/lib/apt/lists/*; \
+#       # verify that the binary works
+# 	  gosu nobody true
 
 # New versions of tomcat doesn't support gdal java bindings, so gdal plugin will be inactive
 RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
