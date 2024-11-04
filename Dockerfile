@@ -67,7 +67,7 @@ RUN set -eux; \
         zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
       dpkg-divert --local --rename --add /sbin/initctl \
       && apt-get clean \
-      && rm -rf /var/lib/apt/lists/*; \
+    #   && rm -rf /var/lib/apt/lists/*; \
       # verify that the binary works
 	  gosu nobody true
 
