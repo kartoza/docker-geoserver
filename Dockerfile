@@ -30,7 +30,8 @@ ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_V
 RUN apk update && apk add curl py3-pip
 RUN pip3 install beautifulsoup4 requests
 
-RUN mkdir -p  /var/lib/apt/lists/partial
+USER root
+RUN mkdir -p /var/lib/apt/lists/partial
 
 WORKDIR /work
 ADD \
@@ -143,16 +144,16 @@ ENTRYPOINT ["/bin/bash", "/scripts/entrypoint.sh"]
 ##############################################################################
 # Testing Stage                                                           #
 ##############################################################################
-FROM geoserver-prod AS geoserver-test
+# FROM geoserver-prod AS geoserver-test
 
-COPY ./scenario_tests/utils/requirements.txt /lib/utils/requirements.txt
+# COPY ./scenario_tests/utils/requirements.txt /lib/utils/requirements.txt
 
-RUN set -eux \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get update \
-    && apt-get -y --no-install-recommends install python3-pip procps \
-    && apt-get -y --purge autoremove \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# RUN mkdir -p /var/lib/apt/lists/partial \
+# RUN set -eux \
+#     && export DEBIAN_FRONTEND=noninteractive \
+#     && apt-get update \
+#     && apt-get -y --no-install-recommends install python3-pip procps \
+#     && apt-get -y --purge autoremove \
+#     && apt-get clean 
 
-RUN pip3 install -r /lib/utils/requirements.txt;pip3 install numpy --upgrade
+# RUN pip3 install -r /lib/utils/requirements.txt;pip3 install numpy --upgrade
