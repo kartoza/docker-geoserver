@@ -70,7 +70,11 @@ RUN set -eux; \
 
 # New versions of tomcat doesn't support gdal java bindings, so gdal plugin will be inactive
 RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
-    apt update -y && apt install -y gdal-bin libgdal-java; \
+    apt update -y && \
+    apt install -y software-properties-common && \
+    add-apt-repository universe && \
+    apt update -y && \
+    apt install -y gdal-bin libgdal-java; \
 fi
 
 ENV \
