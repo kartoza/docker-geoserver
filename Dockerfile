@@ -71,14 +71,23 @@ ENV DEBIAN_FRONTEND=noninteractive
 #       # verify that the binary works
 # 	  gosu nobody true
 
-# New versions of tomcat doesn't support gdal java bindings, so gdal plugin will be inactive
-RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
-    apt update -y && \
-    apt install -y software-properties-common && \
+# Install necessary packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository universe && \
-    apt update -y && \
-    apt install -y gdal-bin libgdal-java; \
-fi
+    apt-get update && \
+    apt-get install -y gdal-bin libgdal-java && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# New versions of tomcat doesn't support gdal java bindings, so gdal plugin will be inactive
+# RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
+#     apt-get update -y && \
+#     apt-get install -y software-properties-common && \
+#     add-apt-repository universe && \
+#     apt update -y && \
+#     apt install -y gdal-bin libgdal-java; \
+# fi
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
