@@ -1,6 +1,6 @@
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=jre21-temurin-noble
+ARG IMAGE_VERSION=9.0-debian-12
 ARG JAVA_HOME=/opt/java/openjdk
 
 ##############################################################################
@@ -46,7 +46,7 @@ RUN /work/plugin_download.sh
 ##############################################################################
 # Production stage                                                           #
 ##############################################################################
-FROM tomcat:$IMAGE_VERSION AS geoserver-prod
+FROM bitnami/tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.26.0
