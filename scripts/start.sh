@@ -207,11 +207,22 @@ if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
 fi
 
 ## Create RoyceGeo Security Configuration
-echo "********** Installing Open ID Filter in '${GEOSERVER_DATA_DIR}' **********"
-create_dir "${GEOSERVER_DATA_DIR}"/security/filter/curve02-openid-connect
-cp /build_data/rg_config/config.xml "${GEOSERVER_DATA_DIR}"/security/filter/curve02-openid-connect
-echo "********** Installing Roles in '${GEOSERVER_DATA_DIR}' **********"
-cp /build_data/rg_config/roles.xml "${GEOSERVER_DATA_DIR}"/security/role/default/
+echo "********** Copying Footprint Shapefiles' **********"
+create_dir /geoserver/rastermask
+cp /settings/rastermask/footprints.cpg /geoserver/rastermask/footprints.cpg
+cp /settings/rastermask/footprints.dbf /geoserver/rastermask/footprints.dbf
+cp /settings/rastermask/footprints.prj /geoserver/rastermask/footprints.prj
+cp /settings/rastermask/footprints.qmd /geoserver/rastermask/footprints.qmd
+cp /settings/rastermask/footprints.shp /geoserver/rastermask/footprints.shp
+cp /settings/rastermask/footprints.shx /geoserver/rastermask/footprints.shx
+
+rm -rf settings/reastermask
+
+## echo "********** Installing Open ID Filter in '${GEOSERVER_DATA_DIR}' **********"
+## create_dir "${GEOSERVER_DATA_DIR}"/security/filter/curve02-openid-connect
+# cp /build_data/rg_config/config.xml "${GEOSERVER_DATA_DIR}"/security/filter/curve02-openid-connect
+# echo "********** Installing Roles in '${GEOSERVER_DATA_DIR}' **********"
+# cp /build_data/rg_config/roles.xml "${GEOSERVER_DATA_DIR}"/security/role/default/
 
 
 # Setup clustering
