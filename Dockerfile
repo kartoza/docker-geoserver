@@ -116,14 +116,14 @@ RUN curl -L -o /tmp/keycloak-plugin.zip https://build.geoserver.org/geoserver/2.
 RUN curl -L -o /tmp/openid-plugin.zip https://build.geoserver.org/geoserver/2.26.x/community-latest/geoserver-2.26-SNAPSHOT-sec-oauth2-openid-connect-plugin.zip \
     && unzip -o /tmp/openid-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
-# RUN curl -L -o /tmp/geofence-server-plugin.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-server-plugin.zip/download \
-#     && unzip -o /tmp/geofence-server-plugin.zip -d ${GEOSERVER_WEBAPP}/
+RUN curl -L -o /tmp/geofence-server-plugin.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-server-plugin.zip/download \
+    && unzip -o /tmp/geofence-server-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
-# RUN curl -L -o /tmp/geofence-wps-plugin.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-wps-plugin.zip/download \
-#     && unzip -o /tmp/geofence-wps-plugin.zip -d ${GEOSERVER_WEBAPP}/
+RUN curl -L -o /tmp/geofence-wps-plugin.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-wps-plugin.zip/download \
+    && unzip -o /tmp/geofence-wps-plugin.zip -d ${GEOSERVER_WEBAPP}/
 
-# RUN curl -L -o /tmp/geofence.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-plugin.zip/download \
-#     && unzip -o /tmp/geofence.zip -d ${GEOSERVER_WEBAPP}/
+RUN curl -L -o /tmp/geofence.zip https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.0/extensions/geoserver-2.26.0-geofence-plugin.zip/download \
+    && unzip -o /tmp/geofence.zip -d ${GEOSERVER_WEBAPP}/
 
 EXPOSE  ${HTTPS_PORT} 
 
