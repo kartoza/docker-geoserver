@@ -67,31 +67,21 @@ fi
 
 
 # Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
-JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-java_version_major=$(echo "${JAVA_VERSION}" | cut -d '.' -f 1)
-if [[ ${java_version_major} -gt 10 ]];then
-    if [[  -f $(find "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      mv "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-* "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-render.jar
-    fi
-else
-    if [[ -f $(find "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      rm "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-*
-      validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_8/marlin-0.9.4.8-Unsafe-OpenJDK11.jar && \
-      mv marlin-0.9.4.8-Unsafe-OpenJDK11.jar "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-render.jar
-    fi
-fi
+
+curl --progress-bar -fLvo ${CATALINA_HOME}/lib/marlin.jar https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_8/marlin-0.9.4.8-Unsafe-OpenJDK11.jar || exit 1
+
 
 # Install jetty-servlets
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   if [[ ! -f ${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-servlets.jar ]]; then
-    curl -vfLo "${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-servlets.jar" https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/11.0.9/jetty-servlets-11.0.9.jar
+    cp /work/required_plugins/jetty-servlets-11.0.9.jar "${GEOSERVER_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
   fi
 fi
 
 # Install jetty-util
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   if [[ ! -f ${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-util.jar ]]; then
-    curl -vfLo "${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-util.jar" https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.9/jetty-util-11.0.9.jar
+    cp /work/required_plugins/jetty-util.jar "${GEOSERVER_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
   fi
 fi
 
