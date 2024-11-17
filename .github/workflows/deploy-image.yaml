@@ -27,11 +27,11 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0.91-jdk11-temurin-focal
+          - image: 9.0.91-jdk17-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 25
-            patch: 4
+          - minor: 26
+            patch: 0
         stablePluginBaseURL:
           # empty because it often changes, so it's better
           # to use the default one described in the Dockerfile
@@ -78,6 +78,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver
             ${{ steps.check_hub_image_exists.outputs.check_image == 200 && format('{0}/geoserver:{1}.{2}.{3}', secrets.DOCKERHUB_REPO,  matrix.geoserverMajorVersion, matrix.geoserverMinorVersion.minor, matrix.geoserverMinorVersion.patch) || null}}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
@@ -108,8 +109,8 @@ jobs:
         geoserverMajorVersion:
           - 2
         geoserverMinorVersion:
-          - minor: 25
-            patch: 4
+          - minor: 26
+            patch: 0
     steps:
       - name: Checkout code
         id: git_checkout
