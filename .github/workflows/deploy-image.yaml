@@ -78,7 +78,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ steps.check_hub_image_exists.outputs.check_image == 200 && format('{0}/geoserver:{1}-{2}.{3}', secrets.DOCKERHUB_REPO,  matrix.geoserverMajorVersion, matrix.geoserverMinorVersion.minor, matrix.geoserverMinorVersion.patch) || null}}
+            ${{ steps.check_hub_image_exists.outputs.check_image == 200 && format('{0}/geoserver:{1}.{2}.{3}', secrets.DOCKERHUB_REPO,  matrix.geoserverMajorVersion, matrix.geoserverMinorVersion.minor, matrix.geoserverMinorVersion.patch) || null}}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
           build-args: |
