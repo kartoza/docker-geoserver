@@ -650,6 +650,19 @@ to see if there are no issues reported there. We rely on the GeoServer community
 issues. For urgent upstream problems, you will need to get paid support
 from the developers in [GeoServer](https://geoserver.org/). 
 
+### Security Vulnerabilities
+The published image uses [Trivy](https://trivy.dev/latest/) to scan vulnerabilities. These vulnerabilities
+are listed in the [security section](https://github.com/kartoza/docker-geoserver/security/code-scanning).
+You can also use other tools to scan the image for vulnerabilities i.e. `docker scan`. 
+The images also inherit vulnerabilities from the base images i.e. [tomcat:9.0.91-jdk11-temurin-focal](https://hub.docker.com/_/tomcat/tags?name=9.0.91-jdk11-temurin-focal).
+So when reporting please vulnerabilities please try to distinguish them from the following:
+* Base image vulnerabilities - These should be reported in the upstream tomcat repository
+and if any fix is applied, we will have to build a new image using a newer image tag.
+* Packages installed with these images i.e. gosu. These should be reported as an
+issue in this repository and should be tagged with the `security` label.
+* Vulnerabilities directly related to libs installed with the GeoServer application, these 
+should be reported upstream following the guidelines from [upstream geoserver](https://github.com/geoserver/geoserver/blob/main/SECURITY.md)
+
 Other platforms where users can ask questions and get assistance are listed below:
 * [Stack Exchange](https://stackexchange.com/)
 * [GeoServer Mailing lists](https://sourceforge.net/projects/geoserver/lists/geoserver-users)
