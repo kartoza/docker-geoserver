@@ -326,8 +326,12 @@ fi
 
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    unzip -qq /tomcat_apps.zip -d /tmp/ &&
-    cp -r  /tmp/tomcat_apps/webapps.dist/* "${CATALINA_HOME}"/webapps/ &&
+    unzip -qq "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip -d /tmp/
+    if [[ -d /tmp/tomcat_apps/webapps.dist ]];then
+      cp -r  /tmp/tomcat_apps/webapps.dist/* "${CATALINA_HOME}"/webapps/
+    else
+      cp -r  /tmp/tomcat_apps/* "${CATALINA_HOME}"/webapps/
+    fi
     rm -r /tmp/tomcat_apps
     if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       if [[ -f ${EXTRA_CONFIG_DIR}/context.xml  ]]; then

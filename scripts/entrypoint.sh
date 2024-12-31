@@ -106,7 +106,7 @@ export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 # Chown again - seems to fix issue with resolving all created directories
 if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
   dir_ownership=("${CATALINA_HOME}" /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}"
-    "${STABLE_PLUGINS_DIR}" "${REQUIRED_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/ /tomcat_apps.zip
+    "${STABLE_PLUGINS_DIR}" "${REQUIRED_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/
     /tmp/ "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}" /scripts/
     "${EXTRA_CONFIG_DIR}" "/docker-entrypoint-geoserver.d" "${MONITOR_AUDIT_PATH}")
   for directory in "${dir_ownership[@]}"; do
