@@ -650,6 +650,14 @@ to see if there are no issues reported there. We rely on the GeoServer community
 issues. For urgent upstream problems, you will need to get paid support
 from the developers in [GeoServer](https://geoserver.org/). 
 
+### Security Vulnerabilities
+The published image uses [Trivy](https://trivy.dev/latest/) for scanning vulnerabilities. The vulnerabilities
+are listed in the [security section](https://github.com/kartoza/docker-geoserver/security/code-scanning).
+You can also use other tools to scan the image for vulnerabilities. If you
+discover vulnerabilities related to how this image is packaged please raise it
+as an issue and label it with `security` tag. For reporting other upstream security
+issues please follow the guidelines from [upstream geoserver](https://github.com/geoserver/geoserver/blob/main/SECURITY.md)
+
 Other platforms where users can ask questions and get assistance are listed below:
 * [Stack Exchange](https://stackexchange.com/)
 * [GeoServer Mailing lists](https://sourceforge.net/projects/geoserver/lists/geoserver-users)
