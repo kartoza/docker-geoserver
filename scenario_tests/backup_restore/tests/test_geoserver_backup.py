@@ -51,7 +51,7 @@ class TestGeoServerBackup(unittest.TestCase):
         execution_id = response_data["backup"]["execution"]["id"]
         execution_url = f"{self.gs_url}/rest/br/backup/{execution_id}.json"
         # wait for backup to complete
-        time.sleep(30)
+        time.sleep(40)
         response_execution_request = requests.get(execution_url, auth=auth)
         if response_execution_request.status_code == 200:
             try:

@@ -41,7 +41,7 @@ services:
       GEOSERVER_ADMIN_USER: admin
       CONSOLE_HANDLER_LEVEL: WARNING
       COMMUNITY_EXTENSIONS: backup-restore-plugin
-      TEST_CLASS: test_geoserver_backup.TestGeoServerRestore
+      TEST_CLASS: test_geoserver_restore.TestGeoServerRestore
     ports:
       - "8080"
     healthcheck:
