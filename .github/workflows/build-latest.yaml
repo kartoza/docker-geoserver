@@ -190,6 +190,7 @@ jobs:
 #          - clustering
           - jdbconfig
           - libjpeg
+          - backup_restore
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
