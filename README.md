@@ -302,7 +302,7 @@ When defining the parameters for the store in GeoServer you will need to set
 
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
-Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for the solution to run under SSL.
+Credits to [AtomGraph](https://github.com/AtomGraph/letsencrypt-tomcat) for the solution to run under SSL.
 
 
 If you set the environment variable `SSL=true` but do not provide the pem files (`fullchain.pem` and `privkey.pem`)
@@ -313,7 +313,7 @@ ie VERSION=2.26.1
 docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
 ```
 
-If you already have your perm files (`fullchain.pem` and `privkey.pem`) you can mount the directory containing your keys as:
+If you already have your pem files (`fullchain.pem` and `privkey.pem`) you can mount the directory containing your keys as:
 
 ```
 ie VERSION=2.26.1
@@ -323,7 +323,7 @@ docker run -it --name geo -v /etc/certs:/etc/certs  -e PKCS12_PASSWORD=geoserver
 
 You can also use a `PFX` file with this image.
 Rename your PFX file as certificate.pfx and then mount the folder containing
-your pfx file. This will be converted to perm files.
+your pfx file. This will be converted to pem files.
 
 **Note** When using PFX files make sure that the `ALIAS_KEY` you specify as
 an environment variable matches the `ALIAS_KEY` that was used when generating
@@ -370,12 +370,12 @@ HTTPS_SCHEME
 To include Tomcat extras including docs, examples, and the manager web app, set the
 `TOMCAT_EXTRAS` environment variable to `true`:
 
-**Note:** If `TOMCAT_EXTRAS` is set to true then you should configure  `TOMCAT_PASSWORD`
+**Note:** If `TOMCAT_EXTRAS` is set to true then you should configure `TOMCAT_PASSWORD`
 to use a strong password otherwise a randomly generated password is used.
 
 ```
 ie VERSION=2.26.1
-docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION}
+docker run -it --name geoserver -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION}
 ```
 
 **Note:** If `TOMCAT_EXTRAS` is set to false, requests to the root webapp ("/") will return HTTP status code 404. 
