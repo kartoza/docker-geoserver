@@ -206,6 +206,12 @@ if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
 
 fi
 
+install_plugin /community_plugins cog-http-plugin
+install_plugin /community_plugins cog-google-plugin
+install_plugin /community_plugins s3-geotiff-plugin
+install_plugin /community_plugins sec-oauth2-openid-connect-plugin
+install_plugin /community_plugins libdeflate-plugin
+
 ## Create RoyceGeo Security Configuration
 echo "********** Copying Footprint Shapefiles' **********"
 create_dir /geoserver/rastermask
