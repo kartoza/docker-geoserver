@@ -181,7 +181,7 @@ fi
 
 fi
 
-export JDBC_CONFIG_ENABLED JDBC_IGNORE_PATHS JDBC_STORE_ENABLED
+export JDBC_CONFIG_ENABLED JDBC_IGNORE_PATHS JDBC_STORE_ENABLED POSTGRES_JNDI
 # Install community modules plugins
 if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
   if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
@@ -316,7 +316,7 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 fi
 
-export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
+export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST USER_WMS_REQUEST THROTTLE_REQUEST_PER_IP
 # Setup control flow properties
 setup_control_flow
 
@@ -350,8 +350,12 @@ fi
 
 
 if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    unzip -qq /tomcat_apps.zip -d /tmp/ &&
-    cp -r  /tmp/tomcat_apps/webapps.dist/* "${CATALINA_HOME}"/webapps/ &&
+    unzip -qq "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip -d /tmp/
+    if [[ -d /tmp/tomcat_apps/webapps.dist ]];then
+      cp -r  /tmp/tomcat_apps/webapps.dist/* "${CATALINA_HOME}"/webapps/
+    else
+      cp -r  /tmp/tomcat_apps/* "${CATALINA_HOME}"/webapps/
+    fi
     rm -r /tmp/tomcat_apps
     if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       if [[ -f ${EXTRA_CONFIG_DIR}/context.xml  ]]; then
@@ -491,7 +495,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 else
     cp "${CATALINA_HOME}"/conf/ssl-tomcat.xsl "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
-    sed -i -e '83,126d' "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
+    sed -i -e '95,138d' "${CATALINA_HOME}"/conf/ssl-tomcat_no_https.xsl
     SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
 fi # End SSL settings
@@ -529,6 +533,14 @@ fi
 
 if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
   HTTP_MAX_HEADER_SIZE_PARAM="--stringparam http.maxHttpHeaderSize $HTTP_MAX_HEADER_SIZE "
+fi
+
+if [[ "$HTTP_RELAX_CHARS" =~ [Tt][Rr][Uu][Ee] ]] ; then
+  HTTP_RELAX_CHARS_PARAM="--stringparam http.relaxedPathChars {}[]\| "
+fi
+
+if [[ "$HTTP_RELAX_QUERY" =~ [Tt][Rr][Uu][Ee] ]] ; then
+  HTTP_RELAX_QUERY_PARAM="--stringparam http.relaxedQueryChars {}[]\| "
 fi
 
 if [ -n "$HTTPS_SCHEME" ] ; then
@@ -587,6 +599,8 @@ transform="xsltproc \
   $HTTP_CONNECTION_TIMEOUT_PARAM \
   $HTTP_COMPRESSION_PARAM \
   $HTTP_SCHEME_PARAM \
+  $HTTP_RELAX_CHARS_PARAM \
+  $HTTP_RELAX_QUERY_PARAM \
   $HTTP_MAX_HEADER_SIZE_PARAM \
   $HTTPS_SCHEME_PARAM \
   $HTTPS_PORT_PARAM \

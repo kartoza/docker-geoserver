@@ -61,7 +61,7 @@ The preferred way (but using the most bandwidth for the initial image) is to
 get our docker-trusted build like this:
 
 ``` shell
-VERSION=2.25.2
+VERSION=2.26.1
 docker pull kartoza/geoserver:$VERSION
 ```
 **Note** Although the images are tagged and backed by unit tests
@@ -100,14 +100,14 @@ See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
 for available tags.
 
 ```
-VERSION=2.25.2
+VERSION=2.26.1
 IMAGE_VERSION=9.0.91-jdk11-temurin-focal
 docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} --build-arg GS_VERSION=${VERSION} -t kartoza/geoserver:${VERSION} .
 ```
 
 For some recent builds, it is necessary to set the JAVA_PATH as well (e.g. Apache Tomcat/9.0.36)
 ```
-docker build --build-arg IMAGE_VERSION=9.0.91-jdk11-temurin-focal --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.25.2 -t kartoza/geoserver:2.25.2 .
+docker build --build-arg IMAGE_VERSION=9.0.91-jdk11-temurin-focal --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=2.26.1 -t kartoza/geoserver:2.26.1 .
 ```
 
 **Note:** Please check the [GeoServer documentation](https://docs.geoserver.org/stable/en/user/production/index.html) 
@@ -195,9 +195,9 @@ will be enabled : [list of default plugins](https://github.com/kartoza/docker-ge
 ####  Activate stable extensions during the contain startup
 
 The environment variable `STABLE_EXTENSIONS` is used to activate extensions listed in
-[stable_plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.2/extensions/)
+[stable_plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.1/extensions/)
 
-**Note:** The plugins listed in the url is of the format `geoserver-2.25.2-wps-plugin.zip`, but the env
+**Note:** The plugins listed in the url is of the format `geoserver-2.26.1-wps-plugin.zip`, but the env
 variable expects the env to be of the format `wps-plugin`. Always consult the url to see which plugins 
 are available. The text file [stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
 contains a curated list of plugins but might be out of date in some cases.
@@ -205,11 +205,11 @@ contains a curated list of plugins but might be out of date in some cases.
 Example
 
 ```
-ie VERSION=2.25.2
+ie VERSION=2.26.1
 docker run -d -p 8600:8080 --name geoserver -e STABLE_EXTENSIONS=charts-plugin,db2-plugin kartoza/geoserver:${VERSION}
 
 ```
-You can pass any comma-separated extensions as defined in [stable_plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.25.2/extensions/)
+You can pass any comma-separated extensions as defined in [stable_plugins](https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.1/extensions/)
 
 ####  Activate community extensions during contain startup
 
@@ -224,7 +224,7 @@ contains a curated list of community plugins but might be out of date in some ca
 Example
 
 ```
-ie VERSION=2.25.2
+ie VERSION=2.26.1
 docker run -d -p 8600:8080 --name geoserver -e COMMUNITY_EXTENSIONS=gwc-sqlite-plugin,ogr-datastore-plugin kartoza/geoserver:${VERSION}
 ```
 
@@ -240,7 +240,7 @@ following the guidelines from [GeoServer develop guidelines](https://docs.geoser
 The image ships with sample data. This can be used to familiarize yourself with GeoServer. This is not activated by default. You can activate it using the environment variable `boolean SAMPLE_DATA`.
 
 ```
-ie VERSION=2.25.2
+ie VERSION=2.26.1
 docker run -d -p 8600:8080 --name geoserver -e SAMPLE_DATA=true kartoza/geoserver:${VERSION}
 ```
 
@@ -302,28 +302,28 @@ When defining the parameters for the store in GeoServer you will need to set
 
 ### Running under SSL
 You can use the environment variables to specify whether you want to run the GeoServer under SSL.
-Credits to [letsencrpt](https://github.com/AtomGraph/letsencrypt-tomcat) for the solution to run under SSL.
+Credits to [AtomGraph](https://github.com/AtomGraph/letsencrypt-tomcat) for the solution to run under SSL.
 
 
 If you set the environment variable `SSL=true` but do not provide the pem files (`fullchain.pem` and `privkey.pem`)
 the container will generate self-signed SSL certificates.
 
 ```
-ie VERSION=2.25.2
-docker run -it --name geoserver  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
+ie VERSION=2.26.1
+docker run -it --name geoserver -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
 ```
 
-If you already have your perm files (`fullchain.pem` and `privkey.pem`) you can mount the directory containing your keys as:
+If you already have your pem files (`fullchain.pem` and `privkey.pem`) you can mount the directory containing your keys as:
 
 ```
-ie VERSION=2.25.2
-docker run -it --name geo -v /etc/certs:/etc/certs  -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
+ie VERSION=2.26.1
+docker run -it --name geoserver -v /etc/certs:/etc/certs -e PKCS12_PASSWORD=geoserver -e JKS_KEY_PASSWORD=geoserver -e JKS_STORE_PASSWORD=geoserver -e SSL=true -p 8443:8443 -p 8600:8080 kartoza/geoserver:${VERSION}
 
 ```
 
 You can also use a `PFX` file with this image.
 Rename your PFX file as certificate.pfx and then mount the folder containing
-your pfx file. This will be converted to perm files.
+your pfx file. This will be converted to pem files.
 
 **Note** When using PFX files make sure that the `ALIAS_KEY` you specify as
 an environment variable matches the `ALIAS_KEY` that was used when generating
@@ -370,12 +370,12 @@ HTTPS_SCHEME
 To include Tomcat extras including docs, examples, and the manager web app, set the
 `TOMCAT_EXTRAS` environment variable to `true`:
 
-**Note:** If `TOMCAT_EXTRAS` is set to true then you should configure  `TOMCAT_PASSWORD`
+**Note:** If `TOMCAT_EXTRAS` is set to true then you should configure `TOMCAT_PASSWORD`
 to use a strong password otherwise a randomly generated password is used.
 
 ```
-ie VERSION=2.25.2
-docker run -it --name geoserver  -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION}
+ie VERSION=2.26.1
+docker run -it --name geoserver -e TOMCAT_EXTRAS=true -p 8600:8080 kartoza/geoserver:${VERSION}
 ```
 
 **Note:** If `TOMCAT_EXTRAS` is set to false, requests to the root webapp ("/") will return HTTP status code 404. 
@@ -398,7 +398,7 @@ If you have downloaded extra fonts you can mount the folder to the path
 path during initialisation. This is useful for styling layers i.e. labeling using specific fonts.
 
 ```
-ie VERSION=2.25.2
+ie VERSION=2.26.1
 docker run -v fonts:/opt/fonts -p 8080:8080 -t kartoza/geoserver:${VERSION}
 ```
 
@@ -408,7 +408,7 @@ You can use the environment variable `GOOGLE_FONTS_NAMES` to activate fonts defi
 i.e.
 
 ```bash
-ie VERSION=2.25.2
+ie VERSION=2.26.1
 docker run -e GOOGLE_FONTS_NAMES=actor,akronim -p 8080:8080 -t kartoza/geoserver:${VERSION}
 ```
 
@@ -649,6 +649,19 @@ When reporting issues especially related to installed extensions (community and 
 to see if there are no issues reported there. We rely on the GeoServer community to resolve upstream
 issues. For urgent upstream problems, you will need to get paid support
 from the developers in [GeoServer](https://geoserver.org/). 
+
+### Security Vulnerabilities
+The published image uses [Trivy](https://trivy.dev/latest/) to scan vulnerabilities. These vulnerabilities
+are listed in the [security section](https://github.com/kartoza/docker-geoserver/security/code-scanning).
+You can also use other tools to scan the image for vulnerabilities i.e. `docker scan`. 
+The images also inherit vulnerabilities from the base images i.e. [tomcat:9.0.91-jdk11-temurin-focal](https://hub.docker.com/_/tomcat/tags?name=9.0.91-jdk11-temurin-focal).
+So when reporting please vulnerabilities please try to distinguish them from the following:
+* Base image vulnerabilities - These should be reported in the upstream tomcat repository
+and if any fix is applied, we will have to build a new image using a newer image tag.
+* Packages installed with these images i.e. gosu. These should be reported as an
+issue in this repository and should be tagged with the `security` label.
+* Vulnerabilities directly related to libs installed with the GeoServer application, these 
+should be reported upstream following the guidelines from [upstream geoserver](https://github.com/geoserver/geoserver/blob/main/SECURITY.md)
 
 Other platforms where users can ask questions and get assistance are listed below:
 * [Stack Exchange](https://stackexchange.com/)

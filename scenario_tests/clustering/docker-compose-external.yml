@@ -8,7 +8,7 @@ x-common-activemq:
 services:
 
   db:
-    image: kartoza/postgis:16-3.4
+    image: kartoza/postgis:17-3.5
     volumes:
       - geo-db-data:/var/lib/postgresql
       - ./tests/init.sql:/docker-entrypoint-initdb.d/init.sql

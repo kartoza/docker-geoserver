@@ -26,5 +26,5 @@ sed -i '' "s/minor: .*/minor: $MINOR/g; s/patch: .*/patch: $BUGFIX/g" .github/wo
 
 sed -i '' "s/minor: .*/minor: $MINOR/g; s/patch: .*/patch: $BUGFIX/g" .github/workflows//build-latest.yaml
 
-git commit -a -m "Upgraded GeoServer from version ${GS_VERSION} to ${GS_NEW_VERSION}"
+git commit -a -m "Upgraded the GeoServer instance from version ${GS_VERSION} to ${GS_NEW_VERSION}"
 

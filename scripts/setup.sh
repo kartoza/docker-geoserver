@@ -67,32 +67,16 @@ fi
 
 
 # Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
-JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-java_version_major=$(echo "${JAVA_VERSION}" | cut -d '.' -f 1)
-if [[ ${java_version_major} -gt 10 ]];then
-    if [[  -f $(find "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      mv "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-* "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-render.jar
-    fi
-else
-    if [[ -f $(find "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib -regex ".*marlin-[0-9]\.[0-9]\.[0-9].*jar") ]]; then
-      rm "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-*
-      validate_url https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_8/marlin-0.9.4.8-Unsafe-OpenJDK11.jar && \
-      mv marlin-0.9.4.8-Unsafe-OpenJDK11.jar "${GEOSERVER_INSTALL_DIR}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/marlin-render.jar
-    fi
-fi
+curl --progress-bar -fLvo ${CATALINA_HOME}/lib/marlin.jar https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_8/marlin-0.9.4.8-Unsafe-OpenJDK11.jar || exit 1
 
 # Install jetty-servlets
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  if [[ ! -f ${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-servlets.jar ]]; then
-    curl -vfLo "${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-servlets.jar" https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/11.0.9/jetty-servlets-11.0.9.jar
-  fi
+    cp /work/required_plugins/jetty-servlets-11.0.9.jar "${GEOSERVER_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
 fi
 
 # Install jetty-util
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-  if [[ ! -f ${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-util.jar ]]; then
-    curl -vfLo "${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/jetty-util.jar" https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.9/jetty-util-11.0.9.jar
-  fi
+    cp /work/required_plugins/jetty-util.jar "${GEOSERVER_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
 fi
 
 # Overlay files and directories in resources/overlays if they exist
@@ -105,7 +89,7 @@ rm -f /tmp/resources/overlays/README.txt &&
 # Package tomcat webapps - useful to activate later
 if [[ -d "${CATALINA_HOME}"/webapps.dist ]]; then
     mv "${CATALINA_HOME}"/webapps.dist /tomcat_apps
-    zip -r /tomcat_apps.zip /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
     rm -r /tomcat_apps
 else
     cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps
@@ -113,8 +97,8 @@ else
     cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps
     cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps
     cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps
-    zip -r /tomcat_apps.zip /tomcat_apps
-    rm -r /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -rf /tomcat_apps
 fi
 
 pushd ${CATALINA_HOME}/lib  || exit

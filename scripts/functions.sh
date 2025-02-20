@@ -555,7 +555,13 @@ function setup_jdbc_db_config() {
               envsubst < "${EXTRA_CONFIG_DIR}"/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
             else
               envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+              sed -i '/^jndiName=/d' "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+              if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
+                # Set jndiName if POSTGRES_JNDI is set to true
+                echo "jndiName=java:comp/env/jdbc/postgres" >> "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
+              fi
             fi
+
             check_jdbc_config_table=$(psql -d "$POSTGRES_DB" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -h "$HOST" -tAc "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'object_property')")
             if [[  ${check_jdbc_config_table} = "t" ]]; then
               sed -i 's/initdb=true/initdb=false/g' "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
@@ -586,9 +592,14 @@ function setup_jdbc_db_store() {
               envsubst < /build_data/jdbcconfig/jdbcconfig.properties > "${GEOSERVER_DATA_DIR}"/jdbcconfig/jdbcconfig.properties
             fi
             if [[ -f "${EXTRA_CONFIG_DIR}"/jdbcstore.properties ]]; then
-              envsubst < "${EXTRA_CONFIG_DIR}"/jdbcstore.properties > "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.propertiesproperties
+              envsubst < "${EXTRA_CONFIG_DIR}"/jdbcstore.properties > "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.properties
             else
-              envsubst < /build_data/jdbcstore/jdbcstore.properties > "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.propertiesproperties
+              envsubst < /build_data/jdbcstore/jdbcstore.properties > "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.properties
+              sed -i '/^jndiName=/d' "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.properties
+              if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
+                # Set jndiName if POSTGRES_JNDI is set to true
+                echo "jndiName=java:comp/env/jdbc/postgres" >> "${GEOSERVER_DATA_DIR}"/jdbcstore/jdbcstore.properties
+              fi
             fi
 
             check_jdbc_store_table=$(psql -d "$POSTGRES_DB" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -h "${HOST}" -tAc "SELECT EXISTS(SELECT 1 from information_schema.tables where table_name = 'resources')")

@@ -1,0 +1,54 @@
+
+volumes:
+  geoserver-data-dir:
+  geoserver-data:
+  geoserver-backup-dir:
+
+
+services:
+
+  geoserver:
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
+    restart: 'always'
+    volumes:
+      - geoserver-data-dir:/opt/geoserver/data_dir
+      - geoserver-backup-dir:/settings
+      - ./tests:/tests
+    environment:
+      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+      GEOSERVER_ADMIN_USER: admin
+      SAMPLE_DATA: true
+      CONSOLE_HANDLER_LEVEL: WARNING
+      COMMUNITY_EXTENSIONS: backup-restore-plugin
+      TEST_CLASS: test_geoserver_backup.TestGeoServerBackup
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+
+  restore:
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
+    restart: 'always'
+    volumes:
+      - geoserver-data:/opt/geoserver/data_dir
+      - geoserver-backup-dir:/settings
+      - ./tests:/tests
+    environment:
+      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+      GEOSERVER_ADMIN_USER: admin
+      CONSOLE_HANDLER_LEVEL: WARNING
+      RECREATE_DATADIR: TRUE
+      COMMUNITY_EXTENSIONS: backup-restore-plugin
+      TEST_CLASS: test_geoserver_restore.TestGeoServerRestore
+    ports:
+      - "8080"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml" ]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+
+

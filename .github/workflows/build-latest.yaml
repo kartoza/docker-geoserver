@@ -25,8 +25,10 @@ jobs:
     timeout-minutes: 5
     if: |
       github.actor != 'dependabot[bot]' &&
-      (!contains(github.event.comment.body, '/skiprelease') ||
-      !contains(github.event.comment.title, '[skiprelease]'))
+      !(
+        contains(github.event.pull_request.title, '[skip-release]') ||
+        contains(github.event.comment.body, '/skiprelease')
+      )
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
@@ -58,18 +60,20 @@ jobs:
     timeout-minutes: 15
     if: |
       github.actor != 'dependabot[bot]' &&
-      (!contains(github.event.comment.body, '/skiprelease') ||
-      !contains(github.event.comment.title, '[skiprelease]'))
+      !(
+        contains(github.event.pull_request.title, '[skip-release]') ||
+        contains(github.event.comment.body, '/skiprelease')
+      )
     strategy:
       matrix:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0.91-jdk11-temurin-focal
+          - image: 9.0.91-jdk17-temurin-focal
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 25
-            patch: 2
+          - minor: 26
+            patch: 1
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
@@ -135,9 +139,11 @@ jobs:
     timeout-minutes: 20
     if: |
       github.actor != 'dependabot[bot]' &&
-      (!contains(github.event.comment.body, '/skiprelease') ||
-      !contains(github.event.comment.title, '[skiprelease]'))
-    needs: [build-geoserver-docker-image, run-scenario-tests]
+      !(
+        contains(github.event.pull_request.title, '[skip-release]') ||
+        contains(github.event.comment.body, '/skiprelease')
+      )
+    needs: [run-scenario-tests]
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
@@ -168,8 +174,10 @@ jobs:
     timeout-minutes: 20
     if: |
       github.actor != 'dependabot[bot]' &&
-      (!contains(github.event.comment.body, '/skiprelease') ||
-      !contains(github.event.comment.title, '[skiprelease]'))
+      !(
+        contains(github.event.pull_request.title, '[skip-release]') ||
+        contains(github.event.comment.body, '/skiprelease')
+      )
     needs: [ build-geoserver-docker-image, build-activemq-docker-image]
     strategy:
       matrix:
@@ -182,6 +190,7 @@ jobs:
 #          - clustering
           - jdbconfig
           - libjpeg
+          - backup_restore
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
@@ -216,8 +225,10 @@ jobs:
       github.event_name == 'pull_request' && 
       github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url && 
       github.actor != 'dependabot[bot]'  &&
-      (!contains(github.event.comment.body, '/skiprelease') ||
-      !contains(github.event.comment.title, '[skiprelease]'))
+      !(
+        contains(github.event.pull_request.title, '[skip-release]') ||
+        contains(github.event.comment.body, '/skiprelease')
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [ build-geoserver-docker-image, run-scenario-tests ]

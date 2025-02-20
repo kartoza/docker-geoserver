@@ -56,6 +56,7 @@ export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING  CLUSTER_CONNECTION
 
 log CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR}"
 log MONITOR_AUDIT_PATH="${MONITOR_AUDIT_PATH}"
+if [[ -z ${GEOSERVER_OPTS} ]];then
 
 export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
@@ -71,7 +72,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -DENABLE_JSONP=${ENABLE_JSONP} \
        -DMAX_FILTER_RULES=${MAX_FILTER_RULES} \
        -DOPTIMIZE_LINE_WIDTH=${OPTIMIZE_LINE_WIDTH} \
-       -DALLOW_ENV_PARAMETRIZATION=${PROXY_BASE_URL_PARAMETRIZATION} \
+       -DALLOW_ENV_PARAMETRIZATION=${ALLOW_ENV_PARAMETRIZATION} \
        -Djavax.servlet.request.encoding=${CHARACTER_ENCODING} \
        -Djavax.servlet.response.encoding=${CHARACTER_ENCODING} \
        -DCLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR} \
@@ -83,8 +84,9 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Dsun.java2d.renderer.useThreadLocal=false \
        -Dsun.java2d.renderer.pixelsize=8192 -server -XX:NewSize=300m \
        -Dlog4j.configuration=${CATALINA_HOME}/log4j.properties \
-       --patch-module java.desktop=${CATALINA_HOME}/marlin-render.jar  \
+       --patch-module java.desktop=${CATALINA_HOME}/lib/marlin.jar \
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
+       -Dsun.java2d.renderer.log=true \
        -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
        -DUPDATE_BUILT_IN_LOGGING_PROFILES=${UPDATE_LOGGING_PROFILES} \
        -DRELINQUISH_LOG4J_CONTROL=${RELINQUISH_LOG4J_CONTROL} \
@@ -96,7 +98,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -DENTITY_RESOLUTION_ALLOWLIST='"${ENTITY_RESOLUTION_ALLOWLIST}"' \
        -DGEOSERVER_DISABLE_STATIC_WEB_FILES=${GEOSERVER_DISABLE_STATIC_WEB_FILES} \
        ${ADDITIONAL_JAVA_STARTUP_OPTIONS} "
-
+fi
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
@@ -107,7 +109,7 @@ export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 # Chown again - seems to fix issue with resolving all created directories
 if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
   dir_ownership=("${CATALINA_HOME}" /home/"${USER_NAME}"/ "${COMMUNITY_PLUGINS_DIR}"
-    "${STABLE_PLUGINS_DIR}" "${REQUIRED_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/ /tomcat_apps.zip
+    "${STABLE_PLUGINS_DIR}" "${REQUIRED_PLUGINS_DIR}" "${GEOSERVER_HOME}" /usr/share/fonts/
     /tmp/ "${FOOTPRINTS_DATA_DIR}" "${CERT_DIR}" "${FONTS_DIR}" /scripts/
     "${EXTRA_CONFIG_DIR}" "/docker-entrypoint-geoserver.d" "${MONITOR_AUDIT_PATH}")
   for directory in "${dir_ownership[@]}"; do

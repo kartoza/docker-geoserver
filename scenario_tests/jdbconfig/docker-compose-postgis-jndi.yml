@@ -10,13 +10,12 @@ services:
     volumes:
       - postgis-data:/var/lib/postgresql
     environment:
-      - POSTGRES_DB=gis,gwc
+      - POSTGRES_DB=gis
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - ALLOW_IP_RANGE=0.0.0.0/0
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting
       - RUN_AS_ROOT=true
-      - FORCE_SSL=TRUE
     restart: on-failure
     healthcheck:
       test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
@@ -32,18 +31,18 @@ services:
       GEOSERVER_ADMIN_USER: admin
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
+      POSTGRES_JNDI: TRUE
+      POSTGRES_PORT: 5432
       HOST: db
-      POSTGRES_DB: gwc
+      POSTGRES_DB: gis
       POSTGRES_USER: docker
       POSTGRES_PASS: docker
-      POSTGRES_PORT: 5432
-      SSL_MODE: allow
-      POSTGRES_SCHEMA: public
-      DISK_QUOTA_SIZE: 5
-      DB_BACKEND: POSTGRES
-      SAMPLE_DATA: true
+      RECREATE_DATADIR: TRUE
       CONSOLE_HANDLER_LEVEL: WARNING
-      TEST_CLASS: test_disk_quota.TestGeoServerDISKQUOTA
+      SAMPLE_DATA: true
+      DB_BACKEND: POSTGRES
+      COMMUNITY_EXTENSIONS: jdbcconfig-plugin,jdbcstore-plugin
+      TEST_CLASS: test_jdbconfig.TestGeoServerJDBCONFIG
     depends_on:
       db:
         condition: service_healthy

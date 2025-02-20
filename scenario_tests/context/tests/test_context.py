@@ -10,18 +10,11 @@ class TestGeoServerREST(unittest.TestCase):
         self.geo_context = environ.get('GEOSERVER_CONTEXT_ROOT').replace("#", '/')
         self.base_url = f'http://localhost:8080/{self.geo_context}'
         self.login_url = f'{self.base_url}/j_spring_security_check'
-        self.username = 'admin'
-        self.container_name = environ['CONTAINER_NAME']
+        self.password = environ['GEOSERVER_ADMIN_PASSWORD']
 
-        if self.container_name == 'geoserver':
-            self.password = environ['GEOSERVER_ADMIN_PASSWORD']
-        else:
-            with open('/opt/geoserver/data_dir/security/pass.txt', 'r') as file:
-                file_pass = file.read()
-            self.password = file_pass.replace("\n", "")
         self.session = requests.Session()
         login_data = {
-            'username': self.username,
+            'username': 'admin',
             'password': self.password,
             'submit': 'Login'
         }
