@@ -1,6 +1,7 @@
 volumes:
    geoserver-data:
    geo-db-data:
+   geoserver-gwc:
 
 services:
    db:
@@ -27,6 +28,7 @@ services:
       image: kartoza/geoserver:${GS_VERSION}
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
+        - geoserver-gwc:/opt/geoserver/gwc
       ports:
         - "${GEOSERVER_PORT}:8080"
       restart: on-failure
