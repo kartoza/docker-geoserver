@@ -394,7 +394,7 @@ fi
 if [ -z "${JDBC_IGNORE_PATHS}" ]; then
   JDBC_IGNORE_PATHS='data,jdbcstore,jdbcconfig,temp,tmp,logs,styles'
 fi
-# S3 Alias
+# S3 Alias https://docs.geoserver.org/main/en/user/community/s3-geotiff/index.html
 file_env S3_ALIAS
 if [ -z "${S3_ALIAS}" ]; then
   S3_ALIAS='alias'
