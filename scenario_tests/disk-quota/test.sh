@@ -26,7 +26,7 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
+  test_url_availability http://localhost:8080/geoserver/ows
   echo "Execute test for $service"
   ${VERSION} -f docker-compose.yml exec $service /bin/bash /tests/test.sh
 
