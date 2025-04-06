@@ -14,6 +14,7 @@ GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
 
 if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+  cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
 
   # Set random password if none provided
   file_env 'GEOSERVER_ADMIN_PASSWORD'
@@ -60,16 +61,18 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   # <userRoles username="admin">
   cat $ROLES_XML.orig | sed -e "s/ username=\"${GEOSERVER_ADMIN_DEFAULT_USER}\"/ username=\"${GEOSERVER_ADMIN_USER}\"/" > $ROLES_XML
 
-  if [[ -f ${EXTRA_CONFIG_DIR}/users.xml ]]; then
-      cp ${EXTRA_CONFIG_DIR}/users.xml ${GEOSERVER_DATA_DIR}/security/usergroup/default/
-  fi
-  if [[ -f ${EXTRA_CONFIG_DIR}/roles.xml ]]; then
-      cp ${EXTRA_CONFIG_DIR}/roles.xml ${GEOSERVER_DATA_DIR}/security/role/default/roles.xml
-  fi
 else
   cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
   sed -i 's/pbePasswordEncoder/strongPbePasswordEncoder/g' ${GEOSERVER_DATA_DIR}/security/config.xml
 
+fi
+
+# Get values from settings and use them instead of setting them
+if [[ -f ${EXTRA_CONFIG_DIR}/users.xml ]]; then
+      cp ${EXTRA_CONFIG_DIR}/users.xml ${GEOSERVER_DATA_DIR}/security/usergroup/default/
+fi
+if [[ -f ${EXTRA_CONFIG_DIR}/roles.xml ]]; then
+      cp ${EXTRA_CONFIG_DIR}/roles.xml ${GEOSERVER_DATA_DIR}/security/role/default/roles.xml
 fi
 
 
