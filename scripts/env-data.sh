@@ -296,10 +296,6 @@ if [ -z "${TOMCAT_USER}" ]; then
     TOMCAT_USER='tomcat'
 fi
 
-file_env GEOSERVER_ADMIN_USER
-if [ -z "${GEOSERVER_ADMIN_USER}" ]; then
-    GEOSERVER_ADMIN_USER='admin'
-fi
 
 if [ -z "${CSRF_WHITELIST}" ]; then
     CSRF_WHITELIST=
