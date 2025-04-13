@@ -68,12 +68,11 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   if [[ -f ${USERS_XML} ]]; then
     user_count=$(grep -o '<user ' ${USERS_XML} | wc -l)
     if [[ "$user_count" -gt 1 ]]; then
-      echo "More than one user exists. Do not update passwords"
+      echo -e "\e[32m [Entrypoint] More than one user exists :\033[0m \e[1;31m ${USERS_XML} \033[0m"
     else
       password_reset
     fi
   else
-    echo "Setting password for the first time"
     password_reset
   fi
 
