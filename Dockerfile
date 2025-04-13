@@ -1,7 +1,10 @@
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.91-jdk11-temurin-focal
+ARG IMAGE_VERSION=9.0.99-jdk17-temurin-noble
 ARG JAVA_HOME=/opt/java/openjdk
+ARG GDAL_VERSION=3.8.4
+
+FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} as gdal-builder
 
 ##############################################################################
 # Plugin downloader                                                          #
@@ -52,14 +55,13 @@ LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.26.2
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
-ARG ACTIVATE_GDAL_PLUGIN=true
 ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
     apt-get update; \
     apt-get -y --no-install-recommends install \
         locales gnupg2 ca-certificates software-properties-common  iputils-ping \
-        apt-transport-https  fonts-cantarell fonts-liberation lmodern ttf-aenigma \
+        apt-transport-https  fonts-cantarell fonts-liberation lmodern fonts-aenigma \
         ttf-bitstream-vera ttf-sjfonts tv-fonts libapr1-dev libssl-dev git \
         zip unzip curl xsltproc certbot  cabextract gettext postgresql-client figlet gosu gdal-bin; \
       dpkg-divert --local --rename --add /sbin/initctl \
@@ -68,17 +70,14 @@ RUN set -eux; \
       # verify that the binary works
 	  gosu nobody true
 
-# New versions of tomcat doesn't support gdal java bindings, so gdal plugin will be inactive
-RUN if [ "${ACTIVATE_GDAL_PLUGIN}" = "true" ]; then \
-    apt update -y && apt install -y gdal-bin libgdal-java; \
-fi
+
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/share/gdal \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/jni/" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     CERT_DIR=/etc/certs \
@@ -96,6 +95,7 @@ ADD resources /tmp/resources
 ADD build_data /build_data
 ADD scripts /scripts
 
+# copy plugins
 COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/required_plugins.txt ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins/*.zip ${STABLE_PLUGINS_DIR}/
@@ -103,6 +103,12 @@ COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNIT
 COPY --from=geoserver-plugin-downloader /work/geoserver_war/geoserver.* ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/community_plugins.txt ${COMMUNITY_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins.txt ${STABLE_PLUGINS_DIR}/
+
+# copy gdal java bindings
+
+COPY --from=gdal-builder /usr/share/java/ /usr/share/java/
+COPY --from=gdal-builder /usr/lib/x86_64-linux-gnu/jni/ /usr/lib/x86_64-linux-gnu/jni/
+
 
 RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_BASE_URL} > /scripts/geoserver_gs_url.txt ;\
     chmod +x /scripts/*.sh;/scripts/setup.sh \
