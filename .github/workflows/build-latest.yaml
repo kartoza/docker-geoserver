@@ -144,6 +144,7 @@ jobs:
         contains(github.event.comment.body, '/skiprelease')
       )
     #needs: [run-scenario-tests]
+    needs: [build-geoserver-docker-image]
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
