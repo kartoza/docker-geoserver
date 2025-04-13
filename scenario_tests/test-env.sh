@@ -14,8 +14,12 @@ EOF
 function test_url_availability() {
   URL=$1
   PASS=$2
+  USERNAME=$3
   if [ -z "$2" ]; then
     PASS=myawesomegeoserver
+  fi
+  if [ -z "$2" ]; then
+    USERNAME=admin
   fi
   timeout=300
   start_time=$(date +%s)
@@ -30,13 +34,13 @@ function test_url_availability() {
     fi
 
 
-    result=$(wget -S --spider --user admin --password ${PASS} --max-redirect=0 ${URL} 2>&1 | grep "HTTP/1.1 " | tail -n 1 | awk '{print $2}')
+    result=$(curl --fail --silent --write-out "%{http_code}" --output /dev/null -u "${USERNAME}:${PASS}" "${URL}")
 
     if [[ $result -eq 200 ]]; then
       echo "Rest endpoint ${URL} is accessible with the provided credentials"
       break
     else
-      echo "Access to ${URL}, with credentials username admin and password ${PASS} did not succeed, retrying in 5 seconds"
+      echo "Access to ${URL}, with credentials username ${USERNAME} and password ${PASS} did not succeed, retrying in 5 seconds"
       sleep 5
     fi
   done

@@ -296,10 +296,6 @@ if [ -z "${TOMCAT_USER}" ]; then
     TOMCAT_USER='tomcat'
 fi
 
-file_env GEOSERVER_ADMIN_USER
-if [ -z "${GEOSERVER_ADMIN_USER}" ]; then
-    GEOSERVER_ADMIN_USER='admin'
-fi
 
 if [ -z "${CSRF_WHITELIST}" ]; then
     CSRF_WHITELIST=
@@ -394,7 +390,7 @@ fi
 if [ -z "${JDBC_IGNORE_PATHS}" ]; then
   JDBC_IGNORE_PATHS='data,jdbcstore,jdbcconfig,temp,tmp,logs,styles'
 fi
-# S3 Alias
+# S3 Alias https://docs.geoserver.org/main/en/user/community/s3-geotiff/index.html
 file_env S3_ALIAS
 if [ -z "${S3_ALIAS}" ]; then
   S3_ALIAS='alias'
@@ -450,4 +446,9 @@ fi
 # Allows loging to files, default is to stdout
 if [ -z "${LOGGING_STDOUT}" ];then
   LOGGING_STDOUT=true
+fi
+
+# https://docs.geoserver.org/2.26.x/en/user/security/sandbox.html
+if [ -z ${GEOSERVER_FILESYSTEM_SANDBOX} ];then
+   GEOSERVER_FILESYSTEM_SANDBOX=''
 fi

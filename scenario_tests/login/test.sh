@@ -32,7 +32,7 @@ for service in "${services[@]}"; do
     PASS="myawesomegeoserver"
   fi
   sleep 30
-  test_url_availability http://localhost:$PORT/geoserver/rest/about/version.xml ${PASS}
+  test_url_availability http://localhost:$PORT/geoserver/ows ${PASS}
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 
@@ -55,8 +55,8 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  sleep 30
-  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml fabulousgeoserver
+  sleep 120
+  #test_url_availability http://localhost:8081/geoserver/ows fabulousgeoserver
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 

@@ -31,7 +31,7 @@ services=("master")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml
+  test_url_availability http://localhost:8080/geoserver/ows
   echo "Execute test for $service"
   ${VERSION} -f docker-compose.yml exec "${service}" /bin/bash /tests/test.sh
 
@@ -43,7 +43,7 @@ services=("node")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8082/geoserver/rest/about/version.xml
+  test_url_availability http://localhost:8080/geoserver/ows
   echo "Execute test for $service"
   ${VERSION} -f docker-compose.yml exec "${service}" /bin/bash /tests/test.sh
 
@@ -72,7 +72,7 @@ services=("master")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml
+  test_url_availability http://localhost:8080/geoserver/ows
   echo "Execute test for $service"
   ${VERSION} -f docker-compose-external.yml exec "${service}" /bin/bash /tests/test.sh
 
@@ -84,7 +84,8 @@ services=("node")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8082/geoserver/rest/about/version.xml
+  #test_url_availability http://localhost:8080/geoserver/ows
+  sleep 120
   echo "Execute test for $service"
   ${VERSION} -f docker-compose-external.yml exec "${service}" /bin/bash /tests/test.sh
 

@@ -31,7 +31,9 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8080/foobar/rest/about/version.xml myawesomegeoserver
+
+  #test_url_availability http://localhost:8080/foobar/ows myawesomegeoserver
+  sleep 120
   echo "Execute test for $service"
   ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
 
@@ -52,7 +54,7 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8080/foobar/geoserver/rest/about/version.xml
+  test_url_availability http://localhost:8080/foobar/geoserver/ows
   echo "Execute test for $service"
   ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
 

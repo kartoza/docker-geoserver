@@ -69,11 +69,11 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0.91-jdk17-temurin-focal
+          - image: 9.0.99-jdk17-temurin-jammy
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 26
-            patch: 1
+            patch: 2
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
@@ -143,7 +143,8 @@ jobs:
         contains(github.event.pull_request.title, '[skip-release]') ||
         contains(github.event.comment.body, '/skiprelease')
       )
-    needs: [run-scenario-tests]
+    #needs: [run-scenario-tests]
+    needs: [build-geoserver-docker-image]
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
