@@ -71,7 +71,10 @@ RUN set -eux; \
       # verify that the binary works
 	  gosu nobody true
 
+# copy gdal java bindings
 
+COPY --from=gdal-builder /usr/share/java/ /usr/share/java/
+COPY --from=gdal-builder /usr/lib/x86_64-linux-gnu/jni/ /usr/lib/x86_64-linux-gnu/jni/
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
@@ -105,10 +108,7 @@ COPY --from=geoserver-plugin-downloader /work/geoserver_war/geoserver.* ${REQUIR
 COPY --from=geoserver-plugin-downloader /work/community_plugins.txt ${COMMUNITY_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins.txt ${STABLE_PLUGINS_DIR}/
 
-# copy gdal java bindings
 
-COPY --from=gdal-builder /usr/share/java/ /usr/share/java/
-COPY --from=gdal-builder /usr/lib/x86_64-linux-gnu/jni/ /usr/lib/x86_64-linux-gnu/jni/
 
 
 RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_BASE_URL} > /scripts/geoserver_gs_url.txt ;\
