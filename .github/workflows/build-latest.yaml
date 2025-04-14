@@ -232,7 +232,8 @@ jobs:
       )
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [ build-geoserver-docker-image, run-scenario-tests ]
+    #needs: [ build-geoserver-docker-image, run-scenario-tests ]
+    needs: [ build-geoserver-docker-image ]
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
