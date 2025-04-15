@@ -72,8 +72,8 @@ jobs:
           - image: 9.0.99-jdk17-temurin-jammy
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
-          - minor: 26
-            patch: 2
+          - minor: 27
+            patch: 0
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
