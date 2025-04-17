@@ -5,7 +5,7 @@ ARG JAVA_HOME=/opt/java/openjdk
 #TODO we need a way to predetermine the gdal version in the tomcat image so as to match it
 ARG GDAL_VERSION=3.8.4
 
-FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} as gdal-builder
+FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
 
 ##############################################################################
 # Plugin downloader                                                          #
