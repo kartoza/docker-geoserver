@@ -113,11 +113,6 @@ docker build --build-arg IMAGE_VERSION=9.0.99-jdk11-temurin-noble --build-arg JA
 **Note:** Please check the [GeoServer documentation](https://docs.geoserver.org/stable/en/user/production/index.html) 
 to see which Tomcat versions are supported.
 
-The current build uses the base image `tomcat:9.0.99-jdk11-temurin-noble` because of the dependency on
-`libgdal-java`. The tomcat base images > focal will not
-have the java bindings for the [GDAL plugin](https://osgeo-org.atlassian.net/browse/GEOT-7412?focusedCommentId=84733)
-hence the container will not support the gdal plugin working if you build using base image > focal.
-
 ### Building on Windows
 
 These instructions detail the recommended process for reliably building this on Windows.
