@@ -452,3 +452,12 @@ fi
 if [ -z ${GEOSERVER_FILESYSTEM_SANDBOX} ];then
    GEOSERVER_FILESYSTEM_SANDBOX=''
 fi
+
+# https://docs.geoserver.org/2.27.x/en/user/datadirectory/setting.html#configuration
+if [ -z ${GEOSERVER_DATA_DIR_LOADER_ENABLED} ];then
+   GEOSERVER_DATA_DIR_LOADER_ENABLED=true
+fi
+
+if [ -z ${GEOSERVER_DATA_DIR_LOADER_THREADS} ];then
+   GEOSERVER_DATA_DIR_LOADER_THREADS=''
+fi
