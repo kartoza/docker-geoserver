@@ -74,9 +74,9 @@ RUN set -eux; \
 
 # copy gdal java bindings
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-        export GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"; \
+        GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
-        export GDAL_LIBS_PATH="/usr/lib/aarch64-linux-gnu"; \
+        GDAL_LIBS_PATH="/usr/lib/aarch64-linux-gnu"; \
     fi
 
 COPY --from=gdal-builder /usr/share/java/ /usr/share/java/
