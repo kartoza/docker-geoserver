@@ -57,6 +57,7 @@ LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.27.0
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
+ARG GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"
 ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
