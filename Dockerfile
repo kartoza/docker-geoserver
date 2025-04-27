@@ -6,7 +6,7 @@ ARG JAVA_HOME=/opt/java/openjdk
 ARG GDAL_VERSION=3.8.4
 ARG TARGETARCH
 
-FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
+FROM --platform=$BUILDPLATFORM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
 
 ##############################################################################
 # Plugin downloader                                                          #
