@@ -4,8 +4,9 @@ ARG IMAGE_VERSION=9.0.99-jdk17-temurin-noble
 ARG JAVA_HOME=/opt/java/openjdk
 #TODO we need a way to predetermine the gdal version in the tomcat image so as to match it
 ARG GDAL_VERSION=3.8.4
+ARG TARGETARCH
 
-FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
+FROM --platform=$BUILDPLATFORM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
 
 ##############################################################################
 # Plugin downloader                                                          #
@@ -56,6 +57,7 @@ LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.27.0
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
+ARG GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"
 ENV DEBIAN_FRONTEND=noninteractive
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
@@ -72,9 +74,14 @@ RUN set -eux; \
 	  gosu nobody true
 
 # copy gdal java bindings
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+        GDAL_LIBS_PATH="/usr/lib/aarch64-linux-gnu"; \
+    fi
 
 COPY --from=gdal-builder /usr/share/java/ /usr/share/java/
-COPY --from=gdal-builder /usr/lib/x86_64-linux-gnu/jni/ /usr/lib/x86_64-linux-gnu/jni/
+COPY --from=gdal-builder ${GDAL_LIBS_PATH}/jni/ ${GDAL_LIBS_PATH}/jni/
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
