@@ -147,4 +147,4 @@ RUN set -eux \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install -r /lib/utils/requirements.txt --break-system-packages;pip3 install numpy --upgrade --break-system-packages
+RUN pip3 install -r /lib/utils/requirements.txt --break-system-packages
