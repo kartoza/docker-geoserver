@@ -137,7 +137,7 @@ fi
 
 
 
-chmod o+rw "${CERT_DIR}";gwc_file_perms ;chmod 400 "${CATALINA_HOME}"/conf/*
+chmod o+rw "${CERT_DIR}";gwc_file_perms ;find ${CATALINA_HOME}/conf/ -type f -exec chmod 400 {} \;
 
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
   chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
