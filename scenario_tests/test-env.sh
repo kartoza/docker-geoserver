@@ -11,6 +11,10 @@ Image tag       : ${TAG}
 
 EOF
 
+
+export VERSION='docker compose'
+
+
 function test_url_availability() {
   URL=$1
   PASS=$2

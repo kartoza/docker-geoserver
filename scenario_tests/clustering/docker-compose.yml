@@ -16,7 +16,7 @@ services:
         - FORCE_SSL=FALSE
       restart: on-failure
       healthcheck:
-        test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
+        test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker"
    master:
       image: 'kartoza/geoserver:${TAG:-manual-build}'
       volumes:

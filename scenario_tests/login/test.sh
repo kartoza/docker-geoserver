@@ -6,11 +6,6 @@ set -e
 source ../test-env.sh
 
 # Run service
-if [[ $(dpkg -l | grep "docker-compose") > /dev/null ]];then
-    VERSION='docker-compose'
-  else
-    VERSION='docker compose'
-fi
 
 ${VERSION} up -d
 
@@ -32,7 +27,7 @@ for service in "${services[@]}"; do
     PASS="myawesomegeoserver"
   fi
   sleep 30
-  test_url_availability http://localhost:$PORT/geoserver/ows ${PASS}
+  test_url_availability http://localhost:$PORT/geoserver/rest/about/version.xml ${PASS}
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 
@@ -56,7 +51,7 @@ for service in "${services[@]}"; do
 
   # Execute tests
   sleep 120
-  #test_url_availability http://localhost:8081/geoserver/ows fabulousgeoserver
+  test_url_availability http://localhost:8081/geoserver/rest/about/version.xml fabulousgeoserver
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 
