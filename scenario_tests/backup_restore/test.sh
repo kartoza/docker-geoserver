@@ -6,11 +6,6 @@ set -e
 source ../test-env.sh
 
 # Run service
-if [[ $(dpkg -l | grep "docker-compose") > /dev/null ]];then
-    VERSION='docker-compose'
-  else
-    VERSION='docker compose'
-fi
 
 ${VERSION} -f docker-compose.yml up -d
 
@@ -24,7 +19,7 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8080/geoserver/ows
+  test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} -f docker-compose.yml exec $service /bin/bash /tests/test.sh
 
@@ -35,8 +30,7 @@ services=("restore")
 for service in "${services[@]}"; do
 
   # Execute tests
-  #test_url_availability http://localhost:8080/geoserver/ows
-  sleep 120
+  test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
   echo "Execute test for $service"
   ${VERSION} -f docker-compose.yml exec $service /bin/bash /tests/test.sh
 

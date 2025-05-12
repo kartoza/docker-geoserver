@@ -41,7 +41,8 @@ class TestGeoServerBackup(unittest.TestCase):
             "backup": {
                 "archiveFile": backup_file,
                 "overwrite": True,
-                "options": {}
+                "options": {},
+                "filter": "name IN ('tiger')"
             }
         }
 

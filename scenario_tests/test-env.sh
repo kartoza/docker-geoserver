@@ -11,6 +11,10 @@ Image tag       : ${TAG}
 
 EOF
 
+
+export VERSION='docker compose'
+
+
 function test_url_availability() {
   URL=$1
   PASS=$2
@@ -34,7 +38,8 @@ function test_url_availability() {
     fi
 
 
-    result=$(curl --fail --silent --write-out "%{http_code}" --output /dev/null -u "${USERNAME}:${PASS}" "${URL}")
+
+    result=$(wget -S --user admin --password ${PASS} --max-redirect=0 ${URL} 2>&1 | grep "HTTP/1.1 " | tail -n 1 | awk '{print $2}')
 
     if [[ $result -eq 200 ]]; then
       echo "Rest endpoint ${URL} is accessible with the provided credentials"

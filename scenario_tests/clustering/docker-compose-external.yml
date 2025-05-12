@@ -20,7 +20,7 @@ services:
       - FORCE_SSL=TRUE
     restart: on-failure
     healthcheck:
-      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
+      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker"
 
   broker1:
     << : *default-common-activemq

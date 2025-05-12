@@ -18,7 +18,7 @@ services:
       - RUN_AS_ROOT=true
     restart: on-failure
     healthcheck:
-      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
+      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker"
 
   geoserver:
     image: 'kartoza/geoserver:${TAG:-manual-build}'
