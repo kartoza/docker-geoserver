@@ -38,13 +38,9 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       # Get current GeoServer admin user
       file_env GEOSERVER_ADMIN_USER
 
-      # If GEOSERVER_ADMIN_USER is set (not empty), set GEOSERVER_ADMIN_DEFAULT_USER
-      if [ -n "${GEOSERVER_ADMIN_USER}" ]; then
-          export GEOSERVER_ADMIN_DEFAULT_USER="$GEOSERVER_ADMIN_USER"
-      else
-          GEOSERVER_ADMIN_USER='admin'
-          export GEOSERVER_ADMIN_DEFAULT_USER="$GEOSERVER_ADMIN_USER"
-      fi
+
+      export GEOSERVER_ADMIN_DEFAULT_USER='admin'
+
 
       # Get encrypted admin password
       #export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD="$(sed -n 's/.*password="\([^"]*\)".*/\1/p' ${USERS_XML})"
