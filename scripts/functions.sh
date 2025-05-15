@@ -359,13 +359,17 @@ function geoserver_logging() {
       export LOG_PATH=${GEOSERVER_LOG_DIR}/geoserver.log
   fi
 
-    echo "
+  if [ -f "${GEOSERVER_DATA_DIR}/logging.xml" ]; then
+    sed -i -E "s|<location>.*</location>|<location>${LOG_PATH}</location>|" "${GEOSERVER_DATA_DIR}/logging.xml"
+    else
+      echo "
 <logging>
   <level>${GEOSERVER_LOG_PROFILE}</level>
   <location>${LOG_PATH}</location>
   <stdOutLogging>true</stdOutLogging>
 </logging>
 " > "${GEOSERVER_DATA_DIR}"/logging.xml
+  fi
 
   if [[ ! -f ${LOG_PATH} ]];then
     touch "${LOG_PATH}"
