@@ -15,28 +15,30 @@ fi
 
 
 services=("geoserver" "server" "credentials")
+START_PORT=8081
 
-for service in "${services[@]}"; do
+for i in "${!services[@]}"; do
+  service="${services[$i]}"
+  PORT=$((START_PORT + i))
 
-  # Execute tests
-  if [[ $service == 'server' ]];then
-    PORT=8082
+  # Set default values
+  PASS="myawesomegeoserver"
+  USER="admin"
+
+  # Service-specific overrides
+  if [[ "$service" == "server" ]]; then
     PASS=$(docker compose exec server cat /opt/geoserver/data_dir/security/pass.txt)
-    USER=admin
-  elif [[ $service == 'geoserver' ]];then
-    PORT=8081
-    PASS="myawesomegeoserver"
-    USER=admin
-  else
-    PORT=8083
-    PASS="myawesomegeoserver"
-    USER=myadmin
+  elif [[ "$service" == "credentials" ]]; then
+    USER="myadmin"
   fi
-  sleep 30
-  test_url_availability http://localhost:$PORT/geoserver/rest/about/version.xml ${PASS} ${USER}
-  echo "Execute test for $service"
-  ${VERSION} exec -T $service /bin/bash /tests/test.sh
 
+  sleep 30
+  echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
+  test_url_availability "http://localhost:$PORT/geoserver/rest/about/version.xml" "$PASS" "$USER"
+
+  echo -e "\e[32m ---------------------------------------- \033[0m"
+  echo -e "[Unit Test] Execute test for: \e[1;31m $service \033[0m"
+  ${VERSION} exec -T "$service" /bin/bash /tests/test.sh
 done
 
 ${VERSION} down -v
@@ -57,8 +59,10 @@ for service in "${services[@]}"; do
 
   # Execute tests
   sleep 120
+  echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
   test_url_availability http://localhost:8081/geoserver/rest/about/version.xml fabulousgeoserver
-  echo "Execute test for $service"
+  echo -e "\e[32m ---------------------------------------- \033[0m"
+  echo -e "[Unit Test] Execute test for: \e[1;31m $service \033[0m"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 
 done

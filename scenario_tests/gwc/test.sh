@@ -21,9 +21,11 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
+  echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
   test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
   ${VERSION} -f docker-compose-gwc.yml ps
-  echo "Execute test for $service"
+  echo -e "\e[32m ---------------------------------------- \033[0m"
+  echo -e "[Unit Test] Execute test for: \e[1;31m $service \033[0m"
   ${VERSION} -f docker-compose-gwc.yml exec  $service /bin/bash /tests/test.sh
 
 done

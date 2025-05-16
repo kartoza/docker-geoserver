@@ -60,7 +60,7 @@ services:
       GEOSERVER_ADMIN_USER: myadmin
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
-      CONTAINER_NAME: geoserver
+      CONTAINER_NAME: credentials
       CONSOLE_HANDLER_LEVEL: WARNING
       TEST_CLASS: test_login.TestGeoServerREST
     ports:
