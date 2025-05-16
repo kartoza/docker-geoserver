@@ -14,7 +14,7 @@ if [[ -n "${PRINT_TEST_LOGS}" ]]; then
 fi
 
 
-services=("geoserver" "server")
+services=("geoserver" "server" "credentials")
 
 for service in "${services[@]}"; do
 
@@ -22,12 +22,18 @@ for service in "${services[@]}"; do
   if [[ $service == 'server' ]];then
     PORT=8082
     PASS=$(docker compose exec server cat /opt/geoserver/data_dir/security/pass.txt)
-  else
+    USER=admin
+  elif [[ $service == 'geoserver' ]]
     PORT=8081
     PASS="myawesomegeoserver"
+    USER=admin
+  else
+    PORT=8083
+    PASS="myawesomegeoserver"
+    USER=myadmin
   fi
   sleep 30
-  test_url_availability http://localhost:$PORT/geoserver/rest/about/version.xml ${PASS}
+  test_url_availability http://localhost:$PORT/geoserver/rest/about/version.xml ${PASS} ${USER}
   echo "Execute test for $service"
   ${VERSION} exec -T $service /bin/bash /tests/test.sh
 
