@@ -23,7 +23,7 @@ for service in "${services[@]}"; do
     PORT=8082
     PASS=$(docker compose exec server cat /opt/geoserver/data_dir/security/pass.txt)
     USER=admin
-  elif [[ $service == 'geoserver' ]]
+  elif [[ $service == 'geoserver' ]];then
     PORT=8081
     PASS="myawesomegeoserver"
     USER=admin
