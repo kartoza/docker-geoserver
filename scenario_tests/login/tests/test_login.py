@@ -9,13 +9,16 @@ class TestGeoServerREST(unittest.TestCase):
         # Login to GeoServer and get the authentication cookies
         self.base_url = 'http://localhost:8080/geoserver'
         self.login_url = f'{self.base_url}/j_spring_security_check'
-        self.username = 'admin'
-        self.password = environ['GEOSERVER_ADMIN_PASSWORD']
         self.container_name = environ['CONTAINER_NAME']
 
-        if self.container_name == 'credentials':
+        if self.container_name == 'geoserver':
+            self.password = environ['GEOSERVER_ADMIN_PASSWORD']
+            self.username = 'admin'
+        elif self.container_name == 'credentials':
+            self.password = environ['GEOSERVER_ADMIN_PASSWORD']
             self.username = 'myadmin'
         elif self.container_name == 'server':
+            self.username = 'admin'
             with open('/opt/geoserver/data_dir/security/pass.txt', 'r') as file:
                 file_pass = file.read()
             self.password = file_pass.replace("\n", "")
