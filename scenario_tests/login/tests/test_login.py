@@ -9,29 +9,16 @@ class TestGeoServerREST(unittest.TestCase):
         # Login to GeoServer and get the authentication cookies
         self.base_url = 'http://localhost:8080/geoserver'
         self.login_url = f'{self.base_url}/j_spring_security_check'
+        self.username = 'admin'
+        self.password = environ['GEOSERVER_ADMIN_PASSWORD']
         self.container_name = environ['CONTAINER_NAME']
-        credential_map = {
-            'geoserver': {
-                'username': 'admin',
-                'password': environ['GEOSERVER_ADMIN_PASSWORD']
-            },
-            'credentials': {
-                'username': 'myadmin',
-                'password': environ['GEOSERVER_ADMIN_PASSWORD']
-            },
-            'server': {
-                'username': 'admin',
-                'password': self._read_password_file('/opt/geoserver/data_dir/security/pass.txt')
-            }
-        }
 
-        creds = credential_map.get(self.container_name)
-        if not creds:
-            raise ValueError(f"Unknown container: {self.container_name}")
-
-        self.username = creds['username']
-        self.password = creds['password']
-
+        if self.container_name == 'credentials':
+            self.username = 'myadmin'
+        elif self.container_name == 'server':
+            with open('/opt/geoserver/data_dir/security/pass.txt', 'r') as file:
+                file_pass = file.read()
+            self.password = file_pass.replace("\n", "")
         self.session = requests.Session()
         login_data = {
             'username': self.username,
@@ -40,10 +27,6 @@ class TestGeoServerREST(unittest.TestCase):
         }
         response = self.session.post(self.login_url, data=login_data)
         self.assertEqual(response.status_code, 200)
-
-    def _read_password_file(self, path):
-        with open(path, 'r') as file:
-            return file.read().strip()
 
     def test_rest_endpoints_accessible(self):
         # Test if the REST endpoints are accessible as a logged user
