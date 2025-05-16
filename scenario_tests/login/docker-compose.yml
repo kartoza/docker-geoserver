@@ -2,6 +2,7 @@
 volumes:
   geoserver-data-dir:
   geoserver-data-dir-pass:
+  geoserver-data-dir-cred:
 
 
 services:
@@ -52,7 +53,7 @@ services:
     image: 'kartoza/geoserver:${TAG:-manual-build}'
     restart: 'always'
     volumes:
-      - geoserver-data-dir:/opt/geoserver/data_dir
+      - geoserver-data-dir-cred:/opt/geoserver/data_dir
       - ./tests:/tests
     environment:
       GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
