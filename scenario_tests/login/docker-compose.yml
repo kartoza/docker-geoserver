@@ -2,6 +2,7 @@
 volumes:
   geoserver-data-dir:
   geoserver-data-dir-pass:
+  geoserver-data-dir-users:
 
 
 services:
@@ -44,6 +45,28 @@ services:
       - "8082:8080"
     healthcheck:
       test: ["CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$$(cat /opt/geoserver/data_dir/security/pass.txt) http://localhost:8080/geoserver/rest/about/version.xml"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+
+  users:
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
+    restart: 'always'
+    volumes:
+      - geoserver-data-dir-users:/opt/geoserver/data_dir
+      - ./tests:/tests
+    environment:
+      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver,mygeoserver,mysample
+      GEOSERVER_ADMIN_USER: foo,myadmin,sample
+      INITIAL_MEMORY: 2G
+      MAXIMUM_MEMORY: 4G
+      CONTAINER_NAME: geoserver
+      CONSOLE_HANDLER_LEVEL: WARNING
+      TEST_CLASS: test_login.TestGeoServerREST
+    ports:
+      - "8083:8080"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER%%,*}:$${GEOSERVER_ADMIN_PASSWORD%%,*} http://localhost:8080/geoserver/rest/about/version.xml" ]
       interval: 1m30s
       timeout: 10s
       retries: 3
