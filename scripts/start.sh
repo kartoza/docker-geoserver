@@ -296,7 +296,6 @@ export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQ
 # Setup control flow properties
 setup_control_flow
 
-# TODO: If this value is set and a user resets it in the UI, we need to respect that and not reset it again
 export GEOSERVER_LOG_PROFILE
 geoserver_logging
 
