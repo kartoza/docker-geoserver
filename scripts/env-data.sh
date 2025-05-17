@@ -276,7 +276,7 @@ if [ -z "${ALLOW_ENV_PARAMETRIZATION}" ]; then
 fi
 
 if [ -z "${GEOSERVER_LOG_PROFILE}" ]; then
-    GEOSERVER_LOG_PROFILE=DEFAULT_LOGGING
+    GEOSERVER_LOG_PROFILE=
 fi
 
 if [ -z "${GEOSERVER_LOG_DIR}" ]; then

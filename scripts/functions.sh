@@ -351,25 +351,35 @@ function log4j_logging() {
 
 }
 
-function geoserver_logging() {
-  if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-      export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
-    else
-      create_dir "${GEOSERVER_LOG_DIR}"
-      export LOG_PATH=${GEOSERVER_LOG_DIR}/geoserver.log
-  fi
-
-  if [ -f "${GEOSERVER_DATA_DIR}/logging.xml" ]; then
-    sed -i -E "s|<location>.*</location>|<location>${LOG_PATH}</location>|" "${GEOSERVER_DATA_DIR}/logging.xml"
-    else
-      echo "
+function set_logging_xml() {
+  echo "
 <logging>
   <level>${GEOSERVER_LOG_PROFILE}</level>
   <location>${LOG_PATH}</location>
   <stdOutLogging>true</stdOutLogging>
 </logging>
-" > "${GEOSERVER_DATA_DIR}"/logging.xml
+" > "$GEOSERVER_LOG_SETTINGS_PATH"
+}
+
+
+function geoserver_logging() {
+  export GEOSERVER_LOG_SETTINGS_PATH="${GEOSERVER_DATA_DIR}/logging.xml"
+
+  if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
+      export LOG_PATH=${CLUSTER_CONFIG_DIR}/geoserver-${HOSTNAME}.log
+    else
+      create_dir "${GEOSERVER_LOG_DIR}"
+      export LOG_PATH="${GEOSERVER_LOG_DIR}/geoserver.log"
   fi
+
+  if [ -z "${GEOSERVER_LOG_PROFILE}" ]; then
+    if [ -f "${GEOSERVER_DATA_DIR}/logging.xml" ]; then
+    GEOSERVER_LOG_PROFILE=$(sed -n 's:.*<level>\(.*\)</level>.*:\1:p' "$GEOSERVER_LOG_SETTINGS_PATH" | head -n 1)
+    else 
+      GEOSERVER_LOG_PROFILE=DEFAULT_LOGGING
+    fi
+  fi
+  set_logging_xml
 
   if [[ ! -f ${LOG_PATH} ]];then
     touch "${LOG_PATH}"
