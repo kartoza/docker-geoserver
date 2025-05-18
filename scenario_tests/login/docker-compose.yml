@@ -13,7 +13,7 @@ services:
       - geoserver-data-dir:/opt/geoserver/data_dir
       - ./tests:/tests
     environment:
-      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+      GEOSERVER_ADMIN_PASSWORD: fabulousgeoserver
       GEOSERVER_ADMIN_USER: admin
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
@@ -56,7 +56,7 @@ services:
       - geoserver-data-dir-cred:/opt/geoserver/data_dir
       - ./tests:/tests
     environment:
-      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+      GEOSERVER_ADMIN_PASSWORD: fabulousgeoserver
       GEOSERVER_ADMIN_USER: myadmin
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
