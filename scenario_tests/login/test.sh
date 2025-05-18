@@ -43,15 +43,11 @@ done
 
 ${VERSION} down -v
 
-# Test Updating passwords
-${VERSION} up -d geoserver
-
-${VERSION} stop
 
 # Update password
-sed -i 's/myawesomegeoserver/fabulousgeoserver/g' docker-compose.yml
+sed 's/myawesomegeoserver/fabulousgeoserver/g' docker-compose.yml > docker-compose-updated.yml
 # Bring the services up again
-${VERSION} up -d geoserver
+${VERSION} -f docker-compose-updated.yml up -d geoserver
 
 services=("geoserver")
 
@@ -63,9 +59,9 @@ for service in "${services[@]}"; do
   test_url_availability http://localhost:8081/geoserver/rest/about/version.xml fabulousgeoserver
   echo -e "\e[32m ---------------------------------------- \033[0m"
   echo -e "[Unit Test] Execute test for: \e[1;31m $service \033[0m"
-  ${VERSION} exec -T $service /bin/bash /tests/test.sh
+  ${VERSION} -f docker-compose-updated.yml exec -T $service /bin/bash /tests/test.sh
 
 done
 
-${VERSION} down -v
-sed -i 's/fabulousgeoserver/myawesomegeoserver/g' docker-compose.yml
+${VERSION} -f docker-compose-updated.yml down -v
+rm -rf docker-compose-updated.yml
