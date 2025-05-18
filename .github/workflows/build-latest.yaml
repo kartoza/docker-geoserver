@@ -192,6 +192,7 @@ jobs:
           - jdbconfig
           - libjpeg
 #          - backup_restore
+          - logging_profile
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
