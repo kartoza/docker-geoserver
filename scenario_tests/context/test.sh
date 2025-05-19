@@ -19,15 +19,18 @@ if [[ -n "${PRINT_TEST_LOGS}" ]]; then
 fi
 
 
-
+# Set default values
+PASS="myawesomegeoserver"
+USER="admin"
 
 services=("geoserver")
 
 for service in "${services[@]}"; do
 
-  # Execute tests
 
-  test_url_availability http://localhost:8080/foobar/rest/about/version.xml myawesomegeoserver
+  # Execute tests
+  echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
+  test_url_availability http://localhost:8080/foobar/rest/about/version.xml "$PASS" "$USER"
   echo "Execute test for $service"
   ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
 
@@ -48,8 +51,10 @@ services=("geoserver")
 for service in "${services[@]}"; do
 
   # Execute tests
-  test_url_availability http://localhost:8080/foobar/geoserver/rest/about/version.xml
-  echo "Execute test for $service"
+  echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
+  test_url_availability http://localhost:8080/foobar/geoserver/rest/about/version.xml "$PASS" "$USER"
+  echo -e "\e[32m ---------------------------------------- \033[0m"
+  echo -e "[Unit Test] Execute test for: \e[1;31m $service \033[0m"
   ${VERSION} exec -T "${service}" /bin/bash /tests/test.sh
 
 done

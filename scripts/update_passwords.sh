@@ -38,19 +38,15 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       # Get current GeoServer admin user
       file_env GEOSERVER_ADMIN_USER
 
-      # If GEOSERVER_ADMIN_USER is set (not empty), set GEOSERVER_ADMIN_DEFAULT_USER
-      if [ -n "${GEOSERVER_ADMIN_USER}" ]; then
-          export GEOSERVER_ADMIN_DEFAULT_USER="$GEOSERVER_ADMIN_USER"
-      else
-          GEOSERVER_ADMIN_USER='admin'
-          export GEOSERVER_ADMIN_DEFAULT_USER="$GEOSERVER_ADMIN_USER"
-      fi
+
+      export GEOSERVER_ADMIN_DEFAULT_USER='admin'
+
 
       # Get encrypted admin password
       #export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD="$(sed -n 's/.*password="\([^"]*\)".*/\1/p' ${USERS_XML})"
 
       export PWD_HASH=$(make_hash $GEOSERVER_ADMIN_PASSWORD $CLASSPATH $HASHING_ALGORITHM)
-      ESCAPED_GEOSERVER_ADMIN_USER=$(printf '%s\n' "$GEOSERVER_ADMIN_DEFAULT_USER" | sed 's/[&/\]/\\&/g')
+      ESCAPED_GEOSERVER_ADMIN_USER=$(printf '%s\n' "$GEOSERVER_ADMIN_USER" | sed 's/[&/\]/\\&/g')
       ESCAPED_PWD_HASH=$(printf '%s\n' "$PWD_HASH" | sed 's/[&/\]/\\&/g')
       sed -i "s/name=\"[^\"]*\"/name=\"$ESCAPED_GEOSERVER_ADMIN_USER\"/; s/password=\"[^\"]*\"/password=\"$ESCAPED_PWD_HASH\"/" $USERS_XML
 
