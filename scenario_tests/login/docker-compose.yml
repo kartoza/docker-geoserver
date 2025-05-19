@@ -1,16 +1,9 @@
 
-volumes:
-  geoserver-data-dir:
-  geoserver-data-dir-pass:
-  geoserver-data-dir-cred:
-
-
 services:
   geoserver:
     image: 'kartoza/geoserver:${TAG:-manual-build}'
     restart: 'always'
     volumes:
-      - geoserver-data-dir:/opt/geoserver/data_dir
       - ./tests:/tests
     environment:
       GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
@@ -32,7 +25,6 @@ services:
     image: 'kartoza/geoserver:${TAG:-manual-build}'
     restart: 'always'
     volumes:
-      - geoserver-data-dir-pass:/opt/geoserver/data_dir
       - ./tests:/tests
     environment:
       GEOSERVER_ADMIN_USER: admin
@@ -53,7 +45,6 @@ services:
     image: 'kartoza/geoserver:${TAG:-manual-build}'
     restart: 'always'
     volumes:
-      - geoserver-data-dir-cred:/opt/geoserver/data_dir
       - ./tests:/tests
     environment:
       GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
@@ -70,3 +61,4 @@ services:
       interval: 1m30s
       timeout: 10s
       retries: 3
+
