@@ -19,7 +19,16 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
 
   function password_reset() {
-    cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
+    if [[ ! -f ${EXTRA_CONFIG_DIR}/.security.lock ]];then
+      cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
+      sed -i '/<readOnly>false<\/readOnly>/a <loginEnabled>false<\/loginEnabled>' ${GEOSERVER_DATA_DIR}/security/config.xml
+      touch ${EXTRA_CONFIG_DIR}/.security.lock
+    else
+      create_dir ${GEOSERVER_DATA_DIR}/security
+      cp -r ${CATALINA_HOME}/security/role  ${GEOSERVER_DATA_DIR}/security/
+      cp -r  ${CATALINA_HOME}/security/usergroup  ${GEOSERVER_DATA_DIR}/security/
+      cp -r  ${CATALINA_HOME}/security/config.xml  ${GEOSERVER_DATA_DIR}/security/
+    fi
 
       # Set random password if none provided
       file_env 'GEOSERVER_ADMIN_PASSWORD'
@@ -71,11 +80,6 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   else
     password_reset
   fi
-
-
-else
-  cp -r ${CATALINA_HOME}/security ${GEOSERVER_DATA_DIR}
-  sed -i 's/pbePasswordEncoder/strongPbePasswordEncoder/g' ${GEOSERVER_DATA_DIR}/security/config.xml
 
 # end final if
 fi

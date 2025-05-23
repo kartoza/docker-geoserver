@@ -28,12 +28,12 @@ if [[ "${WAR_URL}" == *\.zip ]]; then
 fi
 
 # Download Jetty Services
-curl -vfLo /work/required_plugins/jetty-servlets.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/11.0.9/jetty-servlets-11.0.9.jar
+curl --progress-bar -fLvo /work/required_plugins/jetty-servlets.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/11.0.9/jetty-servlets-11.0.9.jar
 
 # Download jetty-util
-curl -vfLo /work/required_plugins/jetty-util.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.9/jetty-util-11.0.9.jar
+curl --progress-bar -fLvo /work/required_plugins/jetty-util.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.9/jetty-util-11.0.9.jar
 
-
+curl --progress-bar -fLvo /work/required_plugins/marlin.jar https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_8/marlin-0.9.4.8-Unsafe-OpenJDK11.jar
 
 # Download everything!
 for attempt in {1..5}; do
