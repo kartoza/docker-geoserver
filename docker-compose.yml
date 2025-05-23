@@ -2,6 +2,7 @@ volumes:
    geoserver-data:
    geo-db-data:
    geoserver-gwc:
+   geoserver-settings:
 
 services:
    db:
@@ -29,6 +30,7 @@ services:
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
         - geoserver-gwc:/opt/geoserver/gwc
+        - geoserver-settings:/settings
       ports:
         - "${GEOSERVER_PORT}:8080"
       restart: on-failure
