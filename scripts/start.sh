@@ -161,7 +161,26 @@ else
   done
 fi
 
+# Match gdal jar to the installed version
+GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
+lib_dir="${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib"
+
+# Search for gdal-<version>.jar files in the lib directory
+for jar_file in "$lib_dir"/gdal-*.jar; do
+    if [[ -f "$jar_file" ]]; then
+        # Extract the version number
+        version=$(basename "$jar_file" | sed 's/gdal-\(.*\)\.jar/\1/')
+        break
+    fi
+done
+
+GDAL_VERSION=$(gdalinfo --version | head -n1 | cut -d" " -f2 | tr -d ,,)
+
+if [[ ${GDAL_VERSION} != ${version} ]];then
+  rm ${lib_dir}/gdal-${version}.jar
+  cp /usr/share/java/gdal-${GDAL_VERSION}.jar "${lib_dir}"
+fi
 
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD S3_ALIAS
