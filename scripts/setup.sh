@@ -43,40 +43,17 @@ dpkg -i "${libjpeg_deb}"
 
 pushd "${CATALINA_HOME}" || exit
 
-# Install GeoServer plugins in correct install dir
-GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
-
-
-lib_dir="${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib"
-
-# Search for gdal-<version>.jar files in the lib directory
-for jar_file in "$lib_dir"/gdal-*.jar; do
-    if [[ -f "$jar_file" ]]; then
-        # Extract the version number
-        version=$(basename "$jar_file" | sed 's/gdal-\(.*\)\.jar/\1/')
-        break
-    fi
-done
-
-GDAL_VERSION=$(gdalinfo --version | head -n1 | cut -d" " -f2 | tr -d ,,)
-
-if [[ ${GDAL_VERSION} != ${version} ]];then
-  rm ${lib_dir}/gdal-${version}.jar
-  curl -vfLo "${lib_dir}/gdal-${GDAL_VERSION:0:3}.0.jar" "https://repo1.maven.org/maven2/org/gdal/gdal/${GDAL_VERSION:0:3}.0/gdal-${GDAL_VERSION:0:3}.0.jar"
-fi
-
-
 # Install Marlin render https://www.geocat.net/docs/geoserver-enterprise/2020.5/install/production/marlin.html
-curl --progress-bar -fLvo ${CATALINA_HOME}/lib/marlin.jar https://github.com/bourgesl/marlin-renderer/releases/download/v0_9_4_8/marlin-0.9.4.8-Unsafe-OpenJDK11.jar || exit 1
+cp ${REQUIRED_PLUGINS_DIR}/marlin.jar ${CATALINA_HOME}/lib/marlin.jar
 
 # Install jetty-servlets
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-    cp /work/required_plugins/jetty-servlets-11.0.9.jar "${GEOSERVER_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
+    cp ${REQUIRED_PLUGINS_DIR}/jetty-servlets-11.0.9.jar "${GEOSERVER_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
 fi
 
 # Install jetty-util
 if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
-    cp /work/required_plugins/jetty-util.jar "${GEOSERVER_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
+    cp ${REQUIRED_PLUGINS_DIR}/jetty-util.jar "${GEOSERVER_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/
 fi
 
 # Overlay files and directories in resources/overlays if they exist
