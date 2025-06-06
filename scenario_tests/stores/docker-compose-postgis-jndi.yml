@@ -37,6 +37,7 @@ services:
       POSTGRES_USER: docker
       POSTGRES_PASS: docker
       RECREATE_DATADIR: TRUE
+      POSTGRES_JNDI_NAME: postgres
       CONSOLE_HANDLER_LEVEL: WARNING
       TEST_CLASS: test_jndi.TestGeoServerJNDI
     depends_on:

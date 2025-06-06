@@ -290,6 +290,7 @@ HOST=${POSTGRES_HOSTNAME}
 POSTGRES_DB=${POSTGRES_DB}
 POSTGRES_USER=${POSTGRES_USER}
 POSTGRES_PASS=${POSTGRES_PASS}
+POSTGRES_JNDI_NAME=${POSTGRES_JNDI_NAME}
 ```
 
 When defining the parameters for the store in GeoServer you will need to set
