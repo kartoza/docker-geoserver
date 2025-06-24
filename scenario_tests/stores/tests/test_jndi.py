@@ -14,6 +14,7 @@ class TestGeoServerJNDI(unittest.TestCase):
         self.gs_url = 'http://localhost:8080/geoserver'
         # Define the PostGIS JNDI store name
         self.jndi_store_name = 'gis'
+        self.jndi_resource_name = environ.get('POSTGRES_JNDI_NAME', 'postgres')
         self.geo_username = environ.get('GEOSERVER_ADMIN_USER', 'admin')
         self.geo_password = environ.get('GEOSERVER_ADMIN_PASSWORD', 'myawesomegeoserver')
         self.geo_workspace_name = 'demo'
@@ -49,13 +50,13 @@ class TestGeoServerJNDI(unittest.TestCase):
             <entry key="Batch insert size">1</entry>
             <entry key="preparedStatements">false</entry>
             <entry key="Method used to simplify geometries">FAST</entry>
-            <entry key="jndiReferenceName">java:comp/env/jdbc/postgres</entry>
+            <entry key="jndiReferenceName">java:comp/env/jdbc/{resource}</entry>
             <entry key="dbtype">postgis</entry>
             <entry key="Loose bbox">true</entry>
           </connectionParameters>
           <disableOnConnFailure>false</disableOnConnFailure>
         </dataStore>
-        """.format(name=self.jndi_store_name)
+        """.format(name=self.jndi_store_name, resource=self.jndi_resource_name)
 
         # Publish the JNDI store
         response = post(self.gs_url + '/rest/workspaces/%s/datastores' % self.geo_workspace_name, auth=auth,

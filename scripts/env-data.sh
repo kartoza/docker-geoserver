@@ -310,6 +310,10 @@ if [ -z "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" ]; then
 fi
 
 
+if [ -z "${POSTGRES_JNDI_NAME}" ]; then
+    POSTGRES_JNDI_NAME=postgres
+fi
+
 if [ -z "${POSTGRES_JNDI}" ]; then
     POSTGRES_JNDI=false
 fi

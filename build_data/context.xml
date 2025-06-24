@@ -16,7 +16,7 @@
   limitations under the License.
 -->
 <Context antiResourceLocking="false" privileged="true" >
-  <Resource name="jdbc/postgres"
+  <Resource name="jdbc/${POSTGRES_JNDI_NAME}"
       auth="Container"
       type="javax.sql.DataSource"
       driverClassName="org.postgresql.Driver"
