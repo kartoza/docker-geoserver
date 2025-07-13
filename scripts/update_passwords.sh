@@ -30,8 +30,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       cp -r  ${CATALINA_HOME}/security/config.xml  ${GEOSERVER_DATA_DIR}/security/
     fi
 
-      # Set random password if none provided
-      file_env 'GEOSERVER_ADMIN_PASSWORD'
+      # Create random password if none is provided
       if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
             generate_random_string 15
             GEOSERVER_ADMIN_PASSWORD=${RAND}
@@ -45,41 +44,55 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       fi
 
       # Get current GeoServer admin user
-      file_env GEOSERVER_ADMIN_USER
+      IFS=','
+      read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
+      file_env 'GEOSERVER_ADMIN_PASSWORD'
 
+      # Get current GeoServer admin user
+      IFS=','
+      read -a geouser <<< "$GEOSERVER_ADMIN_USER"
+      file_env GEOSERVER_ADMIN_USER
 
       export GEOSERVER_ADMIN_DEFAULT_USER='admin'
 
-
       # Get encrypted admin password
-      #export GEOSERVER_ADMIN_DEFAULT_ENCRYPTED_PASSWORD="$(sed -n 's/.*password="\([^"]*\)".*/\1/p' ${USERS_XML})"
 
-      export PWD_HASH=$(make_hash $GEOSERVER_ADMIN_PASSWORD $CLASSPATH $HASHING_ALGORITHM)
-      ESCAPED_GEOSERVER_ADMIN_USER=$(printf '%s\n' "$GEOSERVER_ADMIN_USER" | sed 's/[&/\]/\\&/g')
-      ESCAPED_PWD_HASH=$(printf '%s\n' "$PWD_HASH" | sed 's/[&/\]/\\&/g')
-      sed -i "s/name=\"[^\"]*\"/name=\"$ESCAPED_GEOSERVER_ADMIN_USER\"/; s/password=\"[^\"]*\"/password=\"$ESCAPED_PWD_HASH\"/" $USERS_XML
+      COUNT_GEOSERVER_ADMIN_USER=$(echo "$GEOSERVER_ADMIN_USER" | tr ',' '\n' | wc -l)
+      COUNT_GEOSERVER_ADMIN_PASSWORD=$(echo "$GEOSERVER_ADMIN_PASSWORD" | tr ',' '\n' | wc -l)
+      if [[ ${COUNT_GEOSERVER_ADMIN_USER} -eq ${COUNT_GEOSERVER_ADMIN_PASSWORD} ]]; then
 
-      # Set password encoding
-      sed -i 's/pbePasswordEncoder/strongPbePasswordEncoder/g' ${GEOSERVER_DATA_DIR}/security/config.xml
+        for ((i = 0; i < ${COUNT_GEOSERVER_ADMIN_PASSWORD}; i++)); do
+          user="${geouser[$i]}"
+          pass="${geopass[$i]}"
 
-      # roles.xml setup
-      cp $ROLES_XML $ROLES_XML.orig
-      # <userRoles username="admin">
-      cat $ROLES_XML.orig | sed -e "s/ username=\"${GEOSERVER_ADMIN_DEFAULT_USER}\"/ username=\"${GEOSERVER_ADMIN_USER}\"/" > $ROLES_XML
+          export PWD_HASH=$(make_hash "$pass" "$CLASSPATH" "$HASHING_ALGORITHM")
+          ESCAPED_GEOSERVER_ADMIN_USER=$(printf '%s\n' "$user" | sed 's/[&/\]/\\&/g')
+          ESCAPED_PWD_HASH=$(printf '%s\n' "$PWD_HASH" | sed 's/[&/\]/\\&/g')
+          if [[ $i -eq 0 ]]; then
+
+            sed -i "s/name=\"[^\"]*\"/name=\"$ESCAPED_GEOSERVER_ADMIN_USER\"/; s/password=\"[^\"]*\"/password=\"$ESCAPED_PWD_HASH\"/" "$USERS_XML"
+            cp "$ROLES_XML" "$ROLES_XML.orig"
+            sed -e "s/ username=\"${GEOSERVER_ADMIN_DEFAULT_USER}\"/ username=\"${user}\"/" "$ROLES_XML.orig" > "$ROLES_XML"
+          else
+            echo $ESCAPED_GEOSERVER_ADMIN_USER
+            sed -i "/<\/users>/i \    <user enabled=\"true\" name=\"$ESCAPED_GEOSERVER_ADMIN_USER\" password=\"$ESCAPED_PWD_HASH\"/>" "$USERS_XML"
+            sed -i "/<\/userList>/i \        <userRoles username=\"$ESCAPED_GEOSERVER_ADMIN_USER\">\n            <roleRef roleID=\"ADMIN\"/>\n        </userRoles>" "$ROLES_XML"
+          fi
+        done
+      else
+         echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
+         echo -e "\e[32m [Entrypoint] Passwords and usernames have mismatch so we skip this and use:\033[0m \e[1;31m default credentials \033[0m"
+
+    fi
+    # Set password encoding
+    sed -i 's/pbePasswordEncoder/strongPbePasswordEncoder/g' ${GEOSERVER_DATA_DIR}/security/config.xml
 
 
   } # end password reset
 
-  if [[ -f ${USERS_XML} ]]; then
-    user_count=$(grep -o '<user ' ${USERS_XML} | wc -l)
-    if [[ "$user_count" -gt 1 ]]; then
-      echo -e "\e[32m [Entrypoint] More than one user exists :\033[0m \e[1;31m ${USERS_XML} \033[0m"
-    else
-      password_reset
-    fi
-  else
-    password_reset
-  fi
+
+  password_reset
+
 
 # end final if
 fi

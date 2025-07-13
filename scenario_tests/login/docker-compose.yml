@@ -62,3 +62,23 @@ services:
       timeout: 10s
       retries: 3
 
+  users:
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
+    restart: 'always'
+    volumes:
+      - ./tests:/tests
+    environment:
+      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver,mygeoserver,mysample
+      GEOSERVER_ADMIN_USER: foo,myadmin,sample
+      INITIAL_MEMORY: 2G
+      MAXIMUM_MEMORY: 4G
+      CONTAINER_NAME: users
+      CONSOLE_HANDLER_LEVEL: WARNING
+      TEST_CLASS: test_login.TestGeoServerREST
+    ports:
+      - "8084:8080"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER%%,*}:$${GEOSERVER_ADMIN_PASSWORD%%,*} http://localhost:8080/geoserver/rest/about/version.xml" ]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
