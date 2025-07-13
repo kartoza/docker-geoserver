@@ -455,6 +455,28 @@ GEOSERVER_ADMIN_PASSWORD
 GEOSERVER_ADMIN_USER
 ```
 
+You can additionally pass comma separated values of password i.e.
+
+```bash
+GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver,mygeoserver,mysample
+GEOSERVER_ADMIN_USER=foo,myadmin,sample
+```
+
+If there is a mismatch on number of users and password, 
+the default creds are used to login.
+
+```bash
+GEOSERVER_ADMIN_PASSWORD=geoserver
+GEOSERVER_ADMIN_USER=admin
+```
+
+Currently, there is no logic to parse passwords with comma separated i.e.
+
+```bash
+GEOSERVER_ADMIN_PASSWORD="'myawes,omegeoserver',mygeoserver,mysample"
+
+```
+
 The username and password are reinitialized each time the container starts. If you do not pass the env variables
 `GEOSERVER_ADMIN_PASSWORD` the container will generate a new password which is visible in the
 startup logs.
