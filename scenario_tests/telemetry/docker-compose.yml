@@ -1,0 +1,46 @@
+volumes:
+    geoserver-data:
+    opentelemetry-collector-data:
+
+services:
+    geoserver_one:
+        image: 'kartoza/geoserver:${TAG:-manual-build}'
+        restart: 'always'
+        volumes:
+            - geoserver-data:/opt/geoserver/data_dir
+            - ./tests:/tests
+        environment:
+            GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+            GEOSERVER_ADMIN_USER: admin
+            INITIAL_MEMORY: 2G
+            MAXIMUM_MEMORY: 4G
+            CONTAINER_NAME: geoserver_one
+            CONSOLE_HANDLER_LEVEL: WARNING
+            TELEMETRY_TRACING_ENABLED: 'true'
+        ports:
+            - '8081:8080'
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml",
+                ]
+            interval: 1m30s
+            timeout: 10s
+            retries: 3
+    opentelemetry_collector:
+        image:  'otel/opentelemetry-collector:0.130.0'
+        restart: 'always'
+        volumes:
+            - opentelemetry-collector-data:/otelcol/config
+            - ./assets/otel-config.yaml:/otelcol/config/otel-config.yaml
+        command: ["--config", "/otelcol/config/otel-config.yaml"]
+        ports:
+            - '4318:4318' # OTLP HTTP receiver
+        healthcheck:
+            test: ["CMD", "curl", "--fail", "--silent", "--write-out", "'HTTP CODE : %{http_code}\n'", "--output", "/dev/null", "http://localhost:4318/v1/trace"]
+            interval: 1m30s
+            timeout: 10s
+            retries: 3
+        depends_on:
+            - geoserver_one
