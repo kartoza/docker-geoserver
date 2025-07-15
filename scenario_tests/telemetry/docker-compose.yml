@@ -1,6 +1,5 @@
 volumes:
     geoserver-data:
-    opentelemetry-collector-data:
 
 services:
     geoserver_one:
@@ -35,7 +34,6 @@ services:
         image: 'otel/opentelemetry-collector:0.130.0'
         restart: 'always'
         volumes:
-            - opentelemetry-collector-data:/otelcol/data
             - ./assets/otel-config.yaml:/otelcol/otel-config.yaml
         command: ['--config', '/otelcol/otel-config.yaml']
         ports:
