@@ -103,6 +103,17 @@ fi
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
+## Prepare Telemetry 
+if [ "$TELEMETRY_TRACING_ENABLED" = "true" ]
+then
+  export JAVA_OPTS="${JAVA_OPTS} -javaagent:/otel/opentelemetry-javaagent.jar"
+fi
+
+if [ "$TELEMETRY_METRICS_ENABLED" = "true" ]
+then
+  export JAVA_OPTS="${JAVA_OPTS} -javaagent:/jmx/jmx_prometheus_javaagent.jar=${TELEMETRY_METRICS_PORT}:/jmx/config.yaml"
+fi
+
 
 # Chown again - seems to fix issue with resolving all created directories
 if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
