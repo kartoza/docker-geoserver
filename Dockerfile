@@ -58,7 +58,25 @@ ARG GS_VERSION=2.27.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"
+ARG OTEL_VERSION=v2.17.1
+ARG JMX_PROMETHEUS_VERSION=1.0.1
+ARG LOG4J_VERSION=2.24.3
 ENV DEBIAN_FRONTEND=noninteractive
+ENV OTEL_SERVICE_NAME=geoserver
+
+# Install OpenTelemetry Java agent, JMX Prometheus Java agent, and Log4j2
+RUN wget --directory-prefix=/otel https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/${OTEL_VERSION}/opentelemetry-javaagent.jar \
+    && wget --directory-prefix=${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib https://search.maven.org/remotecontent?filepath=org/apache/logging/log4j/log4j-layout-template-json/${LOG4J_VERSION}/log4j-layout-template-json-${LOG4J_VERSION}.jar \
+    && wget --directory-prefix=/jmx https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${JMX_PROMETHEUS_VERSION}.jar \
+    && mv /jmx/jmx_prometheus_javaagent-${JMX_PROMETHEUS_VERSION}.jar /jmx/jmx_prometheus_javaagent.jar
+
+# Set up JMX Prometheus Java agent
+RUN printf '%s\n' \
+    'rules:' \
+    '- pattern: ".*"' \
+    > /jmx/config.yaml
+
+
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
     apt-get update; \
