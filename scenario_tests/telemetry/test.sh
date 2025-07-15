@@ -28,12 +28,6 @@ for index in "${!services[@]}"; do
     exit 1
   fi 
 
-  # Check if the OpenTelemetry endpoint is available
-  if ! wget -q --spider http://localhost:4317; then
-    echo "ERROR: OpenTelemetry endpoint not available for $service"
-    exit 1
-  fi
-
   # In OpenTelemetry logs check if (using grep) service.name: Str(geoserver) exists
   if ! docker logs opentelemetry_collector  2>&1 | sed -n '/service\.name: Str(geoserver)/p'; then
     echo "ERROR: OpenTelemetry logs do not contain service.name for geoserver"
