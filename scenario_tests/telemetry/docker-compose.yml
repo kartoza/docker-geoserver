@@ -34,8 +34,8 @@ services:
         image: 'otel/opentelemetry-collector:0.130.0'
         restart: 'always'
         volumes:
-            - ./assets/otel-config.yaml:/otelcol/otel-config.yaml
-        command: ['--config', '/otelcol/otel-config.yaml']
+            - ./assets/otel-config.yaml:/mnt/otel-config.yaml
+        command: ['--config', '/mnt/otel-config.yaml']
         ports:
             - '4318:4318'
         healthcheck:
