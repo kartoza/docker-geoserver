@@ -45,7 +45,7 @@ services:
             TELEMETRY_METRICS_ENABLED: 'true'
             TELEMETRY_METRICS_PORT: 54321
         ports:
-            - '8081:8080'
+            - '8082:8080'
             - '1232:54321'
         healthcheck:
             test:
