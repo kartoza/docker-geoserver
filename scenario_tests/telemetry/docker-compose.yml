@@ -17,6 +17,7 @@ services:
             CONTAINER_NAME: geoserver_one
             CONSOLE_HANDLER_LEVEL: WARNING
             TELEMETRY_TRACING_ENABLED: 'true'
+            OTEL_EXPORTER_OTLP_ENDPOINT: 'http://opentelemetry_collector:4318'
         ports:
             - '8081:8080'
         healthcheck:
@@ -28,19 +29,30 @@ services:
             interval: 1m30s
             timeout: 10s
             retries: 3
+        depends_on:
+            - opentelemetry_collector
     opentelemetry_collector:
-        image:  'otel/opentelemetry-collector:0.130.0'
+        image: 'otel/opentelemetry-collector:0.130.0'
         restart: 'always'
         volumes:
-            - opentelemetry-collector-data:/otelcol/config
-            - ./assets/otel-config.yaml:/otelcol/config/otel-config.yaml
-        command: ["--config", "/otelcol/config/otel-config.yaml"]
+            - opentelemetry-collector-data:/otelcol/data
+            - ./assets/otel-config.yaml:/otelcol/otel-config.yaml
+        command: ['--config', '/otelcol/otel-config.yaml']
         ports:
-            - '4318:4318' # OTLP HTTP receiver
+            - '4318:4318'
         healthcheck:
-            test: ["CMD", "curl", "--fail", "--silent", "--write-out", "'HTTP CODE : %{http_code}\n'", "--output", "/dev/null", "http://localhost:4318/v1/trace"]
+            test:
+                [
+                    'CMD',
+                    'curl',
+                    '--fail',
+                    '--silent',
+                    '--write-out',
+                    "'HTTP CODE : %{http_code}\n'",
+                    '--output',
+                    '/dev/null',
+                    'http://localhost:4318/v1/trace',
+                ]
             interval: 1m30s
             timeout: 10s
             retries: 3
-        depends_on:
-            - geoserver_one
