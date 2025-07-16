@@ -31,6 +31,9 @@ FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
 ARG GS_VERSION=2.27.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+ENV OTEL_VERSION=v2.17.1
+ENV JMX_PROMETHEUS_VERSION=1.0.1
+ENV LOG4J_VERSION=2.24.3
 
 RUN apk update && apk add curl py3-pip
 RUN pip3 install beautifulsoup4 requests
@@ -43,6 +46,8 @@ ADD \
     build_data/required_plugins.txt \
     build_data/plugin_download.sh \
     /work/
+
+COPY ./build_data/plugin_download.sh /work/plugin_download.sh
 
 RUN echo ${GS_VERSION} > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh
 
@@ -58,24 +63,8 @@ ARG GS_VERSION=2.27.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"
-ARG OTEL_VERSION=v2.17.1
-ARG JMX_PROMETHEUS_VERSION=1.0.1
-ARG LOG4J_VERSION=2.24.3
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OTEL_SERVICE_NAME=geoserver
-
-# Install OpenTelemetry Java agent, JMX Prometheus Java agent, and Log4j2
-RUN wget --directory-prefix=/otel https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/${OTEL_VERSION}/opentelemetry-javaagent.jar \
-    && wget --directory-prefix=${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib https://search.maven.org/remotecontent?filepath=org/apache/logging/log4j/log4j-layout-template-json/${LOG4J_VERSION}/log4j-layout-template-json-${LOG4J_VERSION}.jar \
-    && wget --directory-prefix=/jmx https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${JMX_PROMETHEUS_VERSION}.jar \
-    && mv /jmx/jmx_prometheus_javaagent-${JMX_PROMETHEUS_VERSION}.jar /jmx/jmx_prometheus_javaagent.jar
-
-# Set up JMX Prometheus Java agent
-RUN printf '%s\n' \
-    'rules:' \
-    '- pattern: ".*"' \
-    > /jmx/config.yaml
-
 
 #Install extra fonts to use with sld font markers
 RUN set -eux; \
@@ -116,13 +105,19 @@ ENV \
     EXTRA_CONFIG_DIR=/settings \
     COMMUNITY_PLUGINS_DIR=/community_plugins  \
     STABLE_PLUGINS_DIR=/stable_plugins \
-    REQUIRED_PLUGINS_DIR=/required_plugins
+    REQUIRED_PLUGINS_DIR=/required_plugins \
+    OTEL_DIR=/otel \
+    JMX_DIR=/jmx 
 
 
 WORKDIR /scripts
 ADD resources /tmp/resources
 ADD build_data /build_data
 ADD scripts /scripts
+
+RUN mkdir -p ${OTEL_DIR} \
+    && mkdir -p ${JMX_DIR} \
+    && mkdir -p ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib
 
 # copy plugins
 COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip ${REQUIRED_PLUGINS_DIR}/
@@ -133,6 +128,12 @@ COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNIT
 COPY --from=geoserver-plugin-downloader /work/geoserver_war/geoserver.* ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/community_plugins.txt ${COMMUNITY_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins.txt ${STABLE_PLUGINS_DIR}/
+
+# copy telemetry jars
+COPY --from=geoserver-plugin-downloader /work/telemetry/opentelemetry-javaagent.jar ${OTEL_DIR}/opentelemetry-javaagent.jar
+COPY --from=geoserver-plugin-downloader /work/telemetry/log4j-layout-template-json.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/log4j-layout-template-json.jar
+COPY --from=geoserver-plugin-downloader /work/telemetry/jmx_prometheus_javaagent.jar ${JMX_DIR}/jmx_prometheus_javaagent.jar
+COPY --from=geoserver-plugin-downloader /work/telemetry/jmx_config.yaml ${JMX_DIR}/config.yaml
 
 RUN ldconfig
 
