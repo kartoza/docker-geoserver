@@ -47,8 +47,6 @@ ADD \
     build_data/plugin_download.sh \
     /work/
 
-COPY ./build_data/plugin_download.sh /work/plugin_download.sh
-
 RUN echo ${GS_VERSION} > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh
 
 RUN /work/plugin_download.sh
@@ -116,8 +114,7 @@ ADD build_data /build_data
 ADD scripts /scripts
 
 RUN mkdir -p ${OTEL_DIR} \
-    && mkdir -p ${JMX_DIR} \
-    && mkdir -p ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib
+    && mkdir -p ${JMX_DIR} 
 
 # copy plugins
 COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip ${REQUIRED_PLUGINS_DIR}/
@@ -131,7 +128,7 @@ COPY --from=geoserver-plugin-downloader /work/stable_plugins.txt ${STABLE_PLUGIN
 
 # copy telemetry jars
 COPY --from=geoserver-plugin-downloader /work/telemetry/opentelemetry-javaagent.jar ${OTEL_DIR}/opentelemetry-javaagent.jar
-COPY --from=geoserver-plugin-downloader /work/telemetry/log4j-layout-template-json.jar ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/log4j-layout-template-json.jar
+COPY --from=geoserver-plugin-downloader /work/telemetry/log4j-layout-template-json.jar "${REQUIRED_PLUGINS_DIR}"/log4j-layout-template-json.jar
 COPY --from=geoserver-plugin-downloader /work/telemetry/jmx_prometheus_javaagent.jar ${JMX_DIR}/jmx_prometheus_javaagent.jar
 COPY --from=geoserver-plugin-downloader /work/telemetry/jmx_config.yaml ${JMX_DIR}/config.yaml
 
