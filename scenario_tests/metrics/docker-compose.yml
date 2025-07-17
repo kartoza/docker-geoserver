@@ -1,0 +1,58 @@
+volumes:
+    geoserver-data-one:
+    geoserver-data-two:
+
+services:
+    geoserver_one:
+        image: 'kartoza/geoserver:${TAG:-manual-build}'
+        restart: 'always'
+        volumes:
+            - geoserver-data-one:/opt/geoserver/data_dir
+            - ./tests:/tests
+        environment:
+            GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+            GEOSERVER_ADMIN_USER: admin
+            INITIAL_MEMORY: 2G
+            MAXIMUM_MEMORY: 4G
+            CONTAINER_NAME: geoserver_one
+            CONSOLE_HANDLER_LEVEL: WARNING
+            TELEMETRY_METRICS_ENABLED: 'true'
+        ports:
+            - '8081:8080'
+            - '1231:12345'
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml",
+                ]
+            interval: 1m30s
+            timeout: 10s
+            retries: 3
+    geoserver_two:
+        image: 'kartoza/geoserver:${TAG:-manual-build}'
+        restart: 'always'
+        volumes:
+            - geoserver-data-two:/opt/geoserver/data_dir
+            - ./tests:/tests
+        environment:
+            GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+            GEOSERVER_ADMIN_USER: admin
+            INITIAL_MEMORY: 2G
+            MAXIMUM_MEMORY: 4G
+            CONTAINER_NAME: geoserver_two
+            CONSOLE_HANDLER_LEVEL: WARNING
+            TELEMETRY_METRICS_ENABLED: 'true'
+            TELEMETRY_METRICS_PORT: 54321
+        ports:
+            - '8082:8080'
+            - '1232:54321'
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml",
+                ]
+            interval: 1m30s
+            timeout: 10s
+            retries: 3

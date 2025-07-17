@@ -193,6 +193,8 @@ jobs:
           - libjpeg
 #          - backup_restore
           - logging_profile
+          - metrics
+          - telemetry
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact

@@ -166,6 +166,9 @@ GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
 lib_dir="${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib"
 
+# Place log4j-layout-template-json.jar in lib directory
+cp "${REQUIRED_PLUGINS_DIR}"/log4j-layout-template-json.jar "${lib_dir}"/log4j-layout-template-json.jar
+
 # Search for gdal-<version>.jar files in the lib directory
 for jar_file in "$lib_dir"/gdal-*.jar; do
     if [[ -f "$jar_file" ]]; then
