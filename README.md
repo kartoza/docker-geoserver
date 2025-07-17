@@ -574,7 +574,8 @@ These features are disabled by default and can be enabled with environment varia
 | ------------------------- | ------- | ------------------------------------------------ |
 | TELEMETRY_TRACING_ENABLED | false   | Enables OpenTelemetry tracing via the Java agent |
 | TELEMETRY_METRICS_ENABLED | false   | Enables Prometheus JMX metrics exporter          |
-| TELEMETRY_METRICS_PORT    | 12345   | Port exposed for the JMX Prometheus agent        |
+| TELEMETRY_METRICS_PORT    | v2.17.1 | Version installed of OpenTelemetry agent         |
+| JMX_PROMETHEUS_VERSION    | 1.0.1   | Version installed of JMX Prometheus agent        |
 
 ### Usage Example
 
