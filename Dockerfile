@@ -28,7 +28,7 @@ FROM --platform=$BUILDPLATFORM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS
 # alpine because it's smaller.
 
 FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
-ARG GS_VERSION=2.27.1
+ARG GS_VERSION=2.27.2
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ENV OTEL_VERSION=v2.17.1
@@ -57,7 +57,7 @@ RUN /work/plugin_download.sh
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
-ARG GS_VERSION=2.27.1
+ARG GS_VERSION=2.27.2
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"
