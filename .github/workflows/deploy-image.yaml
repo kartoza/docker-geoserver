@@ -39,7 +39,7 @@ jobs:
           # to make it easy to pass overrides in the future.
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -114,7 +114,7 @@ jobs:
     steps:
       - name: Checkout code
         id: git_checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: 'develop'
 
