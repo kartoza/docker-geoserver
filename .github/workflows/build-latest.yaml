@@ -195,6 +195,7 @@ jobs:
           - logging_profile
           - metrics
           - telemetry
+          - upgrade
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
