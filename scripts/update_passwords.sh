@@ -72,7 +72,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   function password_reset() {
     if [[ ! -f ${EXTRA_CONFIG_DIR}/.security.lock ]]; then
 
-      echo -e "[SECURITY CONFIG] First-time initialization → copying default security configs. \033[0m"
+      echo -e "\e[32m [SECURITY CONFIG] First-time initialization → copying default security configs. \033[0m"
       cp -r "${CATALINA_HOME}/security" "${GEOSERVER_DATA_DIR}"
       sed -i '/<readOnly>false<\/readOnly>/a <loginEnabled>false<\/loginEnabled>' \
         "${GEOSERVER_DATA_DIR}/security/config.xml"
@@ -84,30 +84,30 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
       case "${GEOSERVER_SECURITY_MODE}" in
         overwrite)
-          echo -e "[SECURITY CONFIG] Mode: overwrite → replacing all security configs with defaults. \033[0m"
+          echo -e "\e[32m [SECURITY CONFIG] Mode: overwrite → replacing all security configs with defaults. \033[0m"
           cp -r "${CATALINA_HOME}/security/"* "${GEOSERVER_DATA_DIR}/security/"
           did_restore=true
           ;;
 
         preserve|*)
-          echo -e "[SECURITY CONFIG] Mode: preserve → keeping user-modified security configs. \033[0m"
+          echo -e "\e[32m [SECURITY CONFIG] Mode: preserve → keeping user-modified security configs. \033[0m"
           # role directory
           if [ ! -d "${GEOSERVER_DATA_DIR}/security/role" ]; then
-            echo -e "[SECURITY CONFIG] role directory missing → restoring defaults. \033[0m"
+            echo -e "\e[32m [SECURITY CONFIG] role directory missing → restoring defaults. \033[0m"
             cp -r "${CATALINA_HOME}/security/role" "${GEOSERVER_DATA_DIR}/security/"
             did_restore=true
           fi
 
           # usergroup directory
           if [ ! -d "${GEOSERVER_DATA_DIR}/security/usergroup" ]; then
-            echo -e "[SECURITY CONFIG] usergroup directory missing → restoring defaults. \033[0m"
+            echo -e "\e[32m [SECURITY CONFIG] usergroup directory missing → restoring defaults. \033[0m"
             cp -r "${CATALINA_HOME}/security/usergroup" "${GEOSERVER_DATA_DIR}/security/"
             did_restore=true
           fi
 
           # config.xml
           if [ ! -f "${GEOSERVER_DATA_DIR}/security/config.xml" ]; then
-            echo -e "[SECURITY CONFIG] config.xml missing → restoring defaults. \033[0m"
+            echo -e "\e[32m [SECURITY CONFIG] config.xml missing → restoring defaults. \033[0m"
             cp "${CATALINA_HOME}/security/config.xml" "${GEOSERVER_DATA_DIR}/security/"
             did_restore=true
           fi
@@ -115,7 +115,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       esac
 
       if [[ "${did_restore}" == true ]]; then
-        echo -e "[SECURITY CONFIG] Running password update because defaults were restored. \033[0m"
+        echo -e "\e[32m [SECURITY CONFIG] Running password update because defaults were restored. \033[0m"
         action_password_update
       fi
     fi
