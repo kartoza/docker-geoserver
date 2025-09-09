@@ -71,7 +71,8 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
   function password_reset() {
     if [[ ! -f ${EXTRA_CONFIG_DIR}/.security.lock ]]; then
-      echo "[SECURITY] First-time initialization → copying default security configs."
+
+      echo -e "[SECURITY CONFIG] First-time initialization → copying default security configs. \033[0m"
       cp -r "${CATALINA_HOME}/security" "${GEOSERVER_DATA_DIR}"
       sed -i '/<readOnly>false<\/readOnly>/a <loginEnabled>false<\/loginEnabled>' \
         "${GEOSERVER_DATA_DIR}/security/config.xml"
@@ -83,49 +84,39 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
       case "${GEOSERVER_SECURITY_MODE}" in
         overwrite)
-          echo "[SECURITY] Mode: overwrite → replacing all security configs with defaults."
+          echo -e "[SECURITY CONFIG] Mode: overwrite → replacing all security configs with defaults. \033[0m"
           cp -r "${CATALINA_HOME}/security/"* "${GEOSERVER_DATA_DIR}/security/"
-          echo "[SECURITY] Defaults copied."
           did_restore=true
           ;;
 
         preserve|*)
-          echo "[SECURITY] Mode: preserve → keeping user-modified security configs."
-
+          echo -e "[SECURITY CONFIG] Mode: preserve → keeping user-modified security configs. \033[0m"
           # role directory
           if [ ! -d "${GEOSERVER_DATA_DIR}/security/role" ]; then
-            echo "[SECURITY] role directory missing → restoring defaults."
+            echo -e "[SECURITY CONFIG] role directory missing → restoring defaults. \033[0m"
             cp -r "${CATALINA_HOME}/security/role" "${GEOSERVER_DATA_DIR}/security/"
             did_restore=true
-          else
-            echo "[SECURITY] role directory exists → skipping copy."
           fi
 
           # usergroup directory
           if [ ! -d "${GEOSERVER_DATA_DIR}/security/usergroup" ]; then
-            echo "[SECURITY] usergroup directory missing → restoring defaults."
+            echo -e "[SECURITY CONFIG] usergroup directory missing → restoring defaults. \033[0m"
             cp -r "${CATALINA_HOME}/security/usergroup" "${GEOSERVER_DATA_DIR}/security/"
             did_restore=true
-          else
-            echo "[SECURITY] usergroup directory exists → skipping copy."
           fi
 
           # config.xml
           if [ ! -f "${GEOSERVER_DATA_DIR}/security/config.xml" ]; then
-            echo "[SECURITY] config.xml missing → restoring defaults."
+            echo -e "[SECURITY CONFIG] config.xml missing → restoring defaults. \033[0m"
             cp "${CATALINA_HOME}/security/config.xml" "${GEOSERVER_DATA_DIR}/security/"
             did_restore=true
-          else
-            echo "[SECURITY] config.xml exists → skipping copy."
           fi
           ;;
       esac
 
       if [[ "${did_restore}" == true ]]; then
-        echo "[SECURITY] Running password update because defaults were restored."
+        echo -e "[SECURITY CONFIG] Running password update because defaults were restored. \033[0m"
         action_password_update
-      else
-        echo "[SECURITY] Skipping password update (all configs already present)."
       fi
     fi
   }

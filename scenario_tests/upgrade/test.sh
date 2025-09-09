@@ -17,7 +17,7 @@ fi
 services=("geoserver")
 
 for service in "${services[@]}"; do
-
+  echo "executing test for service $service"
   # Execute tests
   echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
   test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
@@ -35,7 +35,7 @@ ${VERSION} -f docker-compose.yml up -d upgrade
 services=("upgrade")
 
 for service in "${services[@]}"; do
-
+  echo "executing test for service $service"
   # Execute tests
   echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
   test_url_availability http://localhost:8080/geoserver/rest/about/version.xml

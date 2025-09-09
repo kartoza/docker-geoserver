@@ -452,9 +452,9 @@ if [ -z "${LOGGING_STDOUT}" ];then
   LOGGING_STDOUT=true
 fi
 
-
+# Permitted values = overwrite and preserve
 if [ -z "${GEOSERVER_SECURITY_MODE}" ];then
-  GEOSERVER_SECURITY_MODE=overwrite
+  GEOSERVER_SECURITY_MODE=preserve
 fi
 
 # https://docs.geoserver.org/2.26.x/en/user/security/sandbox.html
