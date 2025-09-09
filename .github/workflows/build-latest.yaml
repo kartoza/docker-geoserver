@@ -22,7 +22,7 @@ on:
 jobs:
   build-activemq-docker-image:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     if: |
       github.actor != 'dependabot[bot]' &&
       !(
@@ -195,6 +195,7 @@ jobs:
           - logging_profile
           - metrics
           - telemetry
+          - upgrade
     steps:
       - uses: actions/checkout@v5
       - name: Download artifact

@@ -16,4 +16,9 @@ scenario_tests/gwc/tests/__pycache__*
 scenario_tests/login/tests/__pycache__*
 scenario_tests/stores/tests/__pycache__*
 scenario_tests/libjpeg/tests/__pycache__*
+scenario_tests/upgrade/tests/__pycache__*
+scenario_tests/backup_restore/tests/__pycache__*
+scenario_tests/metrics/tests/__pycache__*
+scenario_tests/upgrade/telemetry/__pycache__*
+scenario_tests/upgrade/logging_profile/__pycache__*
 .DS_Store
