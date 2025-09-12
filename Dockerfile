@@ -1,6 +1,6 @@
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.99-jdk17-temurin-noble
+ARG IMAGE_VERSION=9.0.109-jdk17-temurin-noble
 ARG JAVA_HOME=/opt/java/openjdk
 #TODO we need a way to predetermine the gdal version in the tomcat image so as to match it
 ARG GDAL_VERSION=3.8.4
