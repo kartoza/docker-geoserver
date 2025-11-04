@@ -433,12 +433,21 @@ if [ -z "${MONITORING_BBOX_LOG_LEVEL}" ];then
   MONITORING_BBOX_LOG_LEVEL=no_wfs
 fi
 
-if [ -z "${ENTITY_RESOLUTION_ALLOWLIST}" ];then
-  ENTITY_RESOLUTION_ALLOWLIST="www.w3.org|schemas.opengis.net|www.opengis.net|inspire.ec.europa.eu/schemas"
+if [ -z "${ENTITY_RESOLUTION_UNRESTRICTED}" ];then
+  ENTITY_RESOLUTION_UNRESTRICTED="www.w3.org|schemas.opengis.net|www.opengis.net|inspire.ec.europa.eu/schemas"
 fi
 
 if [ -z "${GEOSERVER_DISABLE_STATIC_WEB_FILES}" ];then
   GEOSERVER_DISABLE_STATIC_WEB_FILES=true
+fi
+
+if [ -z "${GEOSERVER_DATA_DIR_LOADER_ENABLED}" ];then
+  GEOSERVER_DATA_DIR_LOADER_ENABLED=true
+fi
+
+# Values less than or equal to zero will produce a warning and fall back to the default heuristic
+if [ -z "${GEOSERVER_DATA_DIR_LOADER_THREADS}" ];then
+  GEOSERVER_DATA_DIR_LOADER_THREADS=0
 fi
 
 
