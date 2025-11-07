@@ -306,8 +306,7 @@ POSTGRES_PASS=${POSTGRES_PASS}
 POSTGRES_JNDI_NAME=${POSTGRES_JNDI_NAME}
 ```
 
-When defining the parameters for the store in GeoServer you will need to set
-`jndiReferenceName=java:comp/env/jdbc/postgres`
+The `jndiReferenceName` for Postgres (JNDI) stores in GeoServer will be derived from the `POSTGRES_JNDI_NAME` provided. For example, if `POSTGRES_JNDI_NAME=postgres`, set `jndiReferenceName=java:comp/env/jdbc/postgres`.
 
 ### Running under SSL
 
