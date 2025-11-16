@@ -1,0 +1,43 @@
+name: Gemini Code Review
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'Dockerfile'
+      - 'scripts/**'
+      - 'build_data/**'
+      - '.github/workflows/**'
+  push:
+    branches:
+      - develop
+    paths:
+      - 'Dockerfile'
+      - 'scripts/**'
+      - 'build_data/**'
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: |
+      github.actor != 'dependabot[bot]' &&
+      !(
+        contains(github.event.pull_request.title, '[skip-release]') ||
+        contains(github.event.comment.body, '/skiprelease')
+      )
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Gemini Code Review
+        uses: google/gemini-code-assist-action@v1
+        # No API key needed - uses Google's default authentication
+        # Configuration is automatically read from .gemini/config.yaml
