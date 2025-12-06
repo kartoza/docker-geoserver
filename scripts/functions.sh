@@ -465,7 +465,9 @@ function make_hash() {
     HASH=$(java -classpath $(find "${GEO_INSTALL_PATH}" -regex ".*jasypt-[0-9]\.[0-9]\.[0-9].*jar") \
         org.jasypt.intf.cli.JasyptStringDigestCLI digest.sh \
         algorithm=$ALGO_TYPE saltSizeBytes=16 iterations=100000 input="$NEW_PASSWORD" verbose=0 \
-        2>/dev/null | grep '^Digest:' | awk '{print $2}')
+        2>/dev/null \
+        | grep -Eoi '^[A-Za-z0-9+/=]+$' \
+        | head -1)
 
     echo "digest1:${HASH}"
 }
