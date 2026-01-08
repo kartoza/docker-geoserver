@@ -45,5 +45,19 @@ web_cors() {
   fi
 }
 
-
+package_webapp(){
+  if [[ -d "${CATALINA_HOME}"/webapps.dist ]]; then
+    mv "${CATALINA_HOME}"/webapps.dist /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -r /tomcat_apps
+else
+    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -rf /tomcat_apps
+fi
+}
 

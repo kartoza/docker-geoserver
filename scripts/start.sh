@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Import env and functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "${SCRIPT_DIR}/lib/env-data.sh"
+source "${SCRIPT_DIR}/lib/utils.sh"
+source "${SCRIPT_DIR}/lib/logging.sh"
+source "${SCRIPT_DIR}/lib/database.sh"
+source "${SCRIPT_DIR}/lib/geoserver.sh"
+source "${SCRIPT_DIR}/lib/tomcat.sh"
+source "${SCRIPT_DIR}/lib/cluster.sh"
 
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
@@ -21,39 +31,7 @@ if ls "${FONTS_DIR}"/*.otf >/dev/null 2>&1; then
   cp -rf "${FONTS_DIR}"/*.otf /usr/share/fonts/opentype/
 fi
 
-# Install google fonts based on https://github.com/google/fonts
-# ADDED env variable to allow users to pass comma separated values
-if [[ ! -z  ${GOOGLE_FONTS_NAMES}  ]];then
-  git clone --filter=blob:none --no-checkout https://github.com/google/fonts.git
-  cd $(pwd)/fonts
-  git config core.sparsecheckout true
-
-  if [[ "$GOOGLE_FONTS_NAMES" == *,* ]]; then
-    for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
-          if grep -Fxq "$gfont" /build_data/google_fonts.txt; then
-            echo ofl/$gfont >> .git/info/sparse-checkout
-          fi
-    done
-    git checkout main
-    for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
-          if grep -Fxq "$gfont" /build_data/google_fonts.txt; then
-            cp -r  ofl/"${gfont}" /usr/share/fonts/truetype/
-          fi
-    done
-
-  else
-    if grep -Fxq "$GOOGLE_FONTS_NAMES" /build_data/google_fonts.txt; then
-      echo ofl/$GOOGLE_FONTS_NAMES >> .git/info/sparse-checkout
-    fi
-    git checkout main
-    if grep -Fxq "$GOOGLE_FONTS_NAMES" /build_data/google_fonts.txt; then
-      git sparse-checkout set ofl/$GOOGLE_FONTS_NAMES
-      cp -r ofl/$GOOGLE_FONTS_NAMES /usr/share/fonts/truetype/
-    fi
-  fi
-  cd ..
-  rm -rf fonts
-fi
+setup_google_fonts
 
 if [[ ${LOGGING_STDOUT} =~ [Tt][Rr][Uu][Ee] ]];then
   export CONSOLE_HANDLER_LEVEL
@@ -130,36 +108,7 @@ if [[ ${FORCE_DOWNLOAD_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -rf ${REQUIRED_PLUGINS_DIR}/*.zip
 fi
 
-if [[ "$ACTIVE_EXTENSIONS" != "$DEFAULT_EXTENSIONS" ]]; then
-
-  for ext in $(echo "${ACTIVE_EXTENSIONS}" | tr ',' ' '); do
-    if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
-      if [[ ! -f ${REQUIRED_PLUGINS_DIR}/${ext}.zip ]]; then
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-        download_extension "${approved_plugins_url}" "${ext}" ${REQUIRED_PLUGINS_DIR}/
-      fi
-      install_plugin ${REQUIRED_PLUGINS_DIR}/ "${ext}"
-    else
-      if [[ ! -f ${STABLE_PLUGINS_DIR}/${ext}.zip ]]; then
-        # Download the stable extension
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-        download_extension "${approved_plugins_url}" "${ext}" ${STABLE_PLUGINS_DIR}/
-      fi
-      # Install the stable extension
-      install_plugin ${STABLE_PLUGINS_DIR}/ "${ext}"
-    fi
-  done
-else
-  # Install default plugins
-  for ext in $(echo "${DEFAULT_EXTENSIONS}" | tr ',' ' '); do
-    if [[ ! -f ${REQUIRED_PLUGINS_DIR}/${ext}.zip ]]; then
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-        download_extension "${approved_plugins_url}" "${ext}" ${REQUIRED_PLUGINS_DIR}/
-    fi
-    install_plugin ${REQUIRED_PLUGINS_DIR}/ "${ext}"
-  done
-fi
-
+setup_stable_extensions
 # Match gdal jar to the installed version
 GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
 
@@ -204,29 +153,7 @@ fi
 
 export JDBC_CONFIG_ENABLED JDBC_IGNORE_PATHS JDBC_STORE_ENABLED POSTGRES_JNDI
 # Install community modules plugins
-if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
-  if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-    rm -rf /community_plugins/*.zip
-  fi
-
-  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-      if [[ ! -f /community_plugins/${ext}.zip ]]; then
-        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-        download_extension "${community_plugins_url}" "${ext}" /community_plugins
-        setup_jdbc_db_store
-        setup_jdbc_db_config
-        setup_hz_cluster
-        install_plugin /community_plugins "${ext}"
-      else
-        setup_jdbc_db_store
-        setup_jdbc_db_config
-        setup_hz_cluster
-        install_plugin /community_plugins "${ext}"
-      fi
-  done
-
-fi
-
+setup_community_extensions
 
 # Setup clustering
 set_vars
@@ -641,7 +568,7 @@ fi
 
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-  /bin/bash  "${SCRIPT_DIR}/update_passwords.sh"
+  /bin/bash  "${SCRIPT_DIR}/lib/update_passwords.sh"
 fi
 
 # Run some extra bash script to fix issues i.e missing dependencies in lib caused by community extensions
