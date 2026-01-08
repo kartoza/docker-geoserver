@@ -1,7 +1,6 @@
 #!/bin/bash
 
-source /scripts/functions.sh
-source /scripts/env-data.sh
+
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
 
@@ -642,7 +641,7 @@ fi
 
 
 if [[ -z "${EXISTING_DATA_DIR}" ]]; then
-  /scripts/update_passwords.sh
+  /bin/bash  "${SCRIPT_DIR}/update_passwords.sh"
 fi
 
 # Run some extra bash script to fix issues i.e missing dependencies in lib caused by community extensions

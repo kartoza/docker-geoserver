@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+#!/usr/bin/env bash
+
+set -o pipefail
+
+
 
 figlet -t "Kartoza Docker GeoServer"
 
@@ -21,8 +26,17 @@ if ! id -u "${USER_NAME}" >/dev/null 2>&1; then
 fi
 
 # Import env and functions
-source /scripts/functions.sh
-source /scripts/env-data.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "${SCRIPT_DIR}/lib/env-data.sh"
+source "${SCRIPT_DIR}/lib/utils.sh"
+source "${SCRIPT_DIR}/lib/logging.sh"
+source "${SCRIPT_DIR}/lib/database.sh"
+source "${SCRIPT_DIR}/lib/geoserver.sh"
+source "${SCRIPT_DIR}/lib/tomcat.sh"
+source "${SCRIPT_DIR}/lib/cluster.sh"
+
+
 
 # Create directories
 dir_creation=("${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}"
@@ -50,7 +64,7 @@ export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOG
 export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING  CLUSTER_CONNECTION_RETRY_COUNT CLUSTER_CONNECTION_MAX_WAIT
 
 
-/bin/bash /scripts/start.sh
+/bin/bash  "${SCRIPT_DIR}/start.sh"
 
 
 
