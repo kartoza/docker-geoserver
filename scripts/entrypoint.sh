@@ -6,7 +6,6 @@ set -e
 set -o pipefail
 
 
-
 figlet -t "Kartoza Docker GeoServer"
 
 # Gosu preparations

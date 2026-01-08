@@ -130,3 +130,53 @@ validate_geo_install() {
 
 }
 
+setup_google_fonts(){
+  # Install google fonts based on https://github.com/google/fonts
+# ADDED env variable to allow users to pass comma separated values
+if [[ ! -z  ${GOOGLE_FONTS_NAMES}  ]];then
+  git clone --filter=blob:none --no-checkout https://github.com/google/fonts.git
+  cd $(pwd)/fonts
+  git config core.sparsecheckout true
+
+  if [[ "$GOOGLE_FONTS_NAMES" == *,* ]]; then
+    for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
+          if grep -Fxq "$gfont" /build_data/google_fonts.txt; then
+            echo ofl/$gfont >> .git/info/sparse-checkout
+          fi
+    done
+    git checkout main
+    for gfont in $(echo "${GOOGLE_FONTS_NAMES}" | tr ',' ' '); do
+          if grep -Fxq "$gfont" /build_data/google_fonts.txt; then
+            cp -r  ofl/"${gfont}" /usr/share/fonts/truetype/
+          fi
+    done
+
+  else
+    if grep -Fxq "$GOOGLE_FONTS_NAMES" /build_data/google_fonts.txt; then
+      echo ofl/$GOOGLE_FONTS_NAMES >> .git/info/sparse-checkout
+    fi
+    git checkout main
+    if grep -Fxq "$GOOGLE_FONTS_NAMES" /build_data/google_fonts.txt; then
+      git sparse-checkout set ofl/$GOOGLE_FONTS_NAMES
+      cp -r ofl/$GOOGLE_FONTS_NAMES /usr/share/fonts/truetype/
+    fi
+  fi
+  cd ..
+  rm -rf fonts
+fi
+}
+
+install_turbo(){
+  # Install libjpeg-turbo
+  system_architecture=$(dpkg --print-architecture)
+  # Fixes https://github.com/kartoza/docker-geoserver/issues/673
+  libjpeg_version=2.1.5.1
+  libjpeg_deb_name="libjpeg-turbo-official_${libjpeg_version}_${system_architecture}.deb"
+  libjpeg_deb="${resources_dir}/${libjpeg_deb_name}"
+  if [[ ! -f "${libjpeg_deb}" ]]; then
+    curl -vfLo "${libjpeg_deb}" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${libjpeg_version}/${libjpeg_deb_name}"
+  fi
+
+  dpkg -i "${libjpeg_deb}"
+}
+

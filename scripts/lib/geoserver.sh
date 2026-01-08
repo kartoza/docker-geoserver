@@ -150,5 +150,61 @@ setup_control_flow() {
 
 }
 
+setup_stable_extensions(){
+  if [[ "$ACTIVE_EXTENSIONS" != "$DEFAULT_EXTENSIONS" ]]; then
 
+  for ext in $(echo "${ACTIVE_EXTENSIONS}" | tr ',' ' '); do
+    if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
+      if [[ ! -f ${REQUIRED_PLUGINS_DIR}/${ext}.zip ]]; then
+        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+        download_extension "${approved_plugins_url}" "${ext}" ${REQUIRED_PLUGINS_DIR}/
+      fi
+      install_plugin ${REQUIRED_PLUGINS_DIR}/ "${ext}"
+    else
+      if [[ ! -f ${STABLE_PLUGINS_DIR}/${ext}.zip ]]; then
+        # Download the stable extension
+        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+        download_extension "${approved_plugins_url}" "${ext}" ${STABLE_PLUGINS_DIR}/
+      fi
+      # Install the stable extension
+      install_plugin ${STABLE_PLUGINS_DIR}/ "${ext}"
+    fi
+  done
+else
+  # Install default plugins
+  for ext in $(echo "${DEFAULT_EXTENSIONS}" | tr ',' ' '); do
+    if [[ ! -f ${REQUIRED_PLUGINS_DIR}/${ext}.zip ]]; then
+        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+        download_extension "${approved_plugins_url}" "${ext}" ${REQUIRED_PLUGINS_DIR}/
+    fi
+    install_plugin ${REQUIRED_PLUGINS_DIR}/ "${ext}"
+  done
+fi
 
+}
+
+setup_community_extensions(){
+  if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
+  if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+    rm -rf /community_plugins/*.zip
+  fi
+
+  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+      if [[ ! -f /community_plugins/${ext}.zip ]]; then
+        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+        download_extension "${community_plugins_url}" "${ext}" /community_plugins
+        setup_jdbc_db_store
+        setup_jdbc_db_config
+        setup_hz_cluster
+        install_plugin /community_plugins "${ext}"
+      else
+        setup_jdbc_db_store
+        setup_jdbc_db_config
+        setup_hz_cluster
+        install_plugin /community_plugins "${ext}"
+      fi
+  done
+
+fi
+
+}
