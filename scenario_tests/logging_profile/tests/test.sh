@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source /scripts/env-data.sh
+source /scripts/lib/env-data.sh
 
 set -euo pipefail
 
