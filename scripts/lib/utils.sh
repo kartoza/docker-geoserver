@@ -44,6 +44,13 @@ create_required_dirs() {
     "${GEOSERVER_HOME}"
     "${FONTS_DIR}"
     "${REQUIRED_PLUGINS_DIR}"
+    "${GEOSERVER_DATA_DIR}"
+    "${CERT_DIR}"
+    "${FOOTPRINTS_DATA_DIR}"
+    "${FONTS_DIR}"
+    "${GEOWEBCACHE_CACHE_DIR}"
+    "${EXTRA_CONFIG_DIR}"
+    "/docker-entrypoint-geoserver.d"
   )
 
   for dir in "${path[@]}"; do
