@@ -2,7 +2,9 @@
 
 set -e
 
-source /scripts/lib/env-data.sh
+
+local script="${1:-/scripts/lib/env-data.sh}"
+source ${script}
 
 # execute tests
 pushd /tests
