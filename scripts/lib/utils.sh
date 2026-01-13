@@ -143,6 +143,7 @@ rename_context_root_if_needed() {
 ############################################
 
 gwc_file_perms() {
+  create_dir "${GEOWEBCACHE_CACHE_DIR}"
   GEO_USER_PERM=$(stat -c '%U' "${GEOSERVER_DATA_DIR}")
   GEO_GRP_PERM=$(stat -c '%G' "${GEOSERVER_DATA_DIR}")
   GWC_USER_PERM=$(stat -c '%U' "${GEOWEBCACHE_CACHE_DIR}")
@@ -225,6 +226,7 @@ fix_permissions() {
 
   # Permissions adjustments
   chmod o+rw "${CERT_DIR}"
+  echo -e "\e[32m [Entrypoint] Fixing Permissions for :\033[0m \e[1;31m ${GEOSERVER_DATA_DIR} &&  ${GEOWEBCACHE_CACHE_DIR}  \033[0m"
   gwc_file_perms
   find "${CATALINA_HOME}/conf/" -type f -exec chmod 400 {} \;
 
@@ -334,6 +336,11 @@ create_required_directories() {
     "${GEOSERVER_HOME}"
     "${EXTRA_CONFIG_DIR}"
     "/docker-entrypoint-geoserver.d"
+    "${COMMUNITY_PLUGINS_DIR}"
+    "${STABLE_PLUGINS_DIR}"
+    "${REQUIRED_PLUGINS_DIR}"
+    "/usr/share/fonts/"
+    "${MONITOR_AUDIT_PATH}"
   )
 
   for d in "${dirs[@]}"; do
