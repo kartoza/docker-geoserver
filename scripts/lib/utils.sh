@@ -33,7 +33,7 @@ clean_up_vars() {
   fi
 }
 
-create_required_dirs() {
+create_setup_required_dirs() {
   local path=(
     "${resources_dir}/plugins/gdal"
     "/usr/share/fonts/opentype"
@@ -44,13 +44,6 @@ create_required_dirs() {
     "${GEOSERVER_HOME}"
     "${FONTS_DIR}"
     "${REQUIRED_PLUGINS_DIR}"
-    "${GEOSERVER_DATA_DIR}"
-    "${CERT_DIR}"
-    "${FOOTPRINTS_DATA_DIR}"
-    "${FONTS_DIR}"
-    "${GEOWEBCACHE_CACHE_DIR}"
-    "${EXTRA_CONFIG_DIR}"
-    "/docker-entrypoint-geoserver.d"
   )
 
   for dir in "${path[@]}"; do
@@ -143,7 +136,6 @@ rename_context_root_if_needed() {
 ############################################
 
 gwc_file_perms() {
-  create_dir "${GEOWEBCACHE_CACHE_DIR}"
   GEO_USER_PERM=$(stat -c '%U' "${GEOSERVER_DATA_DIR}")
   GEO_GRP_PERM=$(stat -c '%G' "${GEOSERVER_DATA_DIR}")
   GWC_USER_PERM=$(stat -c '%U' "${GEOWEBCACHE_CACHE_DIR}")
@@ -193,6 +185,7 @@ fix_permissions() {
 
   if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
     # Core directories to check
+    tmp_dir="/tmp/"
     dir_ownership=(
       "${CATALINA_HOME}"
       "/home/${USER_NAME}/"
@@ -201,7 +194,6 @@ fix_permissions() {
       "${REQUIRED_PLUGINS_DIR}"
       "${GEOSERVER_HOME}"
       "/usr/share/fonts/"
-      "/tmp/"
       "${FOOTPRINTS_DATA_DIR}"
       "${CERT_DIR}"
       "${FONTS_DIR}"
@@ -209,6 +201,7 @@ fix_permissions() {
       "${EXTRA_CONFIG_DIR}"
       "/docker-entrypoint-geoserver.d"
       "${MONITOR_AUDIT_PATH}"
+      ${tmp_dir}
     )
 
     for directory in "${dir_ownership[@]}"; do
@@ -325,7 +318,25 @@ install_plugin_dependency() {
 ############################################
 # 7. DATA & DIRECTORY LIFECYCLE
 ############################################
+create_start_directories(){
+  local dirs=(
+    "${GEOWEBCACHE_CACHE_DIR}"
+    "${MONITOR_AUDIT_PATH}"
+    "${CLUSTER_CONFIG_DIR}"
+  )
 
+  for d in "${dirs[@]}"; do
+    create_dir "${d}"
+  done
+}
+
+create_entrypoint_init_directories(){
+dir_creation=("${GEOSERVER_DATA_DIR}" "${CERT_DIR}" "${FOOTPRINTS_DATA_DIR}" "${FONTS_DIR}" "${GEOWEBCACHE_CACHE_DIR}"
+"${GEOSERVER_HOME}" "${EXTRA_CONFIG_DIR}" "/docker-entrypoint-geoserver.d")
+for directory in "${dir_creation[@]}"; do
+  create_dir "${directory}"
+done
+}
 create_required_directories() {
   local dirs=(
     "${GEOSERVER_DATA_DIR}"
@@ -336,11 +347,6 @@ create_required_directories() {
     "${GEOSERVER_HOME}"
     "${EXTRA_CONFIG_DIR}"
     "/docker-entrypoint-geoserver.d"
-    "${COMMUNITY_PLUGINS_DIR}"
-    "${STABLE_PLUGINS_DIR}"
-    "${REQUIRED_PLUGINS_DIR}"
-    "/usr/share/fonts/"
-    "${MONITOR_AUDIT_PATH}"
   )
 
   for d in "${dirs[@]}"; do

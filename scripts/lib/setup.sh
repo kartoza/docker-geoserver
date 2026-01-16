@@ -17,7 +17,7 @@ GS_VERSION=$(cat /scripts/geoserver_version.txt)
 # Main execution flow
 # ---------------------------
 
-create_required_dirs
+create_setup_required_dirs
 install_geoserver_core
 install_plugin_dependency
 install_required_jars

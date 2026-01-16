@@ -26,7 +26,7 @@ source "${SCRIPT_DIR}/lib/cluster.sh"
 # Run functions
 #############################################
 setup_runtime_user
-create_required_directories
+create_entrypoint_init_directories
 rename_context_root_if_needed
 export_cluster_variables
 run_pre_start_hooks

@@ -16,12 +16,12 @@ source "${SCRIPT_DIR}/lib/cluster.sh"
 
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
-create_dir "${GEOWEBCACHE_CACHE_DIR}"
+
 
 #############################################
 # Functions
 #############################################
-
+create_start_directories
 web_cors
 # Useful for development - We need a clean state of data directory
 cleanup_data_dir
