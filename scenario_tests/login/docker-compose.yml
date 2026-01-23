@@ -27,7 +27,6 @@ services:
     volumes:
       - ./tests:/tests
     environment:
-      GEOSERVER_ADMIN_USER: admin
       INITIAL_MEMORY: 2G
       MAXIMUM_MEMORY: 4G
       CONTAINER_NAME: server

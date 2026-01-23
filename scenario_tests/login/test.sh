@@ -28,12 +28,13 @@ for i in "${!services[@]}"; do
   # Service-specific overrides
   if [[ "$service" == "server" ]]; then
     PASS=$(docker compose exec server cat /opt/geoserver/data_dir/security/pass.txt)
+    USER="admin"
   elif [[ "$service" == "credentials" ]]; then
     USER="myadmin"
   fi
 
 
-  if [[ "$service" != "users" ]];then
+  if [[ "$service" != "users"  ]];then
     echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
     test_url_availability "http://localhost:$PORT/geoserver/rest/about/version.xml" "$PASS" "$USER"
     echo -e "\e[32m ---------------------------------------- \033[0m"
