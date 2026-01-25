@@ -16,53 +16,88 @@ fi
 
 services=("geoserver" "server" "credentials" "users")
 START_PORT=8081
+TEST_URL_PATH="/geoserver/rest/about/version.xml"
 
-for i in "${!services[@]}"; do
-  service="${services[$i]}"
-  PORT=$((START_PORT + i))
+DEFAULT_USER="admin"
+DEFAULT_PASS="myawesomegeoserver"
 
-  # Set default values
-  PASS="myawesomegeoserver"
-  USER="admin"
+# ------------------------
+# Helper: resolve credentials per service
+# ------------------------
+get_credentials() {
+  local service="$1"
 
-  # Service-specific overrides
-  if [[ "$service" == "server" ]]; then
-    PASS=$(docker compose exec server cat /opt/geoserver/data_dir/security/pass.txt)
-  elif [[ "$service" == "credentials" ]]; then
-    USER="myadmin"
+  case "$service" in
+    server)
+      USER="admin"
+      PASS="$(docker compose exec -T server cat /opt/geoserver/data_dir/security/pass.txt)"
+      ;;
+    credentials)
+      USER="myadmin"
+      PASS="$DEFAULT_PASS"
+      ;;
+    *)
+      USER="$DEFAULT_USER"
+      PASS="$DEFAULT_PASS"
+      ;;
+  esac
+}
+
+
+# ------------------------
+# Helper: run standard tests
+# ------------------------
+run_tests() {
+  local service="$1"
+  local port="$2"
+  local user="$3"
+  local pass="$4"
+
+  echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
+  test_url_availability "http://localhost:${port}${TEST_URL_PATH}" "$pass" "$user"
+
+  echo -e "\e[32m ---------------------------------------- \033[0m"
+  echo -e "[Unit Test] Execute test for: \e[1;31m $service \033[0m"
+
+  ${VERSION:-docker compose} exec -T "$service" /bin/bash /tests/test.sh
+}
+
+# ------------------------
+# Main loop
+# ------------------------
+for idx in "${!services[@]}"; do
+  service="${services[$idx]}"
+  PORT=$((START_PORT + idx))
+
+  if [[ "$service" != "users" ]]; then
+    get_credentials "$service"
+    run_tests "$service" "$PORT" "$USER" "$PASS"
+    continue
   fi
 
+  # ------------------------
+  # Users service (multi-user tests)
+  # ------------------------
+  GEOSERVER_ADMIN_PASSWORD="myawesomegeoserver,mygeoserver,mysample"
+  GEOSERVER_ADMIN_USER="foo,myadmin,sample"
 
-  if [[ "$service" != "users" ]];then
-    echo -e "[Unit Test] Test URL availability for: \e[1;31m $service \033[0m"
-    test_url_availability "http://localhost:$PORT/geoserver/rest/about/version.xml" "$PASS" "$USER"
-    echo -e "\e[32m ---------------------------------------- \033[0m"
-    echo -e "[Unit Test] Execute test for: \e[1;31m $service \033[0m"
-    ${VERSION} exec -T "$service" /bin/bash /tests/test.sh
-  else
-    # Execute tests
-    GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver,mygeoserver,mysample
-    GEOSERVER_ADMIN_USER=foo,myadmin,sample
-    COUNT_GEOSERVER_ADMIN_PASSWORD=$(echo "$GEOSERVER_ADMIN_PASSWORD" | tr ',' '\n' | wc -l)
-    IFS=','
-    read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
-    read -a geouser <<< "$GEOSERVER_ADMIN_USER"
-    services=("users")
-    for i in "${!services[@]}"; do
-      service="${services[$i]}"
-      for ((i = 0; i < ${COUNT_GEOSERVER_ADMIN_PASSWORD}; i++)); do
-              USER="${geouser[$i]}"
-              PASS="${geopass[$i]}"
-              echo -e "[Unit Test] Test URL availability for: \e[1;31m $service with user $USER and pass $PASS \033[0m"
-              test_url_availability http://localhost:$PORT/geoserver/rest/about/version.xml ${PASS} ${USER}
-              echo "Execute test for $service"
-              docker compose exec -T "$service" /bin/bash /tests/test.sh
-      done
-    done
+  IFS=',' read -ra geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
+  IFS=',' read -ra geouser <<< "$GEOSERVER_ADMIN_USER"
 
-  fi
+  for uidx in "${!geopass[@]}"; do
+    USER_NAME="${geouser[$uidx]}"
+    PASSWORD="${geopass[$uidx]}"
 
+    echo -e "[Unit Test] Test URL availability for: \e[1;31m users \033[0m (user: $USER_NAME)"
+    test_url_availability \
+      "http://localhost:${PORT}${TEST_URL_PATH}" \
+      "$PASSWORD" \
+      "$USER_NAME"
+
+    echo "Execute test for users"
+    docker compose exec -T users /bin/bash /tests/test.sh
+  done
 done
 
-
 docker compose down -v
+

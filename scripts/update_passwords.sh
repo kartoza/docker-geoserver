@@ -29,12 +29,18 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       unset RAND
     fi
 
-    # Get current GeoServer admin user/pass
-    IFS=',' read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
     file_env 'GEOSERVER_ADMIN_PASSWORD'
 
-    IFS=',' read -a geouser <<< "$GEOSERVER_ADMIN_USER"
+    # Get current GeoServer admin pass
+    IFS=',' read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
+
     file_env GEOSERVER_ADMIN_USER
+    if [[ -z "${GEOSERVER_ADMIN_USER}" || "${GEOSERVER_ADMIN_USER}" =~ ^[[:space:]]*$ ]]; then
+      GEOSERVER_ADMIN_USER="admin"
+      echo "[INFO] Using default admin username: admin"
+   fi
+    # Get current GeoServer admin user
+    IFS=',' read -a geouser <<< "$GEOSERVER_ADMIN_USER"
 
     export GEOSERVER_ADMIN_DEFAULT_USER='admin'
 
