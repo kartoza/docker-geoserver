@@ -30,7 +30,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
     fi
 
     file_env 'GEOSERVER_ADMIN_PASSWORD'
-    action_password_update
+
     # Get current GeoServer admin pass
     IFS=',' read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
 
