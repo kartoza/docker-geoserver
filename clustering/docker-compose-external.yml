@@ -10,7 +10,7 @@ x-common-activemq:
 services:
 
   db:
-    image: kartoza/postgis:16-3.4
+    image: kartoza/postgis:18-3.6
     volumes:
       - geo-db-data:/var/lib/postgresql
     ports:
@@ -93,7 +93,7 @@ services:
       retries: 10
 
   master:
-    image: kartoza/geoserver:2.24.0
+    image: kartoza/geoserver:2.28.0
     ports:
       - "8081:8080"
     environment:
@@ -121,7 +121,7 @@ services:
 
 
   node:
-    image: kartoza/geoserver:2.24.0
+    image: kartoza/geoserver:2.28.0
     ports:
       - "8082:8080"
     environment:
