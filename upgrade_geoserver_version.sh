@@ -20,6 +20,8 @@ sed -i "s/${GS_VERSION}/${GS_NEW_VERSION}/g" ".env"
 
 sed -i  "s/${GS_VERSION}/${GS_NEW_VERSION}/g" "clustering/docker-compose.yml"
 
+sed -i  "s/${GS_VERSION}/${GS_NEW_VERSION}/g" "clustering/docker-compose-external.yml"
+
 IFS='.' read -r MAJOR MINOR BUGFIX <<<"$GS_NEW_VERSION"
 
 sed -i "s/minor: .*/minor: $MINOR/g; s/patch: .*/patch: $BUGFIX/g" ".github/workflows/deploy-image.yaml"

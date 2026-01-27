@@ -27,11 +27,11 @@ jobs:
         geoserverMajorVersion:
           - 2
         imageVersion:
-          - image: 9.0.109-jdk17-temurin-noble
+          - image: 9.0.115-jdk17-temurin-noble
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 28
-            patch: 1
+            patch: 2
         stablePluginBaseURL:
           # empty because it often changes, so it's better
           # to use the default one described in the Dockerfile
@@ -119,7 +119,7 @@ jobs:
           - 2
         geoserverMinorVersion:
           - minor: 28
-            patch: 1
+            patch: 2
     steps:
       - name: Checkout code
         id: git_checkout
