@@ -98,9 +98,7 @@ jobs:
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
           cache-from: |
-            type=gha,scope=test
             type=gha,scope=prod
-          cache-to: type=gha,scope=prod
           target: geoserver-prod
 
   publish_release_artifacts:
