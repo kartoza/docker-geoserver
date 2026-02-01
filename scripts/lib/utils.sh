@@ -47,31 +47,6 @@ clean_up_vars() {
   fi
 }
 
-create_required_dirs() {
-  local path=(
-    "${resources_dir}/plugins/gdal"
-    "/usr/share/fonts/opentype"
-    "/tomcat_apps"
-    "${CATALINA_HOME}/postgres_config"
-    "${STABLE_PLUGINS_DIR}"
-    "${COMMUNITY_PLUGINS_DIR}"
-    "${GEOSERVER_HOME}"
-    "${FONTS_DIR}"
-    "${REQUIRED_PLUGINS_DIR}"
-    "${GEOSERVER_DATA_DIR}"
-    "${CERT_DIR}"
-    "${FOOTPRINTS_DATA_DIR}"
-    "${FONTS_DIR}"
-    "${GEOWEBCACHE_CACHE_DIR}"
-    "${EXTRA_CONFIG_DIR}"
-    "/docker-entrypoint-geoserver.d"
-  )
-
-  for dir in "${path[@]}"; do
-    echo "Creating directory: $dir"
-    create_dir "${dir}"
-  done
-}
 
 
 ############################################
