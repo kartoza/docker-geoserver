@@ -13,10 +13,24 @@ generate_random_string() {
   export RAND
 }
 
+
+
 create_dir() {
-  [[ -z "$1" ]] && return 1
-  [[ -d "$1" ]] || mkdir -p "$1"
+  local DATA_PATH="$1"
+
+  if [[ -z "${DATA_PATH}" ]]; then
+    echo -e "\e[31m [ERROR] create_dir: No path provided \033[0m" >&2
+    return 1
+  fi
+
+  if [[ ! -d "${DATA_PATH}" ]]; then
+    if ! mkdir -p "${DATA_PATH}"; then
+      echo -e "\e[31m [ERROR] Failed to create directory: ${DATA_PATH} \033[0m" >&2
+      return 1
+    fi
+  fi
 }
+
 
 delete_file() {
   [[ -f "$1" ]] && rm "$1"
@@ -144,6 +158,13 @@ rename_context_root_if_needed() {
 
 gwc_file_perms() {
   create_dir "${GEOWEBCACHE_CACHE_DIR}"
+  
+  # Ensure directory exists before trying to stat it
+  if [[ ! -d "${GEOWEBCACHE_CACHE_DIR}" ]]; then
+    echo -e "\e[31m [Entrypoint] ERROR: Failed to create ${GEOWEBCACHE_CACHE_DIR} \033[0m"
+    return 1
+  fi
+  
   GEO_USER_PERM=$(stat -c '%U' "${GEOSERVER_DATA_DIR}")
   GEO_GRP_PERM=$(stat -c '%G' "${GEOSERVER_DATA_DIR}")
   GWC_USER_PERM=$(stat -c '%U' "${GEOWEBCACHE_CACHE_DIR}")
