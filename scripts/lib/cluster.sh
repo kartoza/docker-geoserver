@@ -59,8 +59,23 @@ cluster_config() {
       envsubst < "${EXTRA_CONFIG_DIR}/cluster.properties" \
         > "${CLUSTER_CONFIG_DIR}/cluster.properties"
     else
-      envsubst < /build_data/cluster.properties \
-        > "${CLUSTER_CONFIG_DIR}/cluster.properties"
+            cat > "${CLUSTER_CONFIG_DIR}/cluster.properties" <<EOF
+CLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR}
+instanceName=${INSTANCE_STRING}
+readOnly=${READONLY}
+durable=${CLUSTER_DURABILITY}
+brokerURL=failover:(${BROKER_URL})
+embeddedBroker=${EMBEDDED_BROKER}
+connection.retry=${CLUSTER_CONNECTION_RETRY_COUNT}
+toggleMaster=${TOGGLE_MASTER}
+xbeanURL=./broker.xml
+embeddedBrokerProperties=embedded-broker.properties
+topicName=VirtualTopic.geoserver
+connection=enabled
+toggleSlave=${TOGGLE_SLAVE}
+connection.maxwait=${CLUSTER_CONNECTION_MAX_WAIT}
+group=geoserver-cluster
+EOF
     fi
   fi
 
@@ -76,30 +91,98 @@ broker_config() {
       envsubst < "${EXTRA_CONFIG_DIR}/embedded-broker.properties" \
         > "${CLUSTER_CONFIG_DIR}/embedded-broker.properties"
     else
-      envsubst < /build_data/embedded-broker.properties \
-        > "${CLUSTER_CONFIG_DIR}/embedded-broker.properties"
+          cat > "${CLUSTER_CONFIG_DIR}/embedded-broker.properties" <<EOF
+activemq.jmx.useJmx=false
+activemq.jmx.port=1098
+activemq.jmx.host=localhost
+activemq.jmx.createConnector=false
+activemq.transportConnectors.server.uri=${BROKER_URL}?maximumConnections=1000&wireFormat.maxFrameSize=104857600&jms.useAsyncSend=true&transport.daemon=true&trace=true
+activemq.transportConnectors.server.discoveryURI=multicast://default
+activemq.broker.persistent=true
+activemq.base=./
+activemq.broker.systemUsage.memoryUsage=128 mb
+activemq.broker.systemUsage.storeUsage=1 gb
+activemq.broker.systemUsage.tempUsage=128 mb
+EOF
     fi
   fi
 }
 
 broker_xml_config() {
-  rm -f "${CLUSTER_CONFIG_DIR}/broker.xml"
+  local target="${CLUSTER_CONFIG_DIR}/broker.xml"
 
-  if [[ ! -f "${CLUSTER_CONFIG_DIR}/broker.xml" ]]; then
-    if [[ -f "${EXTRA_CONFIG_DIR}/broker.xml" ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}/broker.xml" \
-        > "${CLUSTER_CONFIG_DIR}/broker.xml"
-    else
-      envsubst < /build_data/broker.xml \
-        > "${CLUSTER_CONFIG_DIR}/broker.xml"
+  # Always remove old broker.xml
+  rm -f "$target"
 
-      if [[ "${DB_BACKEND}" =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
-        sed -i '15,17d' "${CLUSTER_CONFIG_DIR}/broker.xml"
-      else
-        sed -i '19,37d' "${CLUSTER_CONFIG_DIR}/broker.xml"
-      fi
-    fi
+  # Helper: write default broker.xml
+  write_default_broker_xml() {
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:amq="http://activemq.apache.org/schema/core"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+                           http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+
+  <broker id="broker" persistent="${activemq.broker.persistent}"
+          useJmx="true" xmlns="http://activemq.apache.org/schema/core"
+          dataDirectory="${activemq.base}" tmpDataDirectory="${activemq.base}/tmp"
+          startAsync="false" start="false" brokerName="${INSTANCE_STRING}">
+
+    <amq:persistenceAdapter>
+      <jdbcPersistenceAdapter dataDirectory="activemq-data"
+                              dataSource="#postgres-ds" lockKeepAlivePeriod="0"
+                              createTablesOnStartup="true"
+                              brokerName="${INSTANCE_STRING}"/>
+      <statements useLockCreateWhereClause="true"
+                  tablePrefix="ACTIVEMQ_"
+                  dualCommitEnabled="false"
+                  updateClob="true"
+                  updateBlob="true"
+                  lockKeepAlivePeriod="30000"/>
+    </amq:persistenceAdapter>
+
+    <bean id="postgres-ds" class="org.postgresql.ds.PGPoolingDataSource">
+      <property name="url" value="jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?${SSL_PARAMETERS}"/>
+      <property name="user" value="${POSTGRES_USER}"/>
+      <property name="password" value="${POSTGRES_PASS}"/>
+      <property name="initialConnections" value="15"/>
+      <property name="maxConnections" value="30"/>
+    </bean>
+
+    <networkConnectors xmlns="http://activemq.apache.org/schema/core">
+      <networkConnector uri="static:(tcp://host1:61616,tcp://host2:61616,tcp://host3:61616,tcp://localhost:61616)" />
+    </networkConnectors>
+
+    <transportConnectors>
+      <transportConnector name="openwire" uri="${activemq.transportConnectors.server.uri}" />
+    </transportConnectors>
+  </broker>
+</beans>
+EOF
+  }
+
+  # Step 1: generate broker.xml
+  if [[ -f "${EXTRA_CONFIG_DIR}/broker.xml" ]]; then
+    envsubst < "${EXTRA_CONFIG_DIR}/broker.xml" > "$target"
+  else
+    write_default_broker_xml > "$target"
   fi
+
+  # Step 2: post-process broker.xml depending on DB_BACKEND
+  adjust_broker_xml() {
+    case "$DB_BACKEND" in
+      [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss])
+        sed -i '15,17d' "$target"
+        ;;
+      *)
+        sed -i '19,37d' "$target"
+        ;;
+    esac
+  }
+
+  adjust_broker_xml
 }
 
 ############################################

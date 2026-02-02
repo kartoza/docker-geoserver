@@ -52,20 +52,46 @@ default_disk_quota_config() {
     envsubst < "${EXTRA_CONFIG_DIR}/geowebcache-diskquota.xml" \
       > "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml"
   else
-    envsubst < /build_data/geowebcache-diskquota.xml \
-      > "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml"
+    cat > "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota.xml" <<EOF
+<gwcQuotaConfiguration>
+  <enabled>true</enabled>
+  <cacheCleanUpFrequency>${DISK_QUOTA_FREQUENCY}</cacheCleanUpFrequency>
+  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
+  <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
+  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
+  <globalQuota>
+    <value>${DISK_QUOTA_SIZE}</value>
+    <units>GiB</units>
+  </globalQuota>
+ <quotaStore>${DISK_QUOTA_BACKEND}</quotaStore>
+</gwcQuotaConfiguration>
+EOF
+
   fi
 }
 
 jdbc_disk_quota_config() {
-  [[ -f "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml" ]] && return
-
-  if [[ -f "${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml" ]]; then
-    envsubst < "${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml" \
-      > "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml"
-  else
-    envsubst < /build_data/geowebcache-diskquota-jdbc.xml \
-      > "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml"
+  if [[ ! -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
+    if [[ -f "${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml" ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}/geowebcache-diskquota-jdbc.xml" \
+        > "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml"
+    else
+      cat > "${GEOWEBCACHE_CACHE_DIR}/geowebcache-diskquota-jdbc.xml" <<EOF
+<gwcJdbcConfiguration>
+  <dialect>PostgreSQL</dialect>
+  <connectionPool>
+    <driver>org.postgresql.Driver</driver>
+    <url>jdbc:postgresql://${HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?${SSL_PARAMETERS}&amp;currentSchema=${POSTGRES_SCHEMA}</url>
+    <username>${POSTGRES_USER}</username>
+    <password>${POSTGRES_PASS}</password>
+    <minConnections>1</minConnections>
+    <maxConnections>100</maxConnections>
+    <connectionTimeout>10000</connectionTimeout>
+    <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
+  </connectionPool>
+</gwcJdbcConfiguration>
+EOF
+    fi
   fi
 }
 
@@ -114,6 +140,10 @@ unzip_geoserver() {
     cp -r "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/data" "${CATALINA_HOME}"
     mv "${CATALINA_HOME}/data/security" "${CATALINA_HOME}"
     rm -rf "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/data"
+
+    if [[ ! -d "${CATALINA_HOME}/postgres_config/" ]];then
+      create_dir "${CATALINA_HOME}/postgres_config"
+    fi
 
     mv "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-"* \
        "${CATALINA_HOME}/postgres_config/"
@@ -289,8 +319,55 @@ activate_gwc_global_configs() {
     if [[ -f "${EXTRA_CONFIG_DIR}"/gwc-gs.xml ]]; then
       envsubst < "${EXTRA_CONFIG_DIR}"/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
     else
-      # default value
-      envsubst < /build_data/gwc-gs.xml > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml
+      cat > "${GEOSERVER_DATA_DIR}"/gwc-gs.xml <<EOF
+<GeoServerGWCConfig>
+  <version>1.1.0</version>
+  <directWMSIntegrationEnabled>${WMS_DIR_INTEGRATION}</directWMSIntegrationEnabled>
+  <requireTiledParameter>${REQUIRE_TILED_PARAMETER}</requireTiledParameter>
+  <WMSCEnabled>${WMSC_ENABLED}</WMSCEnabled>
+  <TMSEnabled>${TMS_ENABLED}</TMSEnabled>
+  <securityEnabled>${SECURITY_ENABLED}</securityEnabled>
+  <innerCachingEnabled>false</innerCachingEnabled>
+  <persistenceEnabled>true</persistenceEnabled>
+  <cacheProviderClass>class org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider</cacheProviderClass>
+  <cacheConfigurations>
+    <entry>
+      <string>class org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider</string>
+      <InnerCacheConfiguration>
+        <hardMemoryLimit>16</hardMemoryLimit>
+        <policy>NULL</policy>
+        <concurrencyLevel>4</concurrencyLevel>
+        <evictionTime>120</evictionTime>
+      </InnerCacheConfiguration>
+    </entry>
+  </cacheConfigurations>
+  <cacheLayersByDefault>true</cacheLayersByDefault>
+  <cacheNonDefaultStyles>true</cacheNonDefaultStyles>
+  <metaTilingX>4</metaTilingX>
+  <metaTilingY>4</metaTilingY>
+  <gutter>0</gutter>
+  <defaultCachingGridSetIds>
+    <string>WebMercatorQuad</string>
+    <string>EPSG:4326</string>
+    <string>WebMercatorQuadx2</string>
+    <string>EPSG:900913</string>
+  </defaultCachingGridSetIds>
+  <defaultCoverageCacheFormats>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+  </defaultCoverageCacheFormats>
+  <defaultVectorCacheFormats>
+    <string>application/vnd.mapbox-vector-tile</string>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+  </defaultVectorCacheFormats>
+  <defaultOtherCacheFormats>
+    <string>application/vnd.mapbox-vector-tile</string>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+  </defaultOtherCacheFormats>
+</GeoServerGWCConfig>
+EOF
     fi
   fi
 }
@@ -303,8 +380,17 @@ setup_control_flow() {
     if [[ -f "${EXTRA_CONFIG_DIR}"/controlflow.properties ]]; then
       envsubst < "${EXTRA_CONFIG_DIR}"/controlflow.properties > "${GEOSERVER_DATA_DIR}"/controlflow.properties
     else
-      # default value
-      envsubst < /build_data/controlflow.properties > "${GEOSERVER_DATA_DIR}"/controlflow.properties
+           cat > "${GEOSERVER_DATA_DIR}"/controlflow.properties <<EOF
+timeout=${REQUEST_TIMEOUT}
+ows.global=${PARALLEL_REQUEST}
+ows.wms.getmap=${GETMAP}
+ows.wfs.getfeature.application/msexcel=${REQUEST_EXCEL}
+user=${SINGLE_USER}
+ows.gwc=${GWC_REQUEST}
+user.ows.wps.execute=${WPS_REQUEST}
+user.ows.wms.getmap=${USER_WMS_REQUEST}
+ip=${THROTTLE_REQUEST_PER_IP}
+EOF
     fi
   fi
 
