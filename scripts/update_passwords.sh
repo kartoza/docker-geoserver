@@ -16,6 +16,8 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
 
   # Create random password if none is provided
+  file_env GEOSERVER_ADMIN_USER
+  
   function action_password_update() {
     if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
       generate_random_string 15
@@ -34,7 +36,6 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
     # Get current GeoServer admin pass
     IFS=',' read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
 
-    file_env GEOSERVER_ADMIN_USER
     if [[ -z "${GEOSERVER_ADMIN_USER}" || "${GEOSERVER_ADMIN_USER}" =~ ^[[:space:]]*$ ]]; then
       GEOSERVER_ADMIN_USER="admin"
       echo "[INFO] Using default admin username: admin"
