@@ -2,10 +2,15 @@
 
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
+SCRIPT_DIR="/scripts"
 
-# Source the functions from other bash scripts
-source /scripts/env-data.sh
-source /scripts/functions.sh
+source "${SCRIPT_DIR}/lib/env-data.sh"
+source "${SCRIPT_DIR}/lib/utils.sh"
+source "${SCRIPT_DIR}/lib/logging.sh"
+source "${SCRIPT_DIR}/lib/database.sh"
+source "${SCRIPT_DIR}/lib/geoserver.sh"
+source "${SCRIPT_DIR}/lib/tomcat.sh"
+source "${SCRIPT_DIR}/lib/cluster.sh"
 
 # Setup install directory
 GEOSERVER_INSTALL_DIR="$(detect_install_dir)"

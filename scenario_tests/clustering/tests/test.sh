@@ -2,7 +2,7 @@
 
 set -e
 
-source /scripts/env-data.sh
+source /scripts/lib/env-data.sh
 
 # execute tests
 pushd /tests

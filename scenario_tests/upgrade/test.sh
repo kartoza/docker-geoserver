@@ -23,7 +23,7 @@ for service in "${services[@]}"; do
   test_url_availability http://localhost:8080/geoserver/rest/about/version.xml
   echo -e "\e[32m ---------------------------------------- \033[0m"
   echo -e "[Unit Test] Execute test for: \e[1;31m $service \033[0m"
-  ${VERSION} -f docker-compose.yml exec $service /bin/bash /tests/test.sh
+  ${VERSION} -f docker-compose.yml exec $service /bin/bash /tests/test.sh /scripts/env-data.sh
 
 done
 
