@@ -148,7 +148,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: kartoza-geoserver
           path: /tmp
@@ -199,7 +199,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: kartoza-geoserver
           path: /tmp
@@ -208,7 +208,7 @@ jobs:
           docker load --input /tmp/geoserver.tar
       - name: Download ActiveMQ artifact
         if: matrix.scenario == 'clustering'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: kartoza-activemq
           path: /tmp
@@ -240,7 +240,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: kartoza-geoserver-production
           path: /tmp
