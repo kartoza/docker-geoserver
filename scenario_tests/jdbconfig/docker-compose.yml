@@ -35,7 +35,7 @@ services:
       POSTGRES_USER: docker
       POSTGRES_PASS: docker
       POSTGRES_PORT: 5432
-      SSL_MODE: allow
+      SSL_MODE: require
       POSTGRES_SCHEMA: public
       DISK_QUOTA_SIZE: 5
       DB_BACKEND: POSTGRES
