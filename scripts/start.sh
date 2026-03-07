@@ -25,7 +25,6 @@ create_dir "${GEOWEBCACHE_CACHE_DIR}"
 web_cors
 # Useful for development - We need a clean state of data directory
 cleanup_data_dir
-# install Font files in resources/fonts if they exists
 install_fonts
 setup_google_fonts
 setup_logging
