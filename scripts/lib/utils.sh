@@ -411,7 +411,7 @@ generate_community_extensions_config() {
     local output_file="${COMMUNITY_PLUGINS_DIR}/${ext}.zip"
 
     if [[ -f "$output_file" ]]; then
-      echo "Skipping ${ext}, already downloaded"
+      echo -e "[Entrypoint] Community Extension already exists, skipping download of : \e[1;31m $ext \033[0m"
       continue
     fi
 
@@ -445,7 +445,7 @@ generate_stable_extensions_config() {
 
     # Skip if already downloaded
     if [[ -f "$output_file" ]]; then
-        echo -e "[Entrypoint] Extension already exists, skipping download of extension : \e[1;31m $ext \033[0m"
+        echo -e "[Entrypoint] Stable/Required Extension already exists, skipping download of : \e[1;31m $ext \033[0m"
         continue
     fi
 
