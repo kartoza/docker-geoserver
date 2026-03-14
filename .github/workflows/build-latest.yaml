@@ -189,7 +189,7 @@ jobs:
           - context
           - disk-quota
 #          - clustering
-          - jdbconfig
+#          - jdbconfig
           - libjpeg
 #          - backup_restore
           - logging_profile

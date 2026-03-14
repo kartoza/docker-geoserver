@@ -60,7 +60,7 @@ LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG GS_VERSION=2.28.2
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
-ARG GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"
+ARG TARGETARCH
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OTEL_SERVICE_NAME=geoserver
 
@@ -78,21 +78,24 @@ RUN set -eux; \
 	  gosu nobody true
 
 # copy gdal java bindings
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
-        GDAL_LIBS_PATH="/usr/lib/x86_64-linux-gnu"; \
-    elif [ "$TARGETARCH" = "arm64" ]; then \
-        GDAL_LIBS_PATH="/usr/lib/aarch64-linux-gnu"; \
-    fi
 
 COPY --from=gdal-builder /usr/share/java/ /usr/share/java/
-COPY --from=gdal-builder ${GDAL_LIBS_PATH}/jni/ ${GDAL_LIBS_PATH}/jni/
+
+RUN --mount=from=gdal-builder,source=/usr/lib,target=/tmp/gdal-builder-lib \
+    if [ "${TARGETARCH}" = "arm64" ]; then \
+      GDAL_LIBS_SUBDIR="aarch64-linux-gnu"; \
+    else \
+      GDAL_LIBS_SUBDIR="x86_64-linux-gnu"; \
+    fi && \
+    mkdir -p /usr/lib/${GDAL_LIBS_SUBDIR}/jni && \
+    cp -r /tmp/gdal-builder-lib/${GDAL_LIBS_SUBDIR}/jni/* /usr/lib/${GDAL_LIBS_SUBDIR}/jni/
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
     DEBIAN_FRONTEND=noninteractive \
     GEOSERVER_DATA_DIR=/opt/geoserver/data_dir \
     GDAL_DATA=/usr/share/gdal \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:${GDAL_LIBS_PATH}:${GDAL_LIBS_PATH}/jni/" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/tomcat/native-jni-lib:/usr/lib/jni:/usr/local/apr/lib:/opt/libjpeg-turbo/lib64:/usr/lib:/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/jni/:/usr/lib/aarch64-linux-gnu:/usr/lib/aarch64-linux-gnu/jni/" \
     FOOTPRINTS_DATA_DIR=/opt/footprints_dir \
     GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc \
     CERT_DIR=/etc/certs \

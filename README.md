@@ -89,7 +89,7 @@ To build yourself with a local checkout using the docker-compose-build.yml:
     git clone https://github.com/kartoza/docker-geoserver
     ```
 
-2. Edit the [build arguments](https://github.com/kartoza/docker-geoserver/blob/master/.env) in the `.env` file:
+2. Edit the [build arguments](https://github.com/kartoza/docker-geoserver/blob/master/compose/.env) in the `.env` file:
 
 3. Build the container and spin up the services
     ```shell
@@ -164,7 +164,7 @@ docker-compose -f docker-compose-build.yml up -d
 
 ## Environment Variables
 
-A full list of environment variables are specified in the [.env](https://github.com/kartoza/docker-geoserver/blob/develop/.env) file
+A full list of environment variables are specified in the [.env](https://github.com/kartoza/docker-geoserver/blob/develop/compose/.env) file
 
 ### Default installed extensions
 
@@ -337,7 +337,7 @@ your pfx file. This will be converted to pem files.
 an environment variable matches the `ALIAS_KEY` that was used when generating
 your `PFX` key.
 
-A full list of SSL variables is provided in [SSL Settings](https://github.com/kartoza/docker-geoserver/blob/develop/.env)
+A full list of SSL variables is provided in [SSL Settings](https://github.com/kartoza/docker-geoserver/blob/develop/compose/.env)
 
 ### Proxy Base URL
 
@@ -423,7 +423,7 @@ docker run -e GOOGLE_FONTS_NAMES=actor,akronim -p 8080:8080 -t kartoza/geoserver
 
 ### Other Environment variables supported
 
-You can find a full list of environment variables in [Generic Env variables](https://github.com/kartoza/docker-geoserver/blob/develop/.env)
+You can find a full list of environment variables in [Generic Env variables](https://github.com/kartoza/docker-geoserver/blob/develop/compose/.env)
 
 **Note** The list below is not exhaustive of all values available.
 Always consult the `.env` file to check possible values.
@@ -665,9 +665,15 @@ following instructions from [docker-pg-backup](https://github.com/kartoza/docker
 
 Start the services using:
 
-```shell
-docker-compose up -d
-```
+1) Navigate to the directory with compose yaml.
+    ```bash
+    cd compose
+    ```
+2) Start the services.
+
+    ```shell
+    docker-compose up -d
+    ```
 
 **Note** The username and password are specified in the `.env` file. It is recommended
 to change them into something more secure. If you do not pass the
