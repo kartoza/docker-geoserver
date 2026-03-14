@@ -228,57 +228,45 @@ install_plugin() {
 ############################################
 
 setup_stable_extensions(){
+
+  generate_stable_extensions_config
+  download_extensions_config "${STABLE_PLUGINS_DIR}/curl.cfg"
+
+  local extensions
+
   if [[ "$ACTIVE_EXTENSIONS" != "$DEFAULT_EXTENSIONS" ]]; then
+      extensions="${ACTIVE_EXTENSIONS}"
+  else
+      extensions="${DEFAULT_EXTENSIONS}"
+  fi
 
-  for ext in $(echo "${ACTIVE_EXTENSIONS}" | tr ',' ' '); do
-    if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
-      if [[ ! -f ${REQUIRED_PLUGINS_DIR}/${ext}.zip ]]; then
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-        download_extension "${approved_plugins_url}" "${ext}" ${REQUIRED_PLUGINS_DIR}/
-      fi
-      install_plugin ${REQUIRED_PLUGINS_DIR}/ "${ext}"
-    else
-      if [[ ! -f ${STABLE_PLUGINS_DIR}/${ext}.zip ]]; then
-        # Download the stable extension
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-        download_extension "${approved_plugins_url}" "${ext}" ${STABLE_PLUGINS_DIR}/
-      fi
-      # Install the stable extension
-      install_plugin ${STABLE_PLUGINS_DIR}/ "${ext}"
-    fi
-  done
-else
-  # Install default plugins
-  for ext in $(echo "${DEFAULT_EXTENSIONS}" | tr ',' ' '); do
-    if [[ ! -f ${REQUIRED_PLUGINS_DIR}/${ext}.zip ]]; then
-        approved_plugins_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-        download_extension "${approved_plugins_url}" "${ext}" ${REQUIRED_PLUGINS_DIR}/
-    fi
-    install_plugin ${REQUIRED_PLUGINS_DIR}/ "${ext}"
-  done
-fi
+  for ext in $(echo "${extensions}" | tr ',' ' '); do
 
+      if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
+          install_plugin "${REQUIRED_PLUGINS_DIR}" "${ext}"
+      else
+          install_plugin "${STABLE_PLUGINS_DIR}" "${ext}"
+      fi
+
+  done
 }
 
 setup_community_extensions(){
   if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
-  if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-    rm -rf /community_plugins/*.zip
-  fi
+    if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+      rm -rf ${COMMUNITY_PLUGINS_DIR}/*.zip
+    fi
+
+  generate_community_extensions_config
+  download_extensions_config "${COMMUNITY_PLUGINS_DIR}/curl.cfg"
 
   for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-      if [[ ! -f /community_plugins/${ext}.zip ]]; then
-        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-        download_extension "${community_plugins_url}" "${ext}" /community_plugins
+      if [[ -f ${COMMUNITY_PLUGINS_DIR}/${ext}.zip ]]; then
+
         setup_jdbc_db_store
         setup_jdbc_db_config
         setup_hz_cluster
-        install_plugin /community_plugins "${ext}"
-      else
-        setup_jdbc_db_store
-        setup_jdbc_db_config
-        setup_hz_cluster
-        install_plugin /community_plugins "${ext}"
+        install_plugin ${COMMUNITY_PLUGINS_DIR} "${ext}"
       fi
   done
 
