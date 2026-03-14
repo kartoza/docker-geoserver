@@ -12,7 +12,7 @@ source "${SCRIPT_DIR}/lib/cluster.sh"
 
 resources_dir="/tmp/resources"
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
-
+STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
 # ---------------------------
 # Main execution flow
 # ---------------------------
