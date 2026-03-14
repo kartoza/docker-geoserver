@@ -6,7 +6,7 @@ ARG JAVA_HOME=/opt/java/openjdk
 ARG GDAL_VERSION=3.8.4
 ARG TARGETARCH
 
-FROM --platform=$BUILDPLATFORM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
+FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
 
 ##############################################################################
 # Plugin downloader                                                          #
@@ -82,13 +82,8 @@ RUN set -eux; \
 COPY --from=gdal-builder /usr/share/java/ /usr/share/java/
 
 RUN --mount=from=gdal-builder,source=/usr/lib,target=/tmp/gdal-builder-lib \
-    if [ "${TARGETARCH}" = "arm64" ]; then \
-      GDAL_LIBS_SUBDIR="aarch64-linux-gnu"; \
-    else \
-      GDAL_LIBS_SUBDIR="x86_64-linux-gnu"; \
-    fi && \
-    mkdir -p /usr/lib/${GDAL_LIBS_SUBDIR}/jni && \
-    cp -r /tmp/gdal-builder-lib/${GDAL_LIBS_SUBDIR}/jni/* /usr/lib/${GDAL_LIBS_SUBDIR}/jni/
+    mkdir -p /usr/lib/jni && \
+    find /tmp/gdal-builder-lib -path "*/jni/*" -exec cp {} /usr/lib/jni/ \;
 
 ENV \
     JAVA_HOME=${JAVA_HOME} \
