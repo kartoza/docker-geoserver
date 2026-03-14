@@ -29,7 +29,7 @@ services:
       retries: 3
       start_period: 1m
     build:
-      context: .
+      context: ../
       # Use yaml anchor for reusability
       args: &build-args-anchor
         IMAGE_VERSION: ${IMAGE_VERSION}
