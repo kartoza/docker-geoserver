@@ -21,6 +21,9 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
 
   # Create random password if none is provided
+  file_env GEOSERVER_ADMIN_USER
+  file_env 'GEOSERVER_ADMIN_PASSWORD'
+
   function action_password_update() {
     if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
       generate_random_string 15
@@ -34,12 +37,11 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       unset RAND
     fi
 
-    file_env 'GEOSERVER_ADMIN_PASSWORD'
+    # Removed duplicate file_env call from here since it is now global
 
     # Get current GeoServer admin pass
     IFS=',' read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
 
-    file_env GEOSERVER_ADMIN_USER
     if [[ -z "${GEOSERVER_ADMIN_USER}" || "${GEOSERVER_ADMIN_USER}" =~ ^[[:space:]]*$ ]]; then
       GEOSERVER_ADMIN_USER="admin"
       echo "[INFO] Using default admin username: admin"
@@ -127,6 +129,10 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
       if [[ "${did_restore}" == true ]]; then
         echo -e "\e[32m [SECURITY CONFIG] Running password update because defaults were restored. \033[0m"
+        action_password_update
+      # Always update password if secret/env is present to ensure consistency on restarts
+      elif [[ -n "${GEOSERVER_ADMIN_PASSWORD}" ]]; then
+        echo -e "\e[32m [SECURITY CONFIG] Force running password update from secrets/env. \033[0m"
         action_password_update
       fi
     fi
