@@ -41,7 +41,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
     # Get current GeoServer admin pass
     IFS=',' read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
-
+  
     if [[ -z "${GEOSERVER_ADMIN_USER}" || "${GEOSERVER_ADMIN_USER}" =~ ^[[:space:]]*$ ]]; then
       GEOSERVER_ADMIN_USER="admin"
       echo "[INFO] Using default admin username: admin"
