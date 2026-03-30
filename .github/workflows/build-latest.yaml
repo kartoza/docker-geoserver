@@ -34,7 +34,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build image for testing activeqm
         id: docker_build_testing_image_activeqm
         uses: docker/build-push-action@v7
@@ -81,7 +81,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build image for production
         id: docker_build_production_image
         uses: docker/build-push-action@v7
