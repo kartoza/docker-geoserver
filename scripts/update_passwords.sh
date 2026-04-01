@@ -2,15 +2,10 @@
 
 # Credits https://github.com/geosolutions-it/docker-geoserver for this script that allows a user to pass a password
 # or username on runtime.
-SCRIPT_DIR="/scripts"
 
-source "${SCRIPT_DIR}/lib/env-data.sh"
-source "${SCRIPT_DIR}/lib/utils.sh"
-source "${SCRIPT_DIR}/lib/logging.sh"
-source "${SCRIPT_DIR}/lib/database.sh"
-source "${SCRIPT_DIR}/lib/geoserver.sh"
-source "${SCRIPT_DIR}/lib/tomcat.sh"
-source "${SCRIPT_DIR}/lib/cluster.sh"
+# Source the functions from other bash scripts
+source /scripts/env-data.sh
+source /scripts/functions.sh
 
 # Setup install directory
 GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
@@ -20,10 +15,10 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
   ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
   CLASSPATH=${CLASSPATH:-${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/}
 
-  # Create random password if none is provided
   file_env GEOSERVER_ADMIN_USER
   file_env 'GEOSERVER_ADMIN_PASSWORD'
 
+  # Create random password if none is provided
   function action_password_update() {
     if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
       generate_random_string 15
@@ -41,7 +36,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
     # Get current GeoServer admin pass
     IFS=',' read -a geopass <<< "$GEOSERVER_ADMIN_PASSWORD"
-  
+
     if [[ -z "${GEOSERVER_ADMIN_USER}" || "${GEOSERVER_ADMIN_USER}" =~ ^[[:space:]]*$ ]]; then
       GEOSERVER_ADMIN_USER="admin"
       echo "[INFO] Using default admin username: admin"
@@ -81,6 +76,7 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
     # Set password encoding
     sed -i 's/pbePasswordEncoder/strongPbePasswordEncoder/g' ${GEOSERVER_DATA_DIR}/security/config.xml
   }
+
 
   function password_reset() {
     if [[ ! -f ${EXTRA_CONFIG_DIR}/.security.lock ]]; then
@@ -129,10 +125,6 @@ if [[ "${USE_DEFAULT_CREDENTIALS}" =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
       if [[ "${did_restore}" == true ]]; then
         echo -e "\e[32m [SECURITY CONFIG] Running password update because defaults were restored. \033[0m"
-        action_password_update
-      # Always update password if secret/env is present to ensure consistency on restarts
-      elif [[ -n "${GEOSERVER_ADMIN_PASSWORD}" ]]; then
-        echo -e "\e[32m [SECURITY CONFIG] Force running password update from secrets/env. \033[0m"
         action_password_update
       fi
     fi

@@ -133,7 +133,7 @@ RUN ldconfig
 
 
 RUN echo ${GS_VERSION} > /scripts/geoserver_version.txt && echo ${STABLE_PLUGIN_BASE_URL} > /scripts/geoserver_gs_url.txt ;\
-    chmod +x /scripts/*.sh;chmod +x /scripts/lib/*.sh;/scripts/lib/setup.sh \
+    chmod +x /scripts/*.sh;/scripts/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
