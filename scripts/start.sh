@@ -61,14 +61,12 @@ if [[ ${LOGGING_STDOUT} =~ [Tt][Rr][Uu][Ee] ]];then
   tomcat_logging
 fi
 
-# Add custom espg properties file or the default one
-create_dir "${GEOSERVER_DATA_DIR}"/user_projections
+
+
 create_dir "${GEOWEBCACHE_CACHE_DIR}"
 
-
-setup_custom_crs
-setup_custom_override_crs
-
+# Add custom espg properties file or the default one
+setup_crs
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -77,35 +75,8 @@ fi
 
 
 # Recreate DISK QUOTA config, useful to change between H2 and jdbc and change connection or schema
-if [[ "${RECREATE_DISKQUOTA}" =~ [Tt][Rr][Uu][Ee] ]]; then
-  if [[ -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml ]]; then
-    rm "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota.xml
-  fi
-  if [[ -f "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml ]]; then
-    rm "${GEOWEBCACHE_CACHE_DIR}"/geowebcache-diskquota-jdbc.xml
-  fi
-fi
-
-export DISK_QUOTA_FREQUENCY DISK_QUOTA_SIZE
-if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
-  postgres_ssl_setup
-  export DISK_QUOTA_BACKEND=JDBC
-  export SSL_PARAMETERS=${PARAMS}
-  export POSTGRES_SCHEMA=${POSTGRES_SCHEMA}
-  default_disk_quota_config
-  jdbc_disk_quota_config
-
-  echo -e "[Entrypoint] Checking PostgreSQL connection to see if diskquota tables are loaded: \033[0m"
-  if [[  ${POSTGRES_SCHEMA} != 'public' ]]; then
-    PGPASSWORD="${POSTGRES_PASS}"
-    export PGPASSWORD
-    postgres_ready_status "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB"
-    create_gwc_tile_tables "${HOST}" "${POSTGRES_PORT}" "${POSTGRES_USER}" "$POSTGRES_DB" "$POSTGRES_SCHEMA"
-  fi
-else
-  export DISK_QUOTA_BACKEND=HSQL
-  default_disk_quota_config
-fi
+reset_disk_quota
+setup_disk_quota
 
 # GWC Global Config options GeoServer WMS
 export WMS_DIR_INTEGRATION REQUIRE_TILED_PARAMETER WMSC_ENABLED TMS_ENABLED SECURITY_ENABLED
@@ -241,10 +212,8 @@ if [[ ${CLUSTERING} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
     fi
   fi
 fi
-create_dir "${MONITOR_AUDIT_PATH}"
-export MONITORING_AUDIT_ENABLED MONITORING_AUDIT_ROLL_LIMIT MONITORING_STORAGE MONITORING_MODE MONITORING_SYNC MONITORING_BODY_SIZE MONITORING_BBOX_LOG_CRS MONITORING_BBOX_LOG_LEVEL
-setup_monitoring
 
+setup_monitoring_status
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
   ext=jms-cluster-plugin
