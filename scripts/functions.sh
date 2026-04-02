@@ -1490,8 +1490,122 @@ run_update_password_hook() {
   fi
 }
 
+run_pre_start_hooks() {
+  local hook="${SCRIPT_DIR}/start.sh"
+
+  if [[ -x "${hook}" ]]; then
+    log "Running pre-start hook"
+    /bin/bash "${hook}"
+  elif [[ -f "${hook}" ]]; then
+    log_warn "start.sh not executable, running via bash"
+    /bin/bash "${hook}"
+  fi
+}
 
 setup_community_extensions_status() {
   export JDBC_CONFIG_ENABLED JDBC_STORE_ENABLED POSTGRES_JNDI
   setup_community_extensions
+}
+
+create_setup_directories() {
+  local dirs=(
+    ${resources_dir}/plugins/gdal
+    /usr/share/fonts/opentype
+    /tomcat_apps
+    "${CATALINA_HOME}"/postgres_config
+    "${STABLE_PLUGINS_DIR}"
+    "${COMMUNITY_PLUGINS_DIR}"
+    "${GEOSERVER_HOME}"
+    "${FONTS_DIR}"
+    "${REQUIRED_PLUGINS_DIR}"
+  )
+
+  for d in "${dirs[@]}"; do
+    create_dir "${d}"
+  done
+}
+
+install_geoserver_core() {
+  pushd "${CATALINA_HOME}" || exit
+  package_geoserver
+
+  cp /build_data/stable_plugins.txt "${STABLE_PLUGINS_DIR}"
+  cp /build_data/community_plugins.txt "${COMMUNITY_PLUGINS_DIR}"
+  cp /build_data/letsencrypt-tomcat.xsl "${CATALINA_HOME}/conf/ssl-tomcat.xsl"
+}
+
+install_required_jars() {
+  pushd "${CATALINA_HOME}" || exit
+
+  cp "${REQUIRED_PLUGINS_DIR}/marlin.jar" "${CATALINA_HOME}/lib/marlin.jar"
+
+  if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+    cp "${REQUIRED_PLUGINS_DIR}/jetty-servlets-11.0.9.jar" \
+       "${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
+    cp "${REQUIRED_PLUGINS_DIR}/jetty-util.jar" \
+       "${GEOSERVER_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
+  fi
+}
+
+configure_libjpegturbo() {
+  local arch
+  arch=$(dpkg --print-architecture)
+  local version="2.1.5.1"
+  local deb="libjpeg-turbo-official_${version}_${arch}.deb"
+
+  [[ -f "${resources_dir}/${deb}" ]] ||
+    curl -vfLo "${resources_dir}/${deb}" \
+      "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${version}/${deb}"
+
+  dpkg -i "${resources_dir}/${deb}"
+}
+
+install_plugin_libjpegturbo() {
+  pushd "${STABLE_PLUGINS_DIR}" || exit
+  configure_libjpegturbo
+}
+
+apply_overlays() {
+  rm -f /tmp/resources/overlays/README.txt
+  if ls /tmp/resources/overlays/* >/dev/null 2>&1; then
+    cp -rf /tmp/resources/overlays/* /
+  fi
+}
+
+package_tomcat_webapp() {
+  if [[ -d "${CATALINA_HOME}"/webapps.dist ]]; then
+    mv "${CATALINA_HOME}"/webapps.dist /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -r /tomcat_apps
+  else
+    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -rf /tomcat_apps
+  fi
+}
+
+patch_tomcat_server_info() {
+  pushd "${CATALINA_HOME}/lib" || exit
+  create_dir org/apache/catalina/util/
+  unzip -p catalina.jar org/apache/catalina/util/ServerInfo.properties \
+  | sed 's/^server.info=.*/server.info=Apache Tomcat/' \
+  > ServerInfo.properties && \
+  zip -d catalina.jar org/apache/catalina/util/ServerInfo.properties && \
+  zip -ur catalina.jar ServerInfo.properties && \
+  rm ServerInfo.properties
+
+}
+
+set_restrictive_umask() {
+  echo "session optional pam_umask.so" >> /etc/pam.d/common-session
+  sed -i 's/UMASK.*022/UMASK           007/g' /etc/login.defs
+}
+
+cleanup_resources() {
+  rm -rf /tmp/resources
+  delete_file "${CATALINA_HOME}/conf/web.xml"
 }
