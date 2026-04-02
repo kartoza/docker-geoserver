@@ -62,6 +62,7 @@ setup_custom_override_crs() {
 
 
 setup_crs() {
+  create_dir "${GEOWEBCACHE_CACHE_DIR}"
   create_dir "${GEOSERVER_DATA_DIR}/user_projections"
   setup_custom_crs
   setup_custom_override_crs
@@ -497,8 +498,14 @@ EOF
   fi
 }
 
+setup_gwc_status() {
+  export WMS_DIR_INTEGRATION REQUIRE_TILED_PARAMETER WMSC_ENABLED TMS_ENABLED SECURITY_ENABLED
+  activate_gwc_global_configs
+}
+
 # Function to setup control flow https://docs.geoserver.org/stable/en/user/extensions/controlflow/index.html
 setup_control_flow() {
+  export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST USER_WMS_REQUEST THROTTLE_REQUEST_PER_IP
   if [[ ! -f "${GEOSERVER_DATA_DIR}"/controlflow.properties ]]; then
     # If it doesn't exists, copy from /settings directory if exists
     if [[ -f "${EXTRA_CONFIG_DIR}"/controlflow.properties ]]; then
@@ -572,12 +579,28 @@ geoserver_logging() {
 }
 
 
+setup_geoserver_logging(){
+  export GEOSERVER_LOG_PROFILE
+  geoserver_logging
+
+}
+
+
+
+
 
 tomcat_logging() {
   if [[ -f "${EXTRA_CONFIG_DIR}/logging.properties" ]]; then
     envsubst < "${EXTRA_CONFIG_DIR}/logging.properties" > "${CATALINA_HOME}/conf/logging.properties"
   else
     envsubst < /build_data/logging.properties > "${CATALINA_HOME}/conf/logging.properties"
+  fi
+}
+
+setup_logging() {
+  if [[ ${LOGGING_STDOUT} =~ [Tt][Rr][Uu][Ee] ]]; then
+    export CONSOLE_HANDLER_LEVEL
+    tomcat_logging
   fi
 }
 
@@ -734,7 +757,8 @@ entry_point_script() {
 
 
 setup_monitoring() {
-
+  create_dir "${MONITOR_AUDIT_PATH}"
+  export MONITORING_AUDIT_ENABLED MONITORING_AUDIT_ROLL_LIMIT MONITORING_STORAGE MONITORING_MODE MONITORING_SYNC MONITORING_BODY_SIZE MONITORING_BBOX_LOG_CRS MONITORING_BBOX_LOG_LEVEL
   if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
         envsubst < "${EXTRA_CONFIG_DIR}"/monitor.properties > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
   else
@@ -858,3 +882,616 @@ setup_hz_cluster() {
   fi
 }
 
+install_fonts() {
+  ls "${FONTS_DIR}"/*.ttf >/dev/null 2>&1 && cp -rf "${FONTS_DIR}"/*.ttf /usr/share/fonts/truetype/
+  ls "${FONTS_DIR}"/*.otf >/dev/null 2>&1 && cp -rf "${FONTS_DIR}"/*.otf /usr/share/fonts/opentype/
+  setup_google_fonts
+}
+
+install_sample_data(){
+  if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
+    cp -r "${CATALINA_HOME}"/data/* "${GEOSERVER_DATA_DIR}"
+  fi
+}
+
+setup_google_fonts() {
+  [[ -z "${GOOGLE_FONTS_NAMES}" ]] && return
+
+  git clone --filter=blob:none --no-checkout https://github.com/google/fonts.git
+  cd fonts || return
+  git config core.sparsecheckout true
+
+  for gfont in ${GOOGLE_FONTS_NAMES//,/ }; do
+    grep -Fxq "$gfont" /build_data/google_fonts.txt &&
+      echo "ofl/$gfont" >> .git/info/sparse-checkout
+  done
+
+  git checkout main
+
+  for gfont in ${GOOGLE_FONTS_NAMES//,/ }; do
+    grep -Fxq "$gfont" /build_data/google_fonts.txt &&
+      cp -r "ofl/$gfont" /usr/share/fonts/truetype/
+  done
+
+  cd ..
+  rm -rf fonts
+}
+
+cleanup_data_dir() {
+  [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]] &&
+    rm -rf "${GEOSERVER_DATA_DIR:?}/"*
+}
+
+setup_s3_extension() {
+  export S3_SERVER_URL S3_USERNAME S3_PASSWORD S3_ALIAS
+
+  if [[ -z "${S3_SERVER_URL}" || -z "${S3_USERNAME}" || -z "${S3_PASSWORD}" || -z "${S3_ALIAS}" ]]; then
+    echo -e "\e[32m [Entrypoint] Missing S3 vars, skipping s3.properties \033[0m"
+    return
+  fi
+
+  if [[ "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" == *"-Ds3.properties.location"* ]]; then
+    s3_config
+  else
+    echo -e "\e[32m [Entrypoint] -Ds3.properties.location not set, skipping S3 \033[0m"
+  fi
+}
+
+
+setup_stable_extensions(){
+
+  generate_stable_extensions_config
+  download_extensions_config "${STABLE_PLUGINS_DIR}/curl.cfg"
+
+  local extensions
+
+  if [[ "$ACTIVE_EXTENSIONS" != "$DEFAULT_EXTENSIONS" ]]; then
+      extensions="${ACTIVE_EXTENSIONS}"
+  else
+      extensions="${DEFAULT_EXTENSIONS}"
+  fi
+
+  for ext in $(echo "${extensions}" | tr ',' ' '); do
+
+      if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
+          install_plugin "${REQUIRED_PLUGINS_DIR}" "${ext}"
+      else
+          install_plugin "${STABLE_PLUGINS_DIR}" "${ext}"
+      fi
+
+  done
+}
+
+setup_community_extensions(){
+
+  if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
+    if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+      rm -rf ${COMMUNITY_PLUGINS_DIR}/*.zip
+    fi
+
+  generate_community_extensions_config
+  download_extensions_config "${COMMUNITY_PLUGINS_DIR}/curl.cfg"
+
+  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+      if [[ -f ${COMMUNITY_PLUGINS_DIR}/${ext}.zip ]]; then
+
+        setup_jdbc_db_store
+        setup_jdbc_db_config
+        setup_hz_cluster
+        install_plugin ${COMMUNITY_PLUGINS_DIR} "${ext}"
+      fi
+  done
+
+fi
+
+}
+
+setup_community_extensions_status() {
+  export JDBC_CONFIG_ENABLED JDBC_IGNORE_PATHS JDBC_STORE_ENABLED POSTGRES_JNDI
+  setup_community_extensions
+}
+
+setup_extensions(){
+
+
+  DEFAULT_EXTENSIONS=''
+  for plugin in $(cat ${REQUIRED_PLUGINS_DIR}/required_plugins.txt); do
+    if [ -z "$DEFAULT_EXTENSIONS" ]; then
+      DEFAULT_EXTENSIONS=${plugin}
+    else
+      DEFAULT_EXTENSIONS=${DEFAULT_EXTENSIONS},${plugin}
+    fi
+  done
+
+  if [[ -z ${ACTIVE_EXTENSIONS} ]];then
+    ACTIVE_EXTENSIONS=${DEFAULT_EXTENSIONS},${STABLE_EXTENSIONS}
+  fi
+
+  # If FORCE_DOWNLOAD_STABLE_EXTENSIONS is true, remove all stable extensions
+  if [[ ${FORCE_DOWNLOAD_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]]; then
+    rm -rf ${STABLE_PLUGINS_DIR}/*.zip
+    rm -rf ${REQUIRED_PLUGINS_DIR}/*.zip
+  fi
+
+  setup_stable_extensions
+}
+
+generate_community_extensions_config() {
+  local cfg_file="${COMMUNITY_PLUGINS_DIR}/curl.cfg"
+  rm -f "$cfg_file"
+
+  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
+    local output_file="${COMMUNITY_PLUGINS_DIR}/${ext}.zip"
+
+    if [[ -f "$output_file" ]]; then
+      echo -e "[Entrypoint] Community Extension already exists, skipping download of : \e[1;31m $ext \033[0m"
+      continue
+    fi
+
+    echo "url = \"https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip\"" >> "$cfg_file"
+    echo "output = \"${output_file}\"" >> "$cfg_file"
+    echo "--fail" >> "$cfg_file"
+    echo "--location" >> "$cfg_file"
+    echo "" >> "$cfg_file"
+  done
+}
+
+generate_stable_extensions_config() {
+  local cfg_file="${STABLE_PLUGINS_DIR}/curl.cfg"
+  rm -f "$cfg_file"
+
+  local extensions
+
+  if [[ "$ACTIVE_EXTENSIONS" != "$DEFAULT_EXTENSIONS" ]]; then
+      extensions="${ACTIVE_EXTENSIONS}"
+  else
+      extensions="${DEFAULT_EXTENSIONS}"
+  fi
+
+  for ext in $(echo "${extensions}" | tr ',' ' '); do
+
+    if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
+        output_file="${REQUIRED_PLUGINS_DIR}/${ext}.zip"
+    else
+        output_file="${STABLE_PLUGINS_DIR}/${ext}.zip"
+    fi
+
+    # Skip if already downloaded
+    if [[ -f "$output_file" ]]; then
+        echo -e "[Entrypoint] Extension already exists : \e[1;31m $ext \033[0m"
+        continue
+    fi
+
+    plugin_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
+
+    echo "url = \"${plugin_url}\"" >> "$cfg_file"
+    echo "output = \"${output_file}\"" >> "$cfg_file"
+    echo "--fail" >> "$cfg_file"
+    echo "--location" >> "$cfg_file"
+    echo "" >> "$cfg_file"
+
+  done
+}
+
+
+
+download_extensions_config() {
+  local cfg_file="${1:-/work/curl.cfg}"
+
+  # Only proceed if config exists and has content
+  if [[ ! -s "$cfg_file" ]]; then
+    echo "No extensions to download"
+    return 0
+  fi
+
+  for attempt in {1..5}; do
+    echo "Attempt $attempt of downloading plugins"
+
+    if curl --progress-bar -K "$cfg_file"; then
+      echo "Download successful"
+      return 0
+    else
+      echo "Download failed, retrying in 5 seconds..."
+      sleep 5
+    fi
+  done
+
+  echo "Download failed after multiple attempts"
+  return 1
+}
+
+sync_gdal_version() {
+  local install_dir lib_dir version
+
+  install_dir="$(detect_install_dir)"
+  lib_dir="${install_dir}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib"
+
+  cp "${REQUIRED_PLUGINS_DIR}/log4j-layout-template-json.jar" "${lib_dir}/"
+
+  for jar in "${lib_dir}"/gdal-*.jar; do
+    version="$(basename "$jar" | sed 's/gdal-\(.*\)\.jar/\1/')"
+    break
+  done
+
+  GDAL_VERSION="$(gdalinfo --version | awk '{print $2}' | tr -d ,)"
+
+  [[ "${GDAL_VERSION}" == "${version}" ]] || {
+    rm -f "${lib_dir}/gdal-${version}.jar"
+    cp "/usr/share/java/gdal-${GDAL_VERSION}.jar" "${lib_dir}/"
+  }
+}
+
+export_cluster_variables() {
+  set_vars
+
+  export READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER
+  export TOGGLE_MASTER TOGGLE_SLAVE
+  export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH
+  export INSTANCE_STRING
+  export CLUSTER_CONNECTION_RETRY_COUNT CLUSTER_CONNECTION_MAX_WAIT
+
+  log "CLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR}"
+  log "MONITOR_AUDIT_PATH=${MONITOR_AUDIT_PATH}"
+}
+
+setup_cluster() {
+  set_vars
+
+  export READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER
+  export TOGGLE_MASTER TOGGLE_SLAVE
+  export CLUSTER_CONFIG_DIR MONITOR_AUDIT_PATH INSTANCE_STRING
+
+  # Cleanup monitoring logs if clustering disabled
+  if [[ "${CLUSTERING}" =~ [Ff][Aa][Ll][Ss][Ee] ]] &&
+     [[ "${RESET_MONITORING_LOGS}" =~ [Tt][Rr][Uu][Ee] ]] &&
+     [[ -d "${GEOSERVER_DATA_DIR}/monitoring" ]]; then
+    find "${GEOSERVER_DATA_DIR}/monitoring" \
+      -type d -name 'monitor_*' -exec rm -r {} +
+  fi
+}
+
+setup_clustering_status() {
+  [[ "${CLUSTERING}" =~ [Ff][Aa][Ll][Ss][Ee] ]] && return
+
+  ext="jms-cluster-plugin"
+
+  # Ensure clustering extension
+  if [[ "${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+    rm -f "/community_plugins/${ext}.zip"
+  fi
+
+  if [[ ! -f "/community_plugins/${ext}.zip" ]]; then
+    community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+    download_extension "${community_plugins_url}" "${ext}" /community_plugins
+  fi
+
+  install_plugin /community_plugins "${ext}"
+
+  if [[ -z "${EXISTING_DATA_DIR}" ]]; then
+    create_dir "${CLUSTER_CONFIG_DIR}"
+    chown -R "${USER_NAME}:${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+
+    if [[ "${DB_BACKEND}" =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
+      postgres_ssl_setup
+      export SSL_PARAMETERS="${PARAMS}"
+    fi
+
+    broker_xml_config
+    cluster_config
+    broker_config
+  else
+    # Validate existing cluster config
+    local count
+    count=$(find "${CLUSTER_CONFIG_DIR}" \
+      -type f \( -name cluster.properties \
+               -o -name embedded-broker.properties \
+               -o -name broker.xml \) | wc -l)
+
+    [[ "${count}" -ne 3 ]] && {
+      echo "Missing cluster configuration files in ${CLUSTER_CONFIG_DIR}"
+      exit 1
+    }
+  fi
+
+  # Temporary fix: jdom2
+  if [[ -f /build_data/jdom2-2.0.6.1.jar ]];then
+    cp /build_data/jdom2-2.0.6.1.jar \
+      "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
+  fi
+}
+
+setup_jndi_status() {
+  if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]]; then
+    postgres_ssl_setup
+    export SSL_PARAMETERS=${PARAMS}
+
+    : "${POSTGRES_PORT:=5432}"
+    export POSTGRES_PORT
+
+    # Remove PostgreSQL jars from GeoServer WEB-INF
+    POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
+    if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
+      rm "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/postgresql-*
+    fi
+
+    # Install JDBC driver into Tomcat
+    cp "${CATALINA_HOME}/postgres_config/postgresql-"* \
+       "${CATALINA_HOME}/lib/"
+
+    if [[ -f "${EXTRA_CONFIG_DIR}/context.xml" ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}/context.xml" \
+        > "${CATALINA_HOME}/conf/context.xml"
+    else
+      envsubst < /build_data/context.xml \
+        > "${CATALINA_HOME}/conf/context.xml"
+    fi
+  else
+    # Fallback: bundle JDBC with GeoServer
+    cp "${CATALINA_HOME}/postgres_config/postgresql-"* \
+       "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
+  fi
+}
+
+setup_tomcat_webapp_status() {
+  if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+    unzip -qq "${REQUIRED_PLUGINS_DIR}/tomcat_apps.zip" -d /tmp/
+
+    cp -r /tmp/tomcat_apps/* "${CATALINA_HOME}/webapps/"
+    rm -rf /tmp/tomcat_apps
+
+    # Manager context.xml when JNDI disabled
+    if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+      if [[ -f "${EXTRA_CONFIG_DIR}/context.xml" ]]; then
+        envsubst < "${EXTRA_CONFIG_DIR}/context.xml" \
+          > "${CATALINA_HOME}/webapps/manager/META-INF/context.xml"
+      else
+        cp /build_data/context.xml \
+           "${CATALINA_HOME}/webapps/manager/META-INF/"
+        sed -i '19,36d' \
+          "${CATALINA_HOME}/webapps/manager/META-INF/context.xml"
+      fi
+    fi
+
+    # Setup Tomcat credentials
+    export TOMCAT_USER
+    if [[ -z ${TOMCAT_PASSWORD} ]]; then
+      generate_random_string 18
+      TOMCAT_PASSWORD=${RAND}
+      echo "${TOMCAT_PASSWORD}" > "${GEOSERVER_DATA_DIR}/tomcat_pass.txt"
+      delete_file "${CATALINA_HOME}/conf/tomcat-users.xml"
+      tomcat_user_config
+      unset TOMCAT_PASSWORD RAND
+    else
+      tomcat_user_config
+    fi
+  else
+    # Harden Tomcat: remove default apps
+    delete_folder "${CATALINA_HOME}/webapps/ROOT"
+    delete_folder "${CATALINA_HOME}/webapps/docs"
+    delete_folder "${CATALINA_HOME}/webapps/examples"
+    delete_folder "${CATALINA_HOME}/webapps/host-manager"
+    delete_folder "${CATALINA_HOME}/webapps/manager"
+
+    if [[ "${ROOT_WEBAPP_REDIRECT}" =~ [Tt][Rr][Uu][Ee] ]]; then
+      mkdir -p "${CATALINA_HOME}/webapps/ROOT"
+      sed "s@/geoserver/@/${GEOSERVER_CONTEXT_ROOT}/@g" \
+        /build_data/index.jsp \
+        > "${CATALINA_HOME}/webapps/ROOT/index.jsp"
+    fi
+  fi
+}
+
+setup_tomcat_ssl_status() {
+
+  ############################################
+  # Temp cleanup helpers
+  ############################################
+  TMP_FILES=()
+
+  cleanup_temp() {
+    for f in "${TMP_FILES[@]}"; do
+      [ -f "$f" ] && rm -f "$f"
+    done
+  }
+
+  trap cleanup_temp EXIT
+
+  ############################################
+  # SSL handling
+  ############################################
+  if [[ "${SSL}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
+
+    # Defaults
+    JKS_FILE="${JKS_FILE:-letsencrypt.jks}"
+    KEY_ALIAS="${KEY_ALIAS:-letsencrypt}"
+    P12_FILE="${P12_FILE:-letsencrypt.p12}"
+
+    file_env JKS_KEY_PASSWORD
+    if [ -z "${JKS_KEY_PASSWORD}" ]; then
+      generate_random_string 22
+      JKS_KEY_PASSWORD="$RAND"
+      echo "JKS_KEY_PASSWORD" >> /tmp/set_vars.txt
+      unset RAND
+    fi
+
+    file_env JKS_STORE_PASSWORD
+    if [ -z "${JKS_STORE_PASSWORD}" ]; then
+      generate_random_string 23
+      JKS_STORE_PASSWORD="$RAND"
+      echo "JKS_STORE_PASSWORD" >> /tmp/set_vars.txt
+      unset RAND
+    fi
+
+    file_env PKCS12_PASSWORD
+    if [ -z "${PKCS12_PASSWORD}" ]; then
+      generate_random_string 24
+      PKCS12_PASSWORD="$RAND"
+      echo "PKCS12_PASSWORD" >> /tmp/set_vars.txt
+      unset RAND
+    fi
+
+    export PKCS12_PASSWORD JKS_KEY_PASSWORD JKS_STORE_PASSWORD
+
+    ############################################
+    # Prepare cert directory
+    ############################################
+    mkdir -p "${CERT_DIR}"
+
+    rm -f \
+      "${CERT_DIR}/${P12_FILE}" \
+      "${CERT_DIR}/${JKS_FILE}" \
+      "${CERT_DIR}/privkey.pem" \
+      "${CERT_DIR}/fullchain.pem"
+
+    ############################################
+    # Optional mounted certificate
+    ############################################
+    if [ -f "${EXTRA_CONFIG_DIR}/certificate.pfx" ]; then
+      cp "${EXTRA_CONFIG_DIR}/certificate.pfx" "${CERT_DIR}/certificate.pfx"
+      TMP_FILES+=("${CERT_DIR}/certificate.pfx")
+    fi
+
+    ############################################
+    # Extract or generate certs
+    ############################################
+    if [[ -f "${CERT_DIR}/certificate.pfx" ]]; then
+      openssl pkcs12 -in "${CERT_DIR}/certificate.pfx" \
+        -nocerts -nodes \
+        -out "${CERT_DIR}/privkey.pem" \
+        -passin pass:"${PKCS12_PASSWORD}"
+
+      openssl pkcs12 -in "${CERT_DIR}/certificate.pfx" \
+        -clcerts -nokeys \
+        -out "${CERT_DIR}/fullchain.pem" \
+        -passin pass:"${PKCS12_PASSWORD}"
+    fi
+
+    if [[ ! -f "${CERT_DIR}/fullchain.pem" ]]; then
+      openssl req -x509 -newkey rsa:4096 \
+        -keyout "${CERT_DIR}/privkey.pem" \
+        -out "${CERT_DIR}/fullchain.pem" \
+        -days 3650 -nodes -sha256 \
+        -subj '/CN=geoserver'
+    fi
+
+    ############################################
+    # PEM → PKCS12 → JKS
+    ############################################
+    openssl pkcs12 -export \
+      -in "${CERT_DIR}/fullchain.pem" \
+      -inkey "${CERT_DIR}/privkey.pem" \
+      -name "${KEY_ALIAS}" \
+      -out "${CERT_DIR}/${P12_FILE}" \
+      -password pass:"${PKCS12_PASSWORD}"
+
+    keytool -importkeystore \
+      -noprompt \
+      -trustcacerts \
+      -alias "${KEY_ALIAS}" \
+      -destkeystore "${CERT_DIR}/${JKS_FILE}" \
+      -deststorepass "${JKS_STORE_PASSWORD}" \
+      -destkeypass "${JKS_KEY_PASSWORD}" \
+      -srckeystore "${CERT_DIR}/${P12_FILE}" \
+      -srcstoretype PKCS12 \
+      -srcstorepass "${PKCS12_PASSWORD}"
+
+    SSL_CONF="${CATALINA_HOME}/conf/ssl-tomcat.xsl"
+
+  ############################################
+  # SSL disabled
+  ############################################
+  else
+    SSL_CONF="${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl"
+    cp "${CATALINA_HOME}/conf/ssl-tomcat.xsl" "${SSL_CONF}"
+    sed -i '95,138d' "${SSL_CONF}"
+    TMP_FILES+=("${SSL_CONF}")
+  fi
+
+  ############################################
+  # XSLT parameter building (unchanged)
+  ############################################
+  [ -n "$HTTP_PORT" ] && HTTP_PORT_PARAM="--stringparam http.port $HTTP_PORT "
+  [ -n "$HTTP_PROXY_NAME" ] && HTTP_PROXY_NAME_PARAM="--stringparam http.proxyName $HTTP_PROXY_NAME "
+  [ -n "$HTTP_PROXY_PORT" ] && HTTP_PROXY_PORT_PARAM="--stringparam http.proxyPort $HTTP_PROXY_PORT "
+  [ -n "$HTTP_REDIRECT_PORT" ] && HTTP_REDIRECT_PORT_PARAM="--stringparam http.redirectPort $HTTP_REDIRECT_PORT "
+  [ -n "$HTTP_CONNECTION_TIMEOUT" ] && HTTP_CONNECTION_TIMEOUT_PARAM="--stringparam http.connectionTimeout $HTTP_CONNECTION_TIMEOUT "
+  [ -n "$HTTP_COMPRESSION" ] && HTTP_COMPRESSION_PARAM="--stringparam http.compression $HTTP_COMPRESSION "
+  [ -n "$HTTP_SCHEME" ] && HTTP_SCHEME_PARAM="--stringparam http.scheme $HTTP_SCHEME "
+  [ -n "$HTTP_MAX_HEADER_SIZE" ] && HTTP_MAX_HEADER_SIZE_PARAM="--stringparam http.maxHttpHeaderSize $HTTP_MAX_HEADER_SIZE "
+
+  [[ "$HTTP_RELAX_CHARS" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]] && \
+    HTTP_RELAX_CHARS_PARAM="--stringparam http.relaxedPathChars {}[]\| "
+
+  [[ "$HTTP_RELAX_QUERY" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]] && \
+    HTTP_RELAX_QUERY_PARAM="--stringparam http.relaxedQueryChars {}[]\| "
+
+  [ -n "$HTTPS_PORT" ] && HTTPS_PORT_PARAM="--stringparam https.port $HTTPS_PORT "
+  [ -n "$JKS_FILE" ] && JKS_FILE_PARAM="--stringparam https.keystoreFile ${CERT_DIR}/${JKS_FILE} "
+  [ -n "$JKS_KEY_PASSWORD" ] && JKS_KEY_PASSWORD_PARAM="--stringparam https.keystorePass $JKS_KEY_PASSWORD "
+  [ -n "$KEY_ALIAS" ] && KEY_ALIAS_PARAM="--stringparam https.keyAlias $KEY_ALIAS "
+  [ -n "$JKS_STORE_PASSWORD" ] && JKS_STORE_PASSWORD_PARAM="--stringparam https.keyPass $JKS_STORE_PASSWORD "
+
+  ############################################
+  # Apply transform
+  ############################################
+  if [[ -f "${EXTRA_CONFIG_DIR}/server.xml" ]]; then
+    cp -f "${EXTRA_CONFIG_DIR}/server.xml" "${CATALINA_HOME}/conf/"
+  else
+    xsltproc \
+      --output "${CATALINA_HOME}/conf/server.xml" \
+      $HTTP_PORT_PARAM \
+      $HTTP_PROXY_NAME_PARAM \
+      $HTTP_PROXY_PORT_PARAM \
+      $HTTP_REDIRECT_PORT_PARAM \
+      $HTTP_CONNECTION_TIMEOUT_PARAM \
+      $HTTP_COMPRESSION_PARAM \
+      $HTTP_SCHEME_PARAM \
+      $HTTP_RELAX_CHARS_PARAM \
+      $HTTP_RELAX_QUERY_PARAM \
+      $HTTP_MAX_HEADER_SIZE_PARAM \
+      $HTTPS_PORT_PARAM \
+      $JKS_FILE_PARAM \
+      $JKS_KEY_PASSWORD_PARAM \
+      $KEY_ALIAS_PARAM \
+      $JKS_STORE_PASSWORD_PARAM \
+      "${SSL_CONF}" \
+      "${CATALINA_HOME}/conf/server.xml"
+
+    if [[ "${ACTIVATE_PROXY_HEADERS}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
+      sed -i -r '/\<\Host\>/ i\ \t<Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="x-forwarded-for" protocolHeader="x-forwarded-proto" />' \
+        "${CATALINA_HOME}/conf/server.xml"
+    fi
+  fi
+
+  ############################################
+  # Hardening
+  ############################################
+  sed -i 's/8005/-1/g' "${CATALINA_HOME}/conf/server.xml"
+}
+
+clean_up_vars() {
+  if [[ -f /tmp/set_vars.txt ]]; then
+    for vars in $(cat /tmp/set_vars.txt); do unset "$vars"; done
+    rm /tmp/set_vars.txt
+  fi
+}
+
+# TODO: update hookpath
+run_update_password_hook() {
+  #local hook="${SCRIPT_DIR}/lib/update_passwords.sh"
+  local hook="/scripts/update_passwords.sh"
+
+  [[ -n "${EXISTING_DATA_DIR}" ]] && return
+
+  if [[ -x "${hook}" ]]; then
+    /bin/bash "${hook}"
+  elif [[ -f "${hook}" ]]; then
+    /bin/bash "${hook}"
+  fi
+}
+
+
+setup_community_extensions_status() {
+  export JDBC_CONFIG_ENABLED JDBC_STORE_ENABLED POSTGRES_JNDI
+  setup_community_extensions
+}
