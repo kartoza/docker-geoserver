@@ -1,86 +1,24 @@
 #!/usr/bin/env bash
 
 ############################################
-# 1. TOMCAT CORE CONFIGURATION
+# TOMCAT CONFIGURATION
 ############################################
 
-# Configure Tomcat users (manager / admin)
-tomcat_user_config() {
-  [[ -f "${CATALINA_HOME}/conf/tomcat-users.xml" ]] && return
-
-  if [[ -f "${EXTRA_CONFIG_DIR}/tomcat-users.xml" ]]; then
-    envsubst < "${EXTRA_CONFIG_DIR}/tomcat-users.xml" \
-      > "${CATALINA_HOME}/conf/tomcat-users.xml"
+package_tomcat_webapp() {
+  if [[ -d "${CATALINA_HOME}"/webapps.dist ]]; then
+    mv "${CATALINA_HOME}"/webapps.dist /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -r /tomcat_apps
   else
-    envsubst < /build_data/tomcat-users.xml \
-      > "${CATALINA_HOME}/conf/tomcat-users.xml"
+    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -rf /tomcat_apps
   fi
 }
-
-# Configure Tomcat JUL logging
-tomcat_logging() {
-  if [[ -f "${EXTRA_CONFIG_DIR}/logging.properties" ]]; then
-    envsubst < "${EXTRA_CONFIG_DIR}/logging.properties" > "${CATALINA_HOME}/conf/logging.properties"
-  else
-    envsubst < /build_data/logging.properties > "${CATALINA_HOME}/conf/logging.properties"
-  fi
-}
-
-setup_logging() {
-  if [[ ${LOGGING_STDOUT} =~ [Tt][Rr][Uu][Ee] ]]; then
-    export CONSOLE_HANDLER_LEVEL
-    tomcat_logging
-  fi
-}
-############################################
-# 2. GEOSERVER LOGGING
-############################################
-
-setup_geoserver_logging(){
-  export GEOSERVER_LOG_PROFILE
-  geoserver_logging
-
-}
-
-############################################
-# 3. JNDI / DATABASE CONFIGURATION
-############################################
-
-setup_jndi_status() {
-  if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]]; then
-    postgres_ssl_setup
-    export SSL_PARAMETERS=${PARAMS}
-
-    : "${POSTGRES_PORT:=5432}"
-    export POSTGRES_PORT
-
-    # Remove PostgreSQL jars from GeoServer WEB-INF
-    POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
-    if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
-      rm "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/postgresql-*
-    fi
-
-    # Install JDBC driver into Tomcat
-    cp "${CATALINA_HOME}/postgres_config/postgresql-"* \
-       "${CATALINA_HOME}/lib/"
-
-    if [[ -f "${EXTRA_CONFIG_DIR}/context.xml" ]]; then
-      envsubst < "${EXTRA_CONFIG_DIR}/context.xml" \
-        > "${CATALINA_HOME}/conf/context.xml"
-    else
-      envsubst < /build_data/context.xml \
-        > "${CATALINA_HOME}/conf/context.xml"
-    fi
-  else
-    # Fallback: bundle JDBC with GeoServer
-    cp "${CATALINA_HOME}/postgres_config/postgresql-"* \
-       "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
-  fi
-}
-
-############################################
-# 4. TOMCAT WEBAPPS & MANAGER
-############################################
 
 setup_tomcat_webapp_status() {
   if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -131,8 +69,38 @@ setup_tomcat_webapp_status() {
   fi
 }
 
+tomcat_user_config() {
+  [[ -f "${CATALINA_HOME}/conf/tomcat-users.xml" ]] && return
+
+  if [[ -f "${EXTRA_CONFIG_DIR}/tomcat-users.xml" ]]; then
+    envsubst < "${EXTRA_CONFIG_DIR}/tomcat-users.xml" \
+      > "${CATALINA_HOME}/conf/tomcat-users.xml"
+  else
+    envsubst < /build_data/tomcat-users.xml \
+      > "${CATALINA_HOME}/conf/tomcat-users.xml"
+  fi
+}
+
+
+patch_tomcat_server_info() {
+  pushd "${CATALINA_HOME}/lib" || exit
+  create_dir org/apache/catalina/util/
+  unzip -p catalina.jar org/apache/catalina/util/ServerInfo.properties \
+  | sed 's/^server.info=.*/server.info=Apache Tomcat/' \
+  > ServerInfo.properties && \
+  zip -d catalina.jar org/apache/catalina/util/ServerInfo.properties && \
+  zip -ur catalina.jar ServerInfo.properties && \
+  rm ServerInfo.properties
+
+}
+
+set_restrictive_umask() {
+  echo "session optional pam_umask.so" >> /etc/pam.d/common-session
+  sed -i 's/UMASK.*022/UMASK           007/g' /etc/login.defs
+}
+
 ############################################
-# 5. SSL & SERVER.XML
+# SSL & SERVER.XML
 ############################################
 
 setup_tomcat_ssl_status() {
@@ -325,7 +293,7 @@ setup_tomcat_ssl_status() {
 
 
 ############################################
-# 6. WEB.XML / CORS
+# WEB.XML / CORS
 ############################################
 
 web_cors() {
@@ -359,7 +327,7 @@ web_cors() {
 }
 
 ############################################
-# 7. JVM & TELEMETRY
+# JVM & TELEMETRY
 ############################################
 
 configure_jvm() {
@@ -406,6 +374,19 @@ configure_jvm() {
        -DGEOSERVER_DISABLE_STATIC_WEB_FILES=${GEOSERVER_DISABLE_STATIC_WEB_FILES} \
        -DGEOSERVER_DATA_DIR_LOADER_ENABLED=${GEOSERVER_DATA_DIR_LOADER_ENABLED} \
        -DGEOSERVER_DATA_DIR_LOADER_THREADS=${GEOSERVER_DATA_DIR_LOADER_THREADS} \
+       -Dows10.exception.xml.responsetype=${APPLICATION_CONTEXT} \
+       -Dows11.exception.xml.responsetype=${APPLICATION_CONTEXT} \
+       -DGEOSERVER_DISABLE_STATIC_WEB_FILES=${GEOSERVER_DISABLE_STATIC_WEB_FILES} \
+       -DGEOSERVER_STATIC_WEB_FILES_SCRIPT=${GEOSERVER_STATIC_WEB_FILES_SCRIPT} \
+       -DGEOSERVER_GLOBAL_LAYER_GROUP_INHERIT=${GEOSERVER_GLOBAL_LAYER_GROUP_INHERIT} \
+       -DPROXY_BASE_URL_HEADER=${PROXY_BASE_URL_HEADER} \
+       -DGEOSERVER_FEATUREINFO_HTML_SCRIPT=${GEOSERVER_FEATUREINFO_HTML_SCRIPT} \
+       -DGEOSERVER_FORCE_FREEMARKER_ESCAPING=${GEOSERVER_FORCE_FREEMARKER_ESCAPING} \
+       -DGEOSERVER_FREEMARKER_API_EXPOSED=${GEOSERVER_FREEMARKER_API_EXPOSED} \
+       -DENABLE_MAP_WRAPPING=${ENABLE_MAP_WRAPPING} \
+       -DENABLE_ADVANCED_PROJECTION=${ENABLE_ADVANCED_PROJECTION} \
+       -DUSE_GLOBAL_RENDERING_POOL=${USE_GLOBAL_RENDERING_POOL} \
+       -Dorg.geoserver.wfs.getfeature.cachelimit=${WFS_GETFEATURE_CACHELIMIT} \
        ${ADDITIONAL_JAVA_STARTUP_OPTIONS} "
   fi
   ## Prepare the JVM command line arguments
@@ -422,43 +403,8 @@ configure_telemetry() {
   export JAVA_OPTS
 }
 
-############################################
-# 8. PACKAGING HELPERS
-############################################
-
-package_tomcat_webapp() {
-  if [[ -d "${CATALINA_HOME}"/webapps.dist ]]; then
-    mv "${CATALINA_HOME}"/webapps.dist /tomcat_apps
-    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
-    rm -r /tomcat_apps
-  else
-    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps
-    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps
-    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps
-    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps
-    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps
-    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
-    rm -rf /tomcat_apps
-  fi
-}
 
 
-patch_tomcat_server_info() {
-  pushd "${CATALINA_HOME}/lib" || exit
-  create_dir org/apache/catalina/util/
-  unzip -p catalina.jar org/apache/catalina/util/ServerInfo.properties \
-  | sed 's/^server.info=.*/server.info=Apache Tomcat/' \
-  > ServerInfo.properties && \
-  zip -d catalina.jar org/apache/catalina/util/ServerInfo.properties && \
-  zip -ur catalina.jar ServerInfo.properties && \
-  rm ServerInfo.properties
-
-}
-
-set_restrictive_umask() {
-  echo "session optional pam_umask.so" >> /etc/pam.d/common-session
-  sed -i 's/UMASK.*022/UMASK           007/g' /etc/login.defs
-}
 
 ############################################
 # 9. STARTUP

@@ -1,21 +1,10 @@
 #!/usr/bin/env bash
 
-############################################
-# CLUSTERING HELPERS
-############################################
-# - set_vars
-# - cluster_config
-# - broker_config
-# - broker_xml_config
-############################################
-
 
 ############################################
 # 1. VARIABLE INITIALIZATION & DERIVATION
 ############################################
-# Determines instance identity, cluster role,
-# and filesystem paths used by clustering
-############################################
+
 
 set_vars() {
   # Instance identity
@@ -300,32 +289,4 @@ setup_clustering_status() {
   fi
 }
 
-############################################
-# 6. EXTERNAL / CROSS-FILE DEPENDENCIES
-############################################
-# These functions are USED here but DEFINED elsewhere.
-# Keep here as a reference to decide ownership.
-############################################
-#
-# From filesystem / utils libs:
-#   - create_dir
-#   - log
-#
-# From plugin management:
-#   - download_extension
-#   - install_plugin
-#
-# From database / SSL:
-#   - postgres_ssl_setup
-#
-#
-# From global env:
-#   - USER_NAME
-#   - GEO_GROUP_NAME
-#   - GEOSERVER_DATA_DIR
-#   - EXTRA_CONFIG_DIR
-#   - DB_BACKEND
-#   - GS_VERSION
-#   - GEOSERVER_CONTEXT_ROOT
-#
-############################################
+
