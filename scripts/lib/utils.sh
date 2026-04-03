@@ -114,22 +114,7 @@ make_hash() {
   echo "digest1:${HASH}"
 }
 
-rename_geoserver_context_root() {
-  if [[ "${GEOSERVER_CONTEXT_ROOT}" != "geoserver" ]]; then
-    #log "Changing context-root to ${GEOSERVER_CONTEXT_ROOT}"
-    echo "Changing context-root to ${GEOSERVER_CONTEXT_ROOT}"
-    local install_dir
-    install_dir="$(detect_install_dir)"
 
-    if [[ -d "${install_dir}/webapps/geoserver" ]]; then
-      mv "${install_dir}/webapps/geoserver" \
-         "${install_dir}/webapps/${GEOSERVER_CONTEXT_ROOT}"
-    else
-      #log_warn "Context already renamed or first-run skipped"
-      echo "Context already renamed or first-run skipped"
-    fi
-  fi
-}
 
 ############################################
 # 4. GEOWEBCACHE & FILE PERMISSIONS
@@ -416,86 +401,3 @@ run_update_password_hook() {
   fi
 }
 
-generate_community_extensions_config() {
-  local cfg_file="${COMMUNITY_PLUGINS_DIR}/curl.cfg"
-  rm -f "$cfg_file"
-
-  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-    local output_file="${COMMUNITY_PLUGINS_DIR}/${ext}.zip"
-
-    if [[ -f "$output_file" ]]; then
-      echo -e "[Entrypoint] Community Extension already exists, skipping download of : \e[1;31m $ext \033[0m"
-      continue
-    fi
-
-    echo "url = \"https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip\"" >> "$cfg_file"
-    echo "output = \"${output_file}\"" >> "$cfg_file"
-    echo "--fail" >> "$cfg_file"
-    echo "--location" >> "$cfg_file"
-    echo "" >> "$cfg_file"
-  done
-}
-
-generate_stable_extensions_config() {
-  local cfg_file="${STABLE_PLUGINS_DIR}/curl.cfg"
-  rm -f "$cfg_file"
-
-  local extensions
-
-  if [[ "$ACTIVE_EXTENSIONS" != "$DEFAULT_EXTENSIONS" ]]; then
-      extensions="${ACTIVE_EXTENSIONS}"
-  else
-      extensions="${DEFAULT_EXTENSIONS}"
-  fi
-
-  for ext in $(echo "${extensions}" | tr ',' ' '); do
-
-    if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
-        output_file="${REQUIRED_PLUGINS_DIR}/${ext}.zip"
-    else
-        output_file="${STABLE_PLUGINS_DIR}/${ext}.zip"
-    fi
-
-    # Skip if already downloaded
-    if [[ -f "$output_file" ]]; then
-        echo -e "[Entrypoint] Extension already exists : \e[1;31m $ext \033[0m"
-        continue
-    fi
-
-    plugin_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-
-    echo "url = \"${plugin_url}\"" >> "$cfg_file"
-    echo "output = \"${output_file}\"" >> "$cfg_file"
-    echo "--fail" >> "$cfg_file"
-    echo "--location" >> "$cfg_file"
-    echo "" >> "$cfg_file"
-
-  done
-}
-
-
-
-download_extensions_config() {
-  local cfg_file="${1:-/work/curl.cfg}"
-
-  # Only proceed if config exists and has content
-  if [[ ! -s "$cfg_file" ]]; then
-    echo "No extensions to download"
-    return 0
-  fi
-
-  for attempt in {1..5}; do
-    echo "Attempt $attempt of downloading plugins"
-
-    if curl --progress-bar -K "$cfg_file"; then
-      echo "Download successful"
-      return 0
-    else
-      echo "Download failed, retrying in 5 seconds..."
-      sleep 5
-    fi
-  done
-
-  echo "Download failed after multiple attempts"
-  return 1
-}

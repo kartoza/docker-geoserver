@@ -13,6 +13,7 @@ source "${SCRIPT_DIR}/lib/database.sh"
 source "${SCRIPT_DIR}/lib/geoserver.sh"
 source "${SCRIPT_DIR}/lib/tomcat.sh"
 source "${SCRIPT_DIR}/lib/cluster.sh"
+source "${SCRIPT_DIR}/lib/extensions.sh"
 
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
 STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)

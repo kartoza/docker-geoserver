@@ -476,6 +476,22 @@ set_restrictive_umask() {
 ############################################
 # 9. STARTUP
 ############################################
+rename_geoserver_context_root() {
+  if [[ "${GEOSERVER_CONTEXT_ROOT}" != "geoserver" ]]; then
+    #log "Changing context-root to ${GEOSERVER_CONTEXT_ROOT}"
+    echo "Changing context-root to ${GEOSERVER_CONTEXT_ROOT}"
+    local install_dir
+    install_dir="$(detect_install_dir)"
+
+    if [[ -d "${install_dir}/webapps/geoserver" ]]; then
+      mv "${install_dir}/webapps/geoserver" \
+         "${install_dir}/webapps/${GEOSERVER_CONTEXT_ROOT}"
+    else
+      #log_warn "Context already renamed or first-run skipped"
+      echo "Context already renamed or first-run skipped"
+    fi
+  fi
+}
 
 start_geoserver_service() {
 if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then

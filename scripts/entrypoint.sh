@@ -18,6 +18,7 @@ source "${SCRIPT_DIR}/lib/database.sh"
 source "${SCRIPT_DIR}/lib/geoserver.sh"
 source "${SCRIPT_DIR}/lib/tomcat.sh"
 source "${SCRIPT_DIR}/lib/cluster.sh"
+source "${SCRIPT_DIR}/lib/extensions.sh"
 
 #############################################
 # Run functions
