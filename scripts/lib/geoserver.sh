@@ -28,13 +28,6 @@ setup_custom_override_crs() {
           "${GEOSERVER_DATA_DIR}/user_projections/"
 }
 
-setup_crs() {
-  create_dir "${GEOWEBCACHE_CACHE_DIR}"
-  create_dir "${GEOSERVER_DATA_DIR}/user_projections"
-  setup_custom_crs
-  setup_custom_override_crs
-}
-
 ############################################
 # 2. DISK QUOTA (GWC)
 ############################################
@@ -98,7 +91,6 @@ EOF
 }
 
 setup_disk_quota() {
-  export DISK_QUOTA_FREQUENCY DISK_QUOTA_SIZE
 
   if [[ "${DB_BACKEND}" =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
     postgres_ssl_setup
@@ -122,8 +114,11 @@ setup_disk_quota() {
 }
 
 ############################################
-# 3. GEOSERVER PACKAGING & INSTALL
+# GEOSERVER PACKAGING & INSTALL
 ############################################
+detect_install_dir() {
+  [[ -f "${GEOSERVER_HOME}/start.jar" ]] && echo "${GEOSERVER_HOME}" || echo "${CATALINA_HOME}"
+}
 
 validate_geo_install() {
   [[ -d "$1" && "$(ls -A "$1")" ]] || {
@@ -200,9 +195,25 @@ install_required_jars() {
   fi
 }
 
+configure_libjpegturbo() {
+  local arch
+  arch=$(dpkg --print-architecture)
+  local version="2.1.5.1"
+  local deb="libjpeg-turbo-official_${version}_${arch}.deb"
+
+  [[ -f "${resources_dir}/${deb}" ]] ||
+    curl -vfLo "${resources_dir}/${deb}" \
+      "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${version}/${deb}"
+
+  dpkg -i "${resources_dir}/${deb}"
+}
+
+install_plugin_libjpegturbo() {
+  configure_libjpegturbo
+}
 
 ############################################
-# 4. GWC, CONTROL FLOW, MONITORING
+# GWC, CONTROL FLOW, MONITORING
 ############################################
 
 activate_gwc_global_configs() {
@@ -288,7 +299,7 @@ EOF
 }
 
 ############################################
-# 5. GDAL VERSION SYNC
+# GDAL VERSION SYNC
 ############################################
 
 sync_gdal_version() {
@@ -313,7 +324,7 @@ sync_gdal_version() {
 }
 
 ############################################
-# 6. STATUS WRAPPERS (ENTRYPOINT CALLS)
+# STATUS WRAPPERS (ENTRYPOINT CALLS)
 ############################################
 
 setup_control_flow_status() {
@@ -326,28 +337,14 @@ setup_gwc_status() {
   activate_gwc_global_configs
 }
 
-############################################
-# 9. EXTERNAL / CROSS-FILE DEPENDENCIES
-############################################
-#
-# Defined elsewhere:
-#   - create_dir
-#   - detect_install_dir
-#   - postgres_ssl_setup
-#   - postgres_ready_status
-#   - create_gwc_tile_tables
-#   - setup_jdbc_db_store
-#   - setup_jdbc_db_config
-#   - setup_hz_cluster
-#   - setup_monitoring
-#
-# Environment dependencies:
-#   - GEOSERVER_DATA_DIR
-#   - GEOWEBCACHE_CACHE_DIR
-#   - EXTRA_CONFIG_DIR
-#   - REQUIRED_PLUGINS_DIR
-#   - STABLE_PLUGINS_DIR
-#   - GS_VERSION
-#   - DB_BACKEND
-#
-############################################
+setup_crs_status() {
+  create_dir "${GEOWEBCACHE_CACHE_DIR}"
+  create_dir "${GEOSERVER_DATA_DIR}/user_projections"
+  setup_custom_crs
+  setup_custom_override_crs
+}
+
+setup_disk_quota_status() {
+  export DISK_QUOTA_FREQUENCY DISK_QUOTA_SIZE
+  setup_disk_quota
+}

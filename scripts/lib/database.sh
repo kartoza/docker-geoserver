@@ -117,3 +117,39 @@ setup_jdbc_db_store() {
         fi
     fi
 }
+
+############################################
+# 3. JNDI / DATABASE CONFIGURATION
+############################################
+
+setup_jndi_status() {
+  if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]]; then
+    postgres_ssl_setup
+    export SSL_PARAMETERS=${PARAMS}
+
+    : "${POSTGRES_PORT:=5432}"
+    export POSTGRES_PORT
+
+    # Remove PostgreSQL jars from GeoServer WEB-INF
+    POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
+    if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
+      rm "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/postgresql-*
+    fi
+
+    # Install JDBC driver into Tomcat
+    cp "${CATALINA_HOME}/postgres_config/postgresql-"* \
+       "${CATALINA_HOME}/lib/"
+
+    if [[ -f "${EXTRA_CONFIG_DIR}/context.xml" ]]; then
+      envsubst < "${EXTRA_CONFIG_DIR}/context.xml" \
+        > "${CATALINA_HOME}/conf/context.xml"
+    else
+      envsubst < /build_data/context.xml \
+        > "${CATALINA_HOME}/conf/context.xml"
+    fi
+  else
+    # Fallback: bundle JDBC with GeoServer
+    cp "${CATALINA_HOME}/postgres_config/postgresql-"* \
+       "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
+  fi
+}
