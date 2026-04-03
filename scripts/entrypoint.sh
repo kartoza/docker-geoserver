@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 
-#!/usr/bin/env bash
-
-set -o pipefail
-
 
 figlet -t "Kartoza Docker GeoServer"
 
@@ -22,16 +18,21 @@ source "${SCRIPT_DIR}/lib/database.sh"
 source "${SCRIPT_DIR}/lib/geoserver.sh"
 source "${SCRIPT_DIR}/lib/tomcat.sh"
 source "${SCRIPT_DIR}/lib/cluster.sh"
+source "${SCRIPT_DIR}/lib/extensions.sh"
 
 #############################################
 # Run functions
 #############################################
-setup_runtime_user
-export_cluster_variables
-create_required_directories
-rename_context_root_if_needed
+
+# Gosu preparations
+setup_geoserver_users
+create_entrypoint_directories
+rename_geoserver_context_root
+set_vars
 run_pre_start_hooks
 configure_jvm
 configure_telemetry
 fix_permissions
 start_geoserver_service
+
+

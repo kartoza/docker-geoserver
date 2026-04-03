@@ -20,11 +20,9 @@ tomcat_user_config() {
 # Configure Tomcat JUL logging
 tomcat_logging() {
   if [[ -f "${EXTRA_CONFIG_DIR}/logging.properties" ]]; then
-    envsubst < "${EXTRA_CONFIG_DIR}/logging.properties" \
-      > "${CATALINA_HOME}/conf/logging.properties"
+    envsubst < "${EXTRA_CONFIG_DIR}/logging.properties" > "${CATALINA_HOME}/conf/logging.properties"
   else
-    envsubst < /build_data/logging.properties \
-      > "${CATALINA_HOME}/conf/logging.properties"
+    envsubst < /build_data/logging.properties > "${CATALINA_HOME}/conf/logging.properties"
   fi
 }
 
@@ -34,14 +32,14 @@ setup_logging() {
     tomcat_logging
   fi
 }
-
 ############################################
 # 2. GEOSERVER LOGGING
 ############################################
 
-setup_geoserver_logging_status() {
+setup_geoserver_logging(){
   export GEOSERVER_LOG_PROFILE
   geoserver_logging
+
 }
 
 ############################################
@@ -57,7 +55,10 @@ setup_jndi_status() {
     export POSTGRES_PORT
 
     # Remove PostgreSQL jars from GeoServer WEB-INF
-    rm -f "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-"*
+    POSTGRES_JAR_COUNT=$(ls -1 ${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l)
+    if [ "$POSTGRES_JAR_COUNT" != 0 ]; then
+      rm "${CATALINA_HOME}"/webapps/"${GEOSERVER_CONTEXT_ROOT}"/WEB-INF/lib/postgresql-*
+    fi
 
     # Install JDBC driver into Tomcat
     cp "${CATALINA_HOME}/postgres_config/postgresql-"* \
@@ -329,12 +330,31 @@ setup_tomcat_ssl_status() {
 
 web_cors() {
   local web_xml="${CATALINA_HOME}/conf/web.xml"
-  [[ -f "${web_xml}" ]] && return
-
-  if [[ -f "${EXTRA_CONFIG_DIR}/web.xml" ]]; then
-    cp "${EXTRA_CONFIG_DIR}/web.xml" "${web_xml}"
-  else
-    envsubst < /build_data/web.xml > "${web_xml}"
+  local custom_web_xml="${EXTRA_CONFIG_DIR}/web.xml"
+  if [[ ! -f "${web_xml}" ]]; then
+    # If it doesn't exists, copy from /settings directory if exists
+    if [[ -f "${custom_web_xml}"  ]]; then
+      cp -f "${custom_web_xml}"  "${CATALINA_HOME}"/conf/
+    else
+      # default values
+      envsubst < /build_data/web.xml > "${web_xml}"
+      ###
+      # Deactivate CORS filter in web.xml if DISABLE_CORS=true
+      # Useful if CORS is handled outside of Tomcat (e.g. in a proxying webserver like nginx)
+      ###
+      if [[ "${DISABLE_CORS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+        sed -i 's/<!-- CORS_START.*/<!-- CORS DEACTIVATED BY DISABLE_CORS -->\n<!--/; s/^.*<!-- CORS_END -->/-->/' \
+          "${web_xml}"
+      fi
+      ###
+      # Deactivate security filter in web.xml if DISABLE_SECURITY_FILTER=true
+      # https://github.com/kartoza/docker-geoserver/issues/549
+      ###
+      if [[ "${DISABLE_SECURITY_FILTER}" =~ [Tt][Rr][Uu][Ee] ]]; then
+        sed -i 's/<!-- SECURITY_START.*/<!-- SECURITY FILTER DEACTIVATED BY DISABLE_SECURITY_FILTER -->\n<!--/; s/^.*<!-- SECURITY_END -->/-->/' \
+          "${web_xml}"
+      fi
+    fi
   fi
 }
 
@@ -407,17 +427,32 @@ configure_telemetry() {
 ############################################
 
 package_tomcat_webapp() {
-  zip -r "${REQUIRED_PLUGINS_DIR}/tomcat_apps.zip" \
-    "${CATALINA_HOME}/webapps"
+  if [[ -d "${CATALINA_HOME}"/webapps.dist ]]; then
+    mv "${CATALINA_HOME}"/webapps.dist /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -r /tomcat_apps
+  else
+    cp -r "${CATALINA_HOME}"/webapps/ROOT /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/docs /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/examples /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/host-manager /tomcat_apps
+    cp -r "${CATALINA_HOME}"/webapps/manager /tomcat_apps
+    zip -r "${REQUIRED_PLUGINS_DIR}"/tomcat_apps.zip /tomcat_apps
+    rm -rf /tomcat_apps
+  fi
 }
+
 
 patch_tomcat_server_info() {
   pushd "${CATALINA_HOME}/lib" || exit
   create_dir org/apache/catalina/util/
-  unzip -j catalina.jar org/apache/catalina/util/ServerInfo.properties -d org/apache/catalina/util/
-  sed -i 's/server.info=.*/server.info=Apache Tomcat/g' org/apache/catalina/util/ServerInfo.properties
-  zip -ur catalina.jar org/apache/catalina/util/ServerInfo.properties
-  rm -rf org
+  unzip -p catalina.jar org/apache/catalina/util/ServerInfo.properties \
+  | sed 's/^server.info=.*/server.info=Apache Tomcat/' \
+  > ServerInfo.properties && \
+  zip -d catalina.jar org/apache/catalina/util/ServerInfo.properties && \
+  zip -ur catalina.jar ServerInfo.properties && \
+  rm ServerInfo.properties
+
 }
 
 set_restrictive_umask() {
@@ -428,11 +463,36 @@ set_restrictive_umask() {
 ############################################
 # 9. STARTUP
 ############################################
+rename_geoserver_context_root() {
+  if [[ "${GEOSERVER_CONTEXT_ROOT}" != "geoserver" ]]; then
+    #log "Changing context-root to ${GEOSERVER_CONTEXT_ROOT}"
+    echo "Changing context-root to ${GEOSERVER_CONTEXT_ROOT}"
+    local install_dir
+    install_dir="$(detect_install_dir)"
+
+    if [[ -d "${install_dir}/webapps/geoserver" ]]; then
+      mv "${install_dir}/webapps/geoserver" \
+         "${install_dir}/webapps/${GEOSERVER_CONTEXT_ROOT}"
+    else
+      #log_warn "Context already renamed or first-run skipped"
+      echo "Context already renamed or first-run skipped"
+    fi
+  fi
+}
 
 start_geoserver_service() {
-  if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
-    exec gosu "${USER_NAME}" /usr/local/tomcat/bin/catalina.sh run
+if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
+  if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+    exec gosu "${USER_NAME}" "${GEOSERVER_HOME}"/bin/startup.sh
   else
-    exec /usr/local/tomcat/bin/catalina.sh run
+    exec gosu "${USER_NAME}" /usr/local/tomcat/bin/catalina.sh run
   fi
+else
+  if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+    exec  "${GEOSERVER_HOME}"/bin/startup.sh
+  else
+    exec  /usr/local/tomcat/bin/catalina.sh run
+  fi
+fi
+
 }

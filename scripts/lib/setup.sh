@@ -9,6 +9,7 @@ source "${SCRIPT_DIR}/lib/database.sh"
 source "${SCRIPT_DIR}/lib/geoserver.sh"
 source "${SCRIPT_DIR}/lib/tomcat.sh"
 source "${SCRIPT_DIR}/lib/cluster.sh"
+source "${SCRIPT_DIR}/lib/extensions.sh"
 
 resources_dir="/tmp/resources"
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
@@ -17,9 +18,9 @@ STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
 # Main execution flow
 # ---------------------------
 
-create_required_dirs
+create_setup_directories
 install_geoserver_core
-install_plugin_dependency
+install_plugin_libjpegturbo
 install_required_jars
 apply_overlays
 package_tomcat_webapp

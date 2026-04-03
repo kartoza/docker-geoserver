@@ -44,6 +44,7 @@ set_vars() {
   MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RANDOM_STRING}"
 }
 
+
 ############################################
 # 2. CLUSTER CONFIG FILE GENERATORS (JMS)
 ############################################
@@ -211,6 +212,7 @@ setup_hz_cluster() {
   fi
 }
 
+
 ############################################
 # 4. CLUSTER ENV EXPORTS & STATE SETUP
 ############################################
@@ -292,8 +294,10 @@ setup_clustering_status() {
   fi
 
   # Temporary fix: jdom2
-  cp /build_data/jdom2-2.0.6.1.jar \
-    "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
+  if [[ -f /build_data/jdom2-2.0.6.1.jar ]];then
+    cp /build_data/jdom2-2.0.6.1.jar \
+      "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
+  fi
 }
 
 ############################################

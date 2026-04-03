@@ -26,7 +26,7 @@ postgres_ssl_setup() {
   esac
 }
 
-function create_gwc_tile_tables(){
+create_gwc_tile_tables(){
   HOST="$1"
   PORT="$2"
   USER="$3"
@@ -39,6 +39,7 @@ function create_gwc_tile_tables(){
   fi
 
 }
+
 
 setup_jdbc_db_config() {
     if [[ ${ext} == 'jdbcconfig-plugin' ]];then
@@ -71,6 +72,7 @@ setup_jdbc_db_config() {
         fi
     fi
 }
+
 
 setup_jdbc_db_store() {
     if [[ ${ext} == 'jdbcstore-plugin' ]];then

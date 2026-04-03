@@ -29,6 +29,7 @@ set_logging_xml() {
 EOF
 }
 
+
 geoserver_logging() {
   export GEOSERVER_LOG_SETTINGS_PATH="${GEOSERVER_DATA_DIR}/logging.xml"
 
@@ -51,16 +52,11 @@ geoserver_logging() {
   [[ -f "${LOG_PATH}" ]] || touch "${LOG_PATH}"
 }
 
-tomcat_logging() {
-  if [[ -f "${EXTRA_CONFIG_DIR}/logging.properties" ]]; then
-    envsubst < "${EXTRA_CONFIG_DIR}/logging.properties" > "${CATALINA_HOME}/conf/logging.properties"
-  else
-    envsubst < /build_data/logging.properties > "${CATALINA_HOME}/conf/logging.properties"
-  fi
-}
+
 
 setup_monitoring() {
-
+  create_dir "${MONITOR_AUDIT_PATH}"
+  export MONITORING_AUDIT_ENABLED MONITORING_AUDIT_ROLL_LIMIT MONITORING_STORAGE MONITORING_MODE MONITORING_SYNC MONITORING_BODY_SIZE MONITORING_BBOX_LOG_CRS MONITORING_BBOX_LOG_LEVEL
   if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
         envsubst < "${EXTRA_CONFIG_DIR}"/monitor.properties > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
   else
@@ -77,4 +73,10 @@ bboxLogLevel=${MONITORING_BBOX_LOG_LEVEL}
 EOF
   fi
 
+}
+
+setup_monitoring_status() {
+  create_dir "${MONITOR_AUDIT_PATH}"
+  export MONITORING_AUDIT_ENABLED MONITORING_AUDIT_ROLL_LIMIT MONITORING_STORAGE MONITORING_MODE MONITORING_SYNC MONITORING_BODY_SIZE MONITORING_BBOX_LOG_CRS MONITORING_BBOX_LOG_LEVEL
+  setup_monitoring
 }

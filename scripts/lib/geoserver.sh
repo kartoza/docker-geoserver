@@ -21,6 +21,7 @@ setup_custom_crs() {
   fi
 }
 
+
 setup_custom_override_crs() {
   [[ -f "${EXTRA_CONFIG_DIR}/epsg_overrides.properties" ]] &&
     cp -f "${EXTRA_CONFIG_DIR}/epsg_overrides.properties" \
@@ -28,6 +29,7 @@ setup_custom_override_crs() {
 }
 
 setup_crs() {
+  create_dir "${GEOWEBCACHE_CACHE_DIR}"
   create_dir "${GEOSERVER_DATA_DIR}/user_projections"
   setup_custom_crs
   setup_custom_override_crs
@@ -200,106 +202,7 @@ install_required_jars() {
 
 
 ############################################
-# 4. PLUGIN MANAGEMENT
-############################################
-
-download_extension() {
-  curl --progress-bar -fL \
-    -o "$3/$2.zip" "$1"
-}
-
-install_plugin() {
-  local data_path="${1:-/community_plugins}"
-  local ext="$2"
-
-  [[ -f "${data_path}/${ext}.zip" ]] || return
-
-  unzip -qq "${data_path}/${ext}.zip" -d /tmp/gs_plugin
-  GEOSERVER_INSTALL_DIR="$(detect_install_dir)"
-
-  cp -u /tmp/gs_plugin/*.jar \
-     "${GEOSERVER_INSTALL_DIR}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
-
-  rm -rf /tmp/gs_plugin
-}
-
-############################################
-# 5. EXTENSIONS (STABLE & COMMUNITY)
-############################################
-
-setup_stable_extensions(){
-
-  generate_stable_extensions_config
-  download_extensions_config "${STABLE_PLUGINS_DIR}/curl.cfg"
-
-  local extensions
-
-  if [[ "$ACTIVE_EXTENSIONS" != "$DEFAULT_EXTENSIONS" ]]; then
-      extensions="${ACTIVE_EXTENSIONS}"
-  else
-      extensions="${DEFAULT_EXTENSIONS}"
-  fi
-
-  for ext in $(echo "${extensions}" | tr ',' ' '); do
-
-      if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
-          install_plugin "${REQUIRED_PLUGINS_DIR}" "${ext}"
-      else
-          install_plugin "${STABLE_PLUGINS_DIR}" "${ext}"
-      fi
-
-  done
-}
-
-setup_community_extensions(){
-  if [[ ! -z ${COMMUNITY_EXTENSIONS} ]]; then
-    if  [[ ${FORCE_DOWNLOAD_COMMUNITY_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]];then
-      rm -rf ${COMMUNITY_PLUGINS_DIR}/*.zip
-    fi
-
-  generate_community_extensions_config
-  download_extensions_config "${COMMUNITY_PLUGINS_DIR}/curl.cfg"
-
-  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-      if [[ -f ${COMMUNITY_PLUGINS_DIR}/${ext}.zip ]]; then
-
-        setup_jdbc_db_store
-        setup_jdbc_db_config
-        setup_hz_cluster
-        install_plugin ${COMMUNITY_PLUGINS_DIR} "${ext}"
-      fi
-  done
-
-fi
-
-}
-
-setup_extensions(){
-
-
-  DEFAULT_EXTENSIONS=''
-  for plugin in $(cat ${REQUIRED_PLUGINS_DIR}/required_plugins.txt); do
-    if [ -z "$DEFAULT_EXTENSIONS" ]; then
-      DEFAULT_EXTENSIONS=${plugin}
-    else
-      DEFAULT_EXTENSIONS=${DEFAULT_EXTENSIONS},${plugin}
-    fi
-  done
-
-  if [[ -z ${ACTIVE_EXTENSIONS} ]];then
-    ACTIVE_EXTENSIONS=${DEFAULT_EXTENSIONS},${STABLE_EXTENSIONS}
-  fi
-
-  # If FORCE_DOWNLOAD_STABLE_EXTENSIONS is true, remove all stable extensions
-  if [[ ${FORCE_DOWNLOAD_STABLE_EXTENSIONS} =~ [Tt][Rr][Uu][Ee] ]]; then
-    rm -rf ${STABLE_PLUGINS_DIR}/*.zip
-    rm -rf ${REQUIRED_PLUGINS_DIR}/*.zip
-  fi
-
-  setup_stable_extensions
-}
-############################################
-# 6. GWC, CONTROL FLOW, MONITORING
+# 4. GWC, CONTROL FLOW, MONITORING
 ############################################
 
 activate_gwc_global_configs() {
@@ -384,15 +287,8 @@ EOF
 
 }
 
-
-setup_monitoring_status() {
-  create_dir "${MONITOR_AUDIT_PATH}"
-  export MONITORING_AUDIT_ENABLED MONITORING_AUDIT_ROLL_LIMIT
-  setup_monitoring
-}
-
 ############################################
-# 7. GDAL VERSION SYNC
+# 5. GDAL VERSION SYNC
 ############################################
 
 sync_gdal_version() {
@@ -417,22 +313,17 @@ sync_gdal_version() {
 }
 
 ############################################
-# 8. STATUS WRAPPERS (ENTRYPOINT CALLS)
+# 6. STATUS WRAPPERS (ENTRYPOINT CALLS)
 ############################################
 
 setup_control_flow_status() {
-  export REQUEST_TIMEOUT PARALLEL_REQUEST
+  export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST USER_WMS_REQUEST THROTTLE_REQUEST_PER_IP
   setup_control_flow
 }
 
 setup_gwc_status() {
-  export WMS_DIR_INTEGRATION SECURITY_ENABLED
+  export WMS_DIR_INTEGRATION REQUIRE_TILED_PARAMETER WMSC_ENABLED TMS_ENABLED SECURITY_ENABLED
   activate_gwc_global_configs
-}
-
-setup_community_extensions_status() {
-  export JDBC_CONFIG_ENABLED JDBC_STORE_ENABLED POSTGRES_JNDI
-  setup_community_extensions
 }
 
 ############################################

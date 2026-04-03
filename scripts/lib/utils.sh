@@ -15,6 +15,7 @@ generate_random_string() {
 
 
 
+
 create_dir() {
   local DATA_PATH="$1"
 
@@ -32,6 +33,7 @@ create_dir() {
 }
 
 
+
 delete_file() {
   [[ -f "$1" ]] && rm "$1"
 }
@@ -40,13 +42,13 @@ delete_folder() {
   [[ -d "$1" ]] && rm -r "$1"
 }
 
+
 clean_up_vars() {
   if [[ -f /tmp/set_vars.txt ]]; then
     for vars in $(cat /tmp/set_vars.txt); do unset "$vars"; done
     rm /tmp/set_vars.txt
   fi
 }
-
 
 
 ############################################
@@ -82,7 +84,7 @@ ensure_user_exists() {
   fi
 }
 
-setup_runtime_user() {
+setup_geoserver_users() {
   init_runtime_user_vars
   ensure_group_exists
   ensure_user_exists
@@ -112,20 +114,7 @@ make_hash() {
   echo "digest1:${HASH}"
 }
 
-rename_context_root_if_needed() {
-  if [[ "${GEOSERVER_CONTEXT_ROOT}" != "geoserver" ]]; then
-    log "Changing context-root to ${GEOSERVER_CONTEXT_ROOT}"
-    local install_dir
-    install_dir="$(detect_install_dir)"
 
-    if [[ -d "${install_dir}/webapps/geoserver" ]]; then
-      mv "${install_dir}/webapps/geoserver" \
-         "${install_dir}/webapps/${GEOSERVER_CONTEXT_ROOT}"
-    else
-      log_warn "Context already renamed or first-run skipped"
-    fi
-  fi
-}
 
 ############################################
 # 4. GEOWEBCACHE & FILE PERMISSIONS
@@ -133,13 +122,13 @@ rename_context_root_if_needed() {
 
 gwc_file_perms() {
   create_dir "${GEOWEBCACHE_CACHE_DIR}"
-  
+
   # Ensure directory exists before trying to stat it
   if [[ ! -d "${GEOWEBCACHE_CACHE_DIR}" ]]; then
     echo -e "\e[31m [Entrypoint] ERROR: Failed to create ${GEOWEBCACHE_CACHE_DIR} \033[0m"
     return 1
   fi
-  
+
   GEO_USER_PERM=$(stat -c '%U' "${GEOSERVER_DATA_DIR}")
   GEO_GRP_PERM=$(stat -c '%G' "${GEOSERVER_DATA_DIR}")
   GWC_USER_PERM=$(stat -c '%U' "${GEOWEBCACHE_CACHE_DIR}")
@@ -173,7 +162,7 @@ esac
 }
 
 fix_permissions() {
-  # Helper: change ownership if needed
+
   change_owner_if_needed() {
     local target="$1"
     if [[ -e "$target" ]]; then
@@ -188,16 +177,15 @@ fix_permissions() {
   }
 
   if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
-    # Core directories to check
     dir_ownership=(
-      "${CATALINA_HOME}"
+      "${CATALINA_HOME}/bin"
+      "${CATALINA_HOME}/conf"
       "/home/${USER_NAME}/"
       "${COMMUNITY_PLUGINS_DIR}"
       "${STABLE_PLUGINS_DIR}"
       "${REQUIRED_PLUGINS_DIR}"
       "${GEOSERVER_HOME}"
       "/usr/share/fonts/"
-      "/tmp/"
       "${FOOTPRINTS_DATA_DIR}"
       "${CERT_DIR}"
       "${FONTS_DIR}"
@@ -238,11 +226,12 @@ fix_permissions() {
 ############################################
 
 s3_config() {
-  cat >"${GEOSERVER_DATA_DIR}/s3.properties" <<EOF
+  cat >"${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
 ${S3_ALIAS}.s3.endpoint=${S3_SERVER_URL}
 ${S3_ALIAS}.s3.user=${S3_USERNAME}
 ${S3_ALIAS}.s3.password=${S3_PASSWORD}
 EOF
+
 }
 
 setup_s3_extension() {
@@ -259,7 +248,6 @@ setup_s3_extension() {
     echo -e "\e[32m [Entrypoint] -Ds3.properties.location not set, skipping S3 \033[0m"
   fi
 }
-
 ############################################
 # 6. FONTS & NATIVE LIBRARIES
 ############################################
@@ -300,7 +288,7 @@ install_sample_data(){
 }
 
 
-install_libjpegturbo() {
+configure_libjpegturbo() {
   local arch
   arch=$(dpkg --print-architecture)
   local version="2.1.5.1"
@@ -313,16 +301,15 @@ install_libjpegturbo() {
   dpkg -i "${resources_dir}/${deb}"
 }
 
-install_plugin_dependency() {
+install_plugin_libjpegturbo() {
   pushd "${STABLE_PLUGINS_DIR}" || exit
-  install_libjpegturbo
+  configure_libjpegturbo
 }
-
 ############################################
 # 7. DATA & DIRECTORY LIFECYCLE
 ############################################
 
-create_required_directories() {
+create_entrypoint_directories() {
   local dirs=(
     "${GEOSERVER_DATA_DIR}"
     "${CERT_DIR}"
@@ -332,11 +319,24 @@ create_required_directories() {
     "${GEOSERVER_HOME}"
     "${EXTRA_CONFIG_DIR}"
     "/docker-entrypoint-geoserver.d"
-    "${COMMUNITY_PLUGINS_DIR}"
+  )
+
+  for d in "${dirs[@]}"; do
+    create_dir "${d}"
+  done
+}
+
+create_setup_directories() {
+  local dirs=(
+    ${resources_dir}/plugins/gdal
+    /usr/share/fonts/opentype
+    /tomcat_apps
+    "${CATALINA_HOME}"/postgres_config
     "${STABLE_PLUGINS_DIR}"
+    "${COMMUNITY_PLUGINS_DIR}"
+    "${GEOSERVER_HOME}"
+    "${FONTS_DIR}"
     "${REQUIRED_PLUGINS_DIR}"
-    "/usr/share/fonts/"
-    "${MONITOR_AUDIT_PATH}"
   )
 
   for d in "${dirs[@]}"; do
@@ -357,11 +357,9 @@ apply_overlays() {
 }
 
 cleanup_resources() {
-  pushd /scripts || exit
   rm -rf /tmp/resources
   delete_file "${CATALINA_HOME}/conf/web.xml"
 }
-
 
 ############################################
 # 8. ENTRYPOINT & HOOKS
@@ -403,86 +401,3 @@ run_update_password_hook() {
   fi
 }
 
-generate_community_extensions_config() {
-  local cfg_file="${COMMUNITY_PLUGINS_DIR}/curl.cfg"
-  rm -f "$cfg_file"
-
-  for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
-    local output_file="${COMMUNITY_PLUGINS_DIR}/${ext}.zip"
-
-    if [[ -f "$output_file" ]]; then
-      echo -e "[Entrypoint] Community Extension already exists, skipping download of : \e[1;31m $ext \033[0m"
-      continue
-    fi
-
-    echo "url = \"https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip\"" >> "$cfg_file"
-    echo "output = \"${output_file}\"" >> "$cfg_file"
-    echo "--fail" >> "$cfg_file"
-    echo "--location" >> "$cfg_file"
-    echo "" >> "$cfg_file"
-  done
-}
-
-generate_stable_extensions_config() {
-  local cfg_file="${STABLE_PLUGINS_DIR}/curl.cfg"
-  rm -f "$cfg_file"
-
-  local extensions
-
-  if [[ "$ACTIVE_EXTENSIONS" != "$DEFAULT_EXTENSIONS" ]]; then
-      extensions="${ACTIVE_EXTENSIONS}"
-  else
-      extensions="${DEFAULT_EXTENSIONS}"
-  fi
-
-  for ext in $(echo "${extensions}" | tr ',' ' '); do
-
-    if echo "${DEFAULT_EXTENSIONS}" | grep -w "${ext}" >/dev/null; then
-        output_file="${REQUIRED_PLUGINS_DIR}/${ext}.zip"
-    else
-        output_file="${STABLE_PLUGINS_DIR}/${ext}.zip"
-    fi
-
-    # Skip if already downloaded
-    if [[ -f "$output_file" ]]; then
-        echo -e "[Entrypoint] Stable/Required Extension already exists, skipping download of : \e[1;31m $ext \033[0m"
-        continue
-    fi
-
-    plugin_url="${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}/extensions/geoserver-${GS_VERSION}-${ext}.zip"
-
-    echo "url = \"${plugin_url}\"" >> "$cfg_file"
-    echo "output = \"${output_file}\"" >> "$cfg_file"
-    echo "--fail" >> "$cfg_file"
-    echo "--location" >> "$cfg_file"
-    echo "" >> "$cfg_file"
-
-  done
-}
-
-
-
-download_extensions_config() {
-  local cfg_file="${1:-/work/curl.cfg}"
-
-  # Only proceed if config exists and has content
-  if [[ ! -s "$cfg_file" ]]; then
-    echo "No extensions to download"
-    return 0
-  fi
-
-  for attempt in {1..5}; do
-    echo "Attempt $attempt of downloading plugins"
-
-    if curl --progress-bar -K "$cfg_file"; then
-      echo "Download successful"
-      return 0
-    else
-      echo "Download failed, retrying in 5 seconds..."
-      sleep 5
-    fi
-  done
-
-  echo "Download failed after multiple attempts"
-  return 1
-}
