@@ -518,54 +518,55 @@ fi
 
 # Generic startup options with defaults specified in documentation
 # https://docs.geoserver.org/main/en/user/configuration/properties/index.html
-if [ -z ${APPLICATION_CONTEXT}  ];then
-  export APPLICATION_CONTEXT='application/xml'
+
+if [ -z "${APPLICATION_CONTEXT}" ]; then
+  export APPLICATION_CONTEXT="application/xml"
 fi
 
-if [ ${GEOSERVER_DISABLE_STATIC_WEB_FILES}  ];then
+if [ -z "${GEOSERVER_DISABLE_STATIC_WEB_FILES}" ]; then
   export GEOSERVER_DISABLE_STATIC_WEB_FILES=true
 fi
 
-if [ ${GEOSERVER_STATIC_WEB_FILES_SCRIPT}  ];then
-  export GEOSERVER_STATIC_WEB_FILES_SCRIPT=UNSAFE
+if [ -z "${GEOSERVER_STATIC_WEB_FILES_SCRIPT}" ]; then
+  export GEOSERVER_STATIC_WEB_FILES_SCRIPT="UNSAFE"
 fi
 
-if [ ${GEOSERVER_GLOBAL_LAYER_GROUP_INHERIT}  ];then
+if [ -z "${GEOSERVER_GLOBAL_LAYER_GROUP_INHERIT}" ]; then
   export GEOSERVER_GLOBAL_LAYER_GROUP_INHERIT=true
 fi
 
-if [ ${PROXY_BASE_URL_HEADER}  ];then
+if [ -z "${PROXY_BASE_URL_HEADER}" ]; then
   export PROXY_BASE_URL_HEADER=false
 fi
 
-if [ ${GEOSERVER_FEATUREINFO_HTML_SCRIPT}  ];then
-  export GEOSERVER_FEATUREINFO_HTML_SCRIPT=SELF
+if [ -z "${GEOSERVER_FEATUREINFO_HTML_SCRIPT}" ]; then
+  export GEOSERVER_FEATUREINFO_HTML_SCRIPT="SELF"
 fi
 
-if [ ${GEOSERVER_FORCE_FREEMARKER_ESCAPING}  ];then
+if [ -z "${GEOSERVER_FORCE_FREEMARKER_ESCAPING}" ]; then
   export GEOSERVER_FORCE_FREEMARKER_ESCAPING=true
 fi
 
-if [ ${GEOSERVER_FREEMARKER_API_EXPOSED} ];then
+if [ -z "${GEOSERVER_FREEMARKER_API_EXPOSED}" ]; then
   export GEOSERVER_FREEMARKER_API_EXPOSED=false
 fi
 
-if [ ${ENABLE_MAP_WRAPPING} ];then
+if [ -z "${ENABLE_MAP_WRAPPING}" ]; then
   export ENABLE_MAP_WRAPPING=true
 fi
 
-if [ ${ENABLE_ADVANCED_PROJECTION}  ];then
+if [ -z "${ENABLE_ADVANCED_PROJECTION}" ]; then
   export ENABLE_ADVANCED_PROJECTION=true
 fi
 
-if [ ${USE_GLOBAL_RENDERING_POOL}  ];then
+if [ -z "${USE_GLOBAL_RENDERING_POOL}" ]; then
   export USE_GLOBAL_RENDERING_POOL=true
 fi
 
-if [ ${SERVICE_STRATEGY}  ];then
-  export SERVICE_STRATEGY='PARTIAL-BUFFER2'
+if [ -z "${SERVICE_STRATEGY}" ]; then
+  export SERVICE_STRATEGY="PARTIAL-BUFFER2"
 fi
 
-if [ ${WFS_GETFEATURE_CACHELIMIT} ];then
+if [ -z "${WFS_GETFEATURE_CACHELIMIT}" ]; then
   export WFS_GETFEATURE_CACHELIMIT=4
 fi
