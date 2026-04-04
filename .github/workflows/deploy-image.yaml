@@ -31,7 +31,7 @@ jobs:
             javaHome: /opt/java/openjdk
         geoserverMinorVersion:
           - minor: 28
-            patch: 3
+            patch: 2
         stablePluginBaseURL:
           # empty because it often changes, so it's better
           # to use the default one described in the Dockerfile
@@ -40,7 +40,7 @@ jobs:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
         geoserverPatchMajorVersionBugs:
           # useful to also update existing broken image, defaults to no
-          - no
+          - yes
     steps:
       - uses: actions/checkout@v6
       - name: Set up QEMU
@@ -117,7 +117,7 @@ jobs:
           - 2
         geoserverMinorVersion:
           - minor: 28
-            patch: 3
+            patch: 2
     steps:
       - name: Checkout code
         id: git_checkout
