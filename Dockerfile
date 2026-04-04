@@ -45,8 +45,6 @@ ADD \
     build_data/extensions.sh \
     build_data/required_plugins.txt \
     build_data/plugin_download.sh \
-    build_data/community_plugins.txt \
-    build_data/stable_plugins.txt \
     /work/
 
 RUN echo ${GS_VERSION} > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh
