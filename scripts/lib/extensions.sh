@@ -192,7 +192,34 @@ download_extensions_config() {
 }
 
 ############################################
-# 4. STATUS WRAPPERS (ENTRYPOINT CALLS)
+# 4. S3 COMMUNITY EXTENSION
+############################################
+
+s3_config() {
+  cat >"${GEOSERVER_DATA_DIR}"/s3.properties <<EOF
+${S3_ALIAS}.s3.endpoint=${S3_SERVER_URL}
+${S3_ALIAS}.s3.user=${S3_USERNAME}
+${S3_ALIAS}.s3.password=${S3_PASSWORD}
+EOF
+
+}
+
+setup_s3_extension() {
+  export S3_SERVER_URL S3_USERNAME S3_PASSWORD S3_ALIAS
+
+  if [[ -z "${S3_SERVER_URL}" || -z "${S3_USERNAME}" || -z "${S3_PASSWORD}" || -z "${S3_ALIAS}" ]]; then
+    echo -e "\e[32m [Entrypoint] Missing S3 vars, skipping s3.properties \033[0m"
+    return
+  fi
+
+  if [[ "${ADDITIONAL_JAVA_STARTUP_OPTIONS}" == *"-Ds3.properties.location"* ]]; then
+    s3_config
+  else
+    echo -e "\e[32m [Entrypoint] -Ds3.properties.location not set, skipping S3 \033[0m"
+  fi
+}
+############################################
+# 5. STATUS WRAPPERS (ENTRYPOINT CALLS)
 ############################################
 
 setup_community_extensions_status() {

@@ -26,12 +26,11 @@ web_cors
 cleanup_data_dir
 install_fonts
 install_sample_data
-setup_google_fonts
-setup_logging
-setup_crs
+setup_logging_status
+setup_crs_status
 install_sample_data
 reset_disk_quota
-setup_disk_quota
+setup_disk_quota_status
 setup_gwc_status
 sync_gdal_version
 setup_extensions

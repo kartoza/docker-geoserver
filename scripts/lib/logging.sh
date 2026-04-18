@@ -19,6 +19,15 @@ log4j_logging() {
   fi
 }
 
+# Configure Tomcat JUL logging
+tomcat_logging() {
+  if [[ -f "${EXTRA_CONFIG_DIR}/logging.properties" ]]; then
+    envsubst < "${EXTRA_CONFIG_DIR}/logging.properties" > "${CATALINA_HOME}/conf/logging.properties"
+  else
+    envsubst < /build_data/logging.properties > "${CATALINA_HOME}/conf/logging.properties"
+  fi
+}
+
 set_logging_xml() {
   cat > "${GEOSERVER_LOG_SETTINGS_PATH}" <<EOF
 <logging>
@@ -53,10 +62,8 @@ geoserver_logging() {
 }
 
 
-
 setup_monitoring() {
   create_dir "${MONITOR_AUDIT_PATH}"
-  export MONITORING_AUDIT_ENABLED MONITORING_AUDIT_ROLL_LIMIT MONITORING_STORAGE MONITORING_MODE MONITORING_SYNC MONITORING_BODY_SIZE MONITORING_BBOX_LOG_CRS MONITORING_BBOX_LOG_LEVEL
   if [[ -f "${EXTRA_CONFIG_DIR}"/monitor.properties ]]; then
         envsubst < "${EXTRA_CONFIG_DIR}"/monitor.properties > "${GEOSERVER_DATA_DIR}"/monitoring/monitor.properties
   else
@@ -75,8 +82,24 @@ EOF
 
 }
 
+############################################
+# ENTRYPOINT & HOOKS
+############################################
+
 setup_monitoring_status() {
-  create_dir "${MONITOR_AUDIT_PATH}"
   export MONITORING_AUDIT_ENABLED MONITORING_AUDIT_ROLL_LIMIT MONITORING_STORAGE MONITORING_MODE MONITORING_SYNC MONITORING_BODY_SIZE MONITORING_BBOX_LOG_CRS MONITORING_BBOX_LOG_LEVEL
   setup_monitoring
+}
+
+setup_logging_status() {
+  if [[ ${LOGGING_STDOUT} =~ [Tt][Rr][Uu][Ee] ]]; then
+    export CONSOLE_HANDLER_LEVEL
+    tomcat_logging
+  fi
+}
+
+setup_geoserver_logging(){
+  export GEOSERVER_LOG_PROFILE
+  geoserver_logging
+
 }
