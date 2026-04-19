@@ -115,64 +115,98 @@ make_hash() {
 ############################################
 # 4. GEOWEBCACHE & FILE PERMISSIONS
 ############################################
-
 gwc_file_perms() {
-  create_dir "${GEOWEBCACHE_CACHE_DIR}"
+  TARGET_DIR="$1"
+  local TMP_LIST="/tmp/data_dir_chown_list.txt"
 
-  # Ensure directory exists before trying to stat it
-  if [[ ! -d "${GEOWEBCACHE_CACHE_DIR}" ]]; then
-    echo -e "\e[31m [Entrypoint] ERROR: Failed to create ${GEOWEBCACHE_CACHE_DIR} \033[0m"
-    return 1
+  [[ -d "$TARGET_DIR" ]] || return 1
+
+  #  Fix top level folder if needed
+  if [[ "$(stat -c '%U' "$TARGET_DIR")" != "$USER_NAME" ]] || \
+     [[ "$(stat -c '%G' "$TARGET_DIR")" != "$GEO_GROUP_NAME" ]]; then
+
+      echo -e "\e[32m [Entrypoint] Fixing ownership for:\033[0m \e[1;31m $TARGET_DIR \033[0m"
+      chown "$USER_NAME:$GEO_GROUP_NAME" "$TARGET_DIR"
   fi
 
-  GEO_USER_PERM=$(stat -c '%U' "${GEOSERVER_DATA_DIR}")
-  GEO_GRP_PERM=$(stat -c '%G' "${GEOSERVER_DATA_DIR}")
-  GWC_USER_PERM=$(stat -c '%U' "${GEOWEBCACHE_CACHE_DIR}")
-  GWC_GRP_PERM=$(stat -c '%G' "${GEOWEBCACHE_CACHE_DIR}")
-  case "${GEOWEBCACHE_CACHE_DIR}" in ${GEOSERVER_DATA_DIR}/*)
-    echo -e " \e[32m [Entrypoint] \033[0m \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m \e[32m is nested in \033[0m \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
-    if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
-      if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] ||  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
-        echo -e "\e[32m [Entrypoint] Changing folder permission for:\033[0m \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
-        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
-      fi
-    fi
-    ;;
-  *)
-    echo -e "\e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m is not nested in \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
-    if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
-      if [[ ${GEO_USER_PERM} != "${USER_NAME}" ]] ||  [[ ${GEO_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
-        echo -e "\e[32m [Entrypoint] Changing folder permission for:\033[0m \e[1;31m ${GEOSERVER_DATA_DIR} \033[0m"
-        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOSERVER_DATA_DIR}"
-      fi
-    fi
-    if [[ ${CHOWN_GWC_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
-      if [[ ${GWC_USER_PERM} != "${USER_NAME}" ]] ||  [[ ${GWC_GRP_PERM} != "${GEO_GROUP_NAME}"  ]];then
-        echo -e "\e[32m [Entrypoint] Changing folder permission for:\033[0m \e[1;31m ${GEOWEBCACHE_CACHE_DIR} \033[0m"
-        chown -R "${USER_NAME}":"${GEO_GROUP_NAME}" "${GEOWEBCACHE_CACHE_DIR}"
-      fi
-    fi
-   ;;
-esac
+  # If directory, scan children and fix mismatches only
 
+  find "$TARGET_DIR" -mindepth 1 \
+        \( ! -user "$USER_NAME" -o ! -group "$GEO_GROUP_NAME" \) \
+        > "$TMP_LIST"
+  # loop through folder and fix permissions
+  while IFS= read -r file; do
+      # Get current owner and group
+      local owner group start end elapsed
+      current_user=$(stat -c %U "$file")
+      current_group=$(stat -c %G "$file")
+      start=$(date +%s)
+
+      # Only chown if either differs
+      if [ "$current_user" != "$USER_NAME" ] || [ "$current_group" != "$GEO_GROUP_NAME" ]; then
+
+        chown "$USER_NAME:$GEO_GROUP_NAME" "$file"
+        end=$(date +%s)
+        elapsed=$((end - start))
+        if [[ ${VERBOSE_LOGGING} =~ [Tt][Rr][Uu][Ee] ]];then
+          echo -e "\e[32m [Entrypoint] Completed:\033[0m \e[1;31m ${file} \033[0m \e[32m( changed in ${elapsed}s)\033[0m"
+        fi
+      fi
+    done < "$TMP_LIST"
+    rm ${TMP_LIST}
 }
+
 
 fix_permissions() {
 
   change_owner_if_needed() {
     local target="$1"
-    if [[ -e "$target" ]]; then
-      local owner group
-      owner=$(stat -c '%U' "$target")
-      group=$(stat -c '%G' "$target")
-      if [[ "$owner" != "$USER_NAME" || "$group" != "$GEO_GROUP_NAME" ]]; then
-        echo -e "\e[32m [Entrypoint] Changing folder permission for:\033[0m \e[1;31m $target \033[0m"
-        chown -R "$USER_NAME":"$GEO_GROUP_NAME" "$target"
-      fi
+    local TMP_LIST="/tmp/fix_ownership_list.txt"
+
+    [[ -e "$target" ]] || return 0
+
+    local owner group start end elapsed
+    owner=$(stat -c '%U' "$target")
+    group=$(stat -c '%G' "$target")
+    start=$(date +%s)
+
+    #  Fix top level folder if needed
+    if [[ "$owner" != "$USER_NAME" || "$group" != "$GEO_GROUP_NAME" ]]; then
+      echo -e "\e[32m [Entrypoint] Fixing ownership for:\033[0m \e[1;31m $target \033[0m"
+      chown "$USER_NAME":"$GEO_GROUP_NAME" "$target"
     fi
+
+    # If directory, scan children and fix mismatches only
+    if [[ -d "$target" ]]; then
+      # create file with list of files to chown
+      find "$target" -mindepth 1 \
+        \( ! -user "$USER_NAME" -o ! -group "$GEO_GROUP_NAME" \) \
+        > "$TMP_LIST"
+      # loop through folder and fix permissions
+      while IFS= read -r file; do
+      # Get current owner and group
+      current_user=$(stat -c %U "$file")
+      current_group=$(stat -c %G "$file")
+
+      # Only chown if either differs
+      if [ "$current_user" != "$USER_NAME" ] || [ "$current_group" != "$GEO_GROUP_NAME" ]; then
+
+        chown "$USER_NAME:$GEO_GROUP_NAME" "$file"
+        end=$(date +%s)
+        elapsed=$((end - start))
+        if [[ ${VERBOSE_LOGGING} =~ [Tt][Rr][Uu][Ee] ]];then
+        echo -e "\e[32m [Entrypoint] Completed:\033[0m \e[1;31m ${file} \033[0m \e[32m( changed in ${elapsed}s)\033[0m"
+        fi
+      fi
+    done < "$TMP_LIST"
+    rm ${TMP_LIST}
+
+    fi
+
   }
 
   if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+
     dir_ownership=(
       "${CATALINA_HOME}/bin"
       "${CATALINA_HOME}/conf"
@@ -195,7 +229,7 @@ fix_permissions() {
       change_owner_if_needed "$directory"
     done
 
-    # Special cases
+    # Special paths
     change_owner_if_needed "${CLUSTER_CONFIG_DIR}"
     change_owner_if_needed "${GEOSERVER_DATA_DIR}/logging.xml"
     change_owner_if_needed "${GEOSERVER_DATA_DIR}/jdbcconfig"
@@ -206,17 +240,19 @@ fix_permissions() {
 
   # Permissions adjustments
   chmod o+rw "${CERT_DIR}"
-  echo -e "\e[32m [Entrypoint] Fixing Permissions for :\033[0m \e[1;31m ${GEOSERVER_DATA_DIR} &&  ${GEOWEBCACHE_CACHE_DIR}  \033[0m"
-  gwc_file_perms
+
+  echo -e "\e[32m [Entrypoint] Fixing Permissions for:\033[0m \e[1;31m ${GEOSERVER_DATA_DIR} && ${GEOWEBCACHE_CACHE_DIR}\033[0m"
+
+  gwc_file_perms "${GEOWEBCACHE_CACHE_DIR}"
+  gwc_file_perms "${GEOSERVER_DATA_DIR}"
+
   find "${CATALINA_HOME}/conf/" -type f -exec chmod 400 {} \;
 
   # Sample data ownership fix
-
   if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
-      change_owner_if_needed "${GEOSERVER_DATA_DIR}"
+    change_owner_if_needed "${GEOSERVER_DATA_DIR}"
   fi
 }
-
 
 ############################################
 # 6. FONTS & NATIVE LIBRARIES
