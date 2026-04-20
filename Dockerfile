@@ -116,6 +116,7 @@ RUN mkdir -p ${OTEL_DIR} \
 # copy plugins
 COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/required_plugins/*.jar ${REQUIRED_PLUGINS_DIR}/
+COPY --from=geoserver-plugin-downloader /work/required_plugins/*.deb ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/required_plugins.txt ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins/*.zip ${STABLE_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNITY_PLUGINS_DIR}/
