@@ -570,3 +570,7 @@ fi
 if [ -z "${WFS_GETFEATURE_CACHELIMIT}" ]; then
   export WFS_GETFEATURE_CACHELIMIT=4
 fi
+
+if [ -z ${VERBOSE_LOGGING} ]; then
+  export VERBOSE_LOGGING=false
+fi

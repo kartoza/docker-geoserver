@@ -1,11 +1,45 @@
 #!/bin/sh
 set -eux
 
-mkdir -p /work/required_plugins
-mkdir -p /work/stable_plugins
-mkdir -p /work/community_plugins
-mkdir -p /work/geoserver_war
-mkdir -p /work/telemetry
+create_dir() {
+  local DATA_PATH="$1"
+
+  if [[ -z "${DATA_PATH}" ]]; then
+    echo -e "\e[31m [ERROR] create_dir: No path provided \033[0m" >&2
+    return 1
+  fi
+
+  if [[ ! -d "${DATA_PATH}" ]]; then
+    if ! mkdir -p "${DATA_PATH}"; then
+      echo -e "\e[31m [ERROR] Failed to create directory: ${DATA_PATH} \033[0m" >&2
+      return 1
+    fi
+  fi
+}
+
+
+
+create_dir /work/required_plugins
+create_dir /work/stable_plugins
+create_dir /work/community_plugins
+create_dir /work/geoserver_war
+create_dir /work/telemetry
+
+
+download_libjpegturbo() {
+  version="2.1.5.1"
+  archs="amd64 arm64"
+
+  for arch in $archs; do
+    deb="libjpeg-turbo-official_${version}_${arch}.deb"
+
+    [ -f "/work/required_plugins/${deb}" ] && continue
+
+    curl -vfLo "/work/required_plugins/${deb}" \
+      "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${version}/${deb}"
+  done
+}
+download_libjpegturbo
 
 # Build a curl config to download all required plugins
 awk '{print "url = \"'"${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}"'/extensions/geoserver-'"${GS_VERSION}"'-"$0".zip\"\noutput = \"/work/required_plugins/"$0".zip\"\n--fail\n--location\n"}' < /work/required_plugins.txt > /work/curl.cfg

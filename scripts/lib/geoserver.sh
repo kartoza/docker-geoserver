@@ -195,21 +195,14 @@ install_required_jars() {
   fi
 }
 
-configure_libjpegturbo() {
-  local arch
-  arch=$(dpkg --print-architecture)
-  local version="2.1.5.1"
-  local deb="libjpeg-turbo-official_${version}_${arch}.deb"
 
-  [[ -f "${resources_dir}/${deb}" ]] ||
-    curl -vfLo "${resources_dir}/${deb}" \
-      "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${version}/${deb}"
-
-  dpkg -i "${resources_dir}/${deb}"
-}
 
 install_plugin_libjpegturbo() {
-  configure_libjpegturbo
+  local arch deb version
+  arch=$(dpkg --print-architecture)
+  version="2.1.5.1"
+  deb="libjpeg-turbo-official_${version}_${arch}.deb"
+  dpkg -i "${REQUIRED_PLUGINS_DIR}/${deb}"
 }
 
 ############################################

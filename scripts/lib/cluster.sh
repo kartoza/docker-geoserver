@@ -282,11 +282,7 @@ setup_clustering_status() {
     }
   fi
 
-  # Temporary fix: jdom2
-  if [[ -f /build_data/jdom2-2.0.6.1.jar ]];then
-    cp /build_data/jdom2-2.0.6.1.jar \
-      "${CATALINA_HOME}/webapps/${GEOSERVER_CONTEXT_ROOT}/WEB-INF/lib/"
-  fi
+
 }
 
 
