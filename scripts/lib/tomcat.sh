@@ -44,12 +44,22 @@ setup_tomcat_webapp_status() {
     export TOMCAT_USER
     if [[ -z ${TOMCAT_PASSWORD} ]]; then
       generate_random_string 18
-      TOMCAT_PASSWORD=${RAND}
+      PASSWORD=${RAND}
+      if [[ "${TOMCAT_ENCRYPTED_PASSWORD}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
+        digest_password=$(${CATALINA_HOME}/bin/digest.sh -a "sha-512" ${PASSWORD})
+        export TOMCAT_PASSWORD="${digest_password##*:}"
+      else
+        export TOMCAT_PASSWORD=${PASSWORD}
+      fi
       echo "${TOMCAT_PASSWORD}" > "${GEOSERVER_DATA_DIR}/tomcat_pass.txt"
       delete_file "${CATALINA_HOME}/conf/tomcat-users.xml"
       tomcat_user_config
       unset TOMCAT_PASSWORD RAND
     else
+      if [[ "${TOMCAT_ENCRYPTED_PASSWORD}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
+        digest_password=$(${CATALINA_HOME}/bin/digest.sh -a "sha-512" ${TOMCAT_PASSWORD})
+        TOMCAT_PASSWORD="${digest_password##*:}"
+      fi
       tomcat_user_config
     fi
   else
@@ -282,6 +292,10 @@ setup_tomcat_ssl_status() {
     if [[ "${ACTIVATE_PROXY_HEADERS}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
       sed -i -r '/\<\Host\>/ i\ \t<Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="x-forwarded-for" protocolHeader="x-forwarded-proto" />' \
         "${CATALINA_HOME}/conf/server.xml"
+    fi
+
+    if [[ "${TOMCAT_ENCRYPTED}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
+      sed -i 's|<Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>|<Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase">\n      <CredentialHandler className="org.apache.catalina.realm.MessageDigestCredentialHandler" algorithm="sha-512" />\n    </Realm>|' "${CATALINA_HOME}/conf/server.xml"
     fi
   fi
 
