@@ -40,11 +40,11 @@ RUN pip3 install beautifulsoup4 requests
 
 WORKDIR /work
 ADD \
-    build_data/community_plugins.py \
-    build_data/stable_plugins.py \
-    build_data/extensions.sh \
-    build_data/required_plugins.txt \
-    build_data/plugin_download.sh \
+    build_data/plugins/community_plugins.py \
+    build_data/plugins/stable_plugins.py \
+    build_data/plugins/extensions.sh \
+    build_data/plugins/required_plugins.txt \
+    build_data/plugins/plugin_download.sh \
     /work/
 
 RUN echo ${GS_VERSION} > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh

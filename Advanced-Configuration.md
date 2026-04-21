@@ -48,7 +48,7 @@ A full list of environment variables are specified in the [.env](https://github.
 
 ### Default installed extensions
 
-The image activates the [default_stable_extensions](https://github.com/kartoza/docker-geoserver/blob/develop/build_data/required_plugins.txt) listed below on container start:
+The image activates the [default_stable_extensions](https://github.com/kartoza/docker-geoserver/blob/develop/build_data/plugins/required_plugins.txt) listed below on container start:
 
 -   vectortiles-plugin
 -   wps-plugin
@@ -75,7 +75,7 @@ ACTIVE_EXTENSIONS=control-flow-plugin,csw-iso-plugin,csw-plugin,gdal-plugin,insp
 will skip activating libjpeg-turbo-plugin.
 
 The variable `ACTIVE_EXTENSIONS` is used to specify a set of plugins to enable, if left empty or unset the following
-will be enabled : [list of default plugins](https://github.com/kartoza/docker-geoserver/blob/develop/build_data/required_plugins.txt)
+will be enabled : [list of default plugins](https://github.com/kartoza/docker-geoserver/blob/develop/build_data/plugins/required_plugins.txt)
 
 #### Activate stable extensions during the contain startup
 
@@ -84,7 +84,7 @@ The environment variable `STABLE_EXTENSIONS` is used to activate extensions list
 
 **Note:** The plugins listed in the url is of the format `geoserver-2.28.3-wps-plugin.zip`, but the env
 variable expects the env to be of the format `wps-plugin`. Always consult the url to see which plugins
-are available. The text file [stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
+are available. The text file [stable_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/plugins/stable_plugins.txt)
 contains a curated list of plugins but might be out of date in some cases.
 
 Example
@@ -104,7 +104,7 @@ The environment variable `COMMUNITY_EXTENSIONS` can be used to activate extensio
 
 **Note:** The plugins listed in the url is of the format `geoserver-2.25-SNAPSHOT-cog-http-plugin.zip `, but the env
 variable expects the env to be of the format `cog-http-plugin`. Always consult the url to see which plugins
-are available. The text file [community_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/stable_plugins.txt)
+are available. The text file [community_plugins.txt](https://github.com/kartoza/docker-geoserver/blob/master/build_data/plugins/stable_plugins.txt)
 contains a curated list of community plugins but might be out of date in some cases.
 
 Example

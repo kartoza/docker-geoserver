@@ -1,11 +1,29 @@
 #!/bin/sh
 set -eux
 
-mkdir -p /work/required_plugins
-mkdir -p /work/stable_plugins
-mkdir -p /work/community_plugins
-mkdir -p /work/geoserver_war
-mkdir -p /work/telemetry
+create_dir() {
+  local DATA_PATH="$1"
+
+  if [[ -z "${DATA_PATH}" ]]; then
+    echo -e "\e[31m [ERROR] create_dir: No path provided \033[0m" >&2
+    return 1
+  fi
+
+  if [[ ! -d "${DATA_PATH}" ]]; then
+    if ! mkdir -p "${DATA_PATH}"; then
+      echo -e "\e[31m [ERROR] Failed to create directory: ${DATA_PATH} \033[0m" >&2
+      return 1
+    fi
+  fi
+}
+
+
+
+create_dir /work/required_plugins
+create_dir /work/stable_plugins
+create_dir /work/community_plugins
+create_dir /work/geoserver_war
+create_dir /work/telemetry
 
 
 download_libjpegturbo() {
