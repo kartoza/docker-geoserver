@@ -294,7 +294,7 @@ setup_tomcat_ssl_status() {
         "${CATALINA_HOME}/conf/server.xml"
     fi
 
-    if [[ "${TOMCAT_ENCRYPTED}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
+    if [[ "${TOMCAT_ENCRYPTED_PASSWORD}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
       sed -i 's|<Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>|<Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase">\n      <CredentialHandler className="org.apache.catalina.realm.MessageDigestCredentialHandler" algorithm="sha-512" />\n    </Realm>|' "${CATALINA_HOME}/conf/server.xml"
     fi
   fi
