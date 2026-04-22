@@ -574,3 +574,7 @@ fi
 if [ -z ${VERBOSE_LOGGING} ]; then
   export VERBOSE_LOGGING=false
 fi
+
+if [ -z ${TOMCAT_ENCRYPTED_PASSWORD} ];then
+  export TOMCAT_ENCRYPTED_PASSWORD=false
+fi
