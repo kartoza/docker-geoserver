@@ -141,6 +141,14 @@ apply_extra_configs() {
   fi
 }
 
+show_tomcat_pass(){
+  if [[ ${SHOW_PASSWORD} =~ [Tt][Rr][Uu][Ee] ]];then
+    show_tomcat_pass=$(cat ${GEOSERVER_DATA_DIR}/tomcat_pass.txt)
+    echo -e "\e[32m -------------------------------------------------------------------------------- \033[0m"
+    echo -e "[Entrypoint] GENERATED GeoServer Random PASSWORD is: \e[1;31m $show_tomcat_pass \033[0m"
+    rm ${GEOSERVER_DATA_DIR}/tomcat_pass.txt
+  fi
+}
 
 
 main() {
@@ -154,6 +162,7 @@ main() {
 
   apply_extra_configs
   clean_up_vars
+  show_tomcat_pass
 }
 
 main "$@"

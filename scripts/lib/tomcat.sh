@@ -24,7 +24,10 @@ setup_tomcat_webapp_status() {
   if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
     unzip -qq "${REQUIRED_PLUGINS_DIR}/tomcat_apps.zip" -d /tmp/
 
-    cp -r /tmp/tomcat_apps/* "${CATALINA_HOME}/webapps/"
+    list_folders="docs  examples  host-manager  manager  ROOT"
+    for data in $list_folders; do
+      cp -r /tmp/tomcat_apps/webapps.dist/${data} "${CATALINA_HOME}/webapps/"
+    done
     rm -rf /tmp/tomcat_apps
 
     # Manager context.xml when JNDI disabled
@@ -51,7 +54,9 @@ setup_tomcat_webapp_status() {
       else
         export TOMCAT_PASSWORD=${PASSWORD}
       fi
-      echo "${TOMCAT_PASSWORD}" > "${GEOSERVER_DATA_DIR}/tomcat_pass.txt"
+
+      echo "${PASSWORD}" > "${GEOSERVER_DATA_DIR}/tomcat_pass.txt"
+
       delete_file "${CATALINA_HOME}/conf/tomcat-users.xml"
       tomcat_user_config
       unset TOMCAT_PASSWORD RAND
@@ -70,7 +75,7 @@ setup_tomcat_webapp_status() {
     delete_folder "${CATALINA_HOME}/webapps/host-manager"
     delete_folder "${CATALINA_HOME}/webapps/manager"
 
-    if [[ "${ROOT_WEBAPP_REDIRECT}" =~ [Tt][Rr][Uu][Ee] ]]; then
+    if [[ "${ROOT_WEBAPP_REDIRECT}" =~ [Tt][Rr][Uu][Ee] ]] && [[ ${TOMCAT_EXTRAS} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
       mkdir -p "${CATALINA_HOME}/webapps/ROOT"
       sed "s@/geoserver/@/${GEOSERVER_CONTEXT_ROOT}/@g" \
         /build_data/index.jsp \
@@ -296,6 +301,7 @@ setup_tomcat_ssl_status() {
 
     if [[ "${TOMCAT_ENCRYPTED_PASSWORD}" =~ ^([Tt][Rr][Uu][Ee]|1)$ ]]; then
       sed -i 's|<Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>|<Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase">\n      <CredentialHandler className="org.apache.catalina.realm.MessageDigestCredentialHandler" algorithm="sha-512" />\n    </Realm>|' "${CATALINA_HOME}/conf/server.xml"
+      sed -i 's#<Resource name="UserDatabase" auth="Container"#<Resource digest="SHA" name="UserDatabase" auth="Container"#' "${CATALINA_HOME}/conf/server.xml"
     fi
   fi
 
