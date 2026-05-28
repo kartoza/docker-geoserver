@@ -105,7 +105,6 @@ jobs:
             GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
-            LIMIT_EXT_DOWNLOAD=false
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=prod
@@ -133,7 +132,6 @@ jobs:
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
-            LIMIT_EXT_DOWNLOAD=false
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=test

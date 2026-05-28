@@ -4,7 +4,6 @@ ARG IMAGE_VERSION=9.0.115-jdk17-temurin-noble
 ARG JAVA_HOME=/opt/java/openjdk
 #TODO we need a way to predetermine the gdal version in the tomcat image so as to match it
 ARG GDAL_VERSION=3.8.4
-ARG LIMIT_EXT_DOWNLOAD=false
 ARG TARGETARCH
 
 FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
@@ -62,7 +61,6 @@ ARG GS_VERSION=2.28.3
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG TARGETARCH
-ARG LIMIT_EXT_DOWNLOAD=false
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OTEL_SERVICE_NAME=geoserver
 
