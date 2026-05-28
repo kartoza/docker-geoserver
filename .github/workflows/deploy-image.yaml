@@ -59,7 +59,7 @@ jobs:
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
             python:3.12-slim \
-            bash /scripts/check_geoserver.sh
+            bash /scripts/check_geoserver_version.sh
 
       - name: Get Current Date
         id: current_date
@@ -139,7 +139,7 @@ jobs:
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
             python:3.12-slim \
-            bash /scripts/check_geoserver.sh
+            bash /scripts/check_geoserver_version.sh
 
       - name: Get Latest Commit Hash
         id: latest_commit_hash

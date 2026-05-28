@@ -88,7 +88,7 @@ jobs:
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
             python:3.12-slim \
-            bash /scripts/check_geoserver.sh
+            bash /scripts/check_geoserver_version.sh
 
       - name: Build image for production
         id: docker_build_production_image
