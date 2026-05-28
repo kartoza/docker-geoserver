@@ -49,7 +49,7 @@ if [ "$(echo "${LIMIT_EXT_DOWNLOAD}" | tr '[:upper:]' '[:lower:]')" = "true" ]; 
   head -n 5 /work/stable_plugins.txt > /work/stable_plugins_modified.txt
   STABLE_PLUGINS_FILE=/work/stable_plugins_modified.txt
 else
-  STABLE_PLUGINS_FILE=/work/stable_plugins.tx
+  STABLE_PLUGINS_FILE=/work/stable_plugins.txt
 fi
 awk '{print "url = \"'"${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}"'/extensions/geoserver-'"${GS_VERSION}"'-"$0".zip\"\noutput = \"/work/stable_plugins/"$0".zip\"\n--fail\n--location\n"}' < ${STABLE_PLUGINS_FILE} >> /work/curl.cfg
 
