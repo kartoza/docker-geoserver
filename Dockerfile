@@ -61,6 +61,7 @@ ARG GS_VERSION=2.28.3
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG TARGETARCH
+ARG LIMIT_EXT_DOWNLOAD=false
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OTEL_SERVICE_NAME=geoserver
 
