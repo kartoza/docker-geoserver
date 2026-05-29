@@ -24,10 +24,6 @@ jobs:
       latest-ref: refs/heads/develop
     strategy:
       matrix:
-        
-        imageVersion:
-          - image: 9.0.115-jdk17-temurin-noble
-            javaHome: /opt/java/openjdk
 
         stablePluginBaseURL:
           # empty because it often changes, so it's better
@@ -60,6 +56,28 @@ jobs:
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
             python:3.12-slim \
             bash /scripts/check_geoserver_version.sh
+
+      - name: Check tomcat version in the series
+        id: tomcat_check
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "$PWD/.github/workflows/scripts:/scripts" \
+            -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
+            python:3.12-slim \
+            bash /scripts/check_tomcat_version.sh
+
+      - name: Check Java Home path
+        id: java_home_check
+        shell: bash
+        run: |
+          IMAGE_VERSION=${{steps.tomcat_check.outputs.tomcat_version}}
+          JAVA_HOME=$(
+              docker run --rm \
+                "tomcat:${IMAGE_VERSION}" \
+                sh -c 'printf "%s" "$JAVA_HOME"'
+            )
+          echo "java_home=${JAVA_HOME}" >> $GITHUB_OUTPUT
 
       - name: Get Current Date
         id: current_date
@@ -99,8 +117,8 @@ jobs:
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}--v${{ steps.current_date.outputs.formatted }}
           build-args: |
-            IMAGE_VERSION=${{ matrix.imageVersion.image }}
-            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
+            JAVA_HOME=${{ steps.java_home_check.outputs.java_home }}
             GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
@@ -140,6 +158,7 @@ jobs:
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
             python:3.12-slim \
             bash /scripts/check_geoserver_version.sh
+          
 
       - name: Get Latest Commit Hash
         id: latest_commit_hash
