@@ -20,41 +20,7 @@ on:
 #permissions:
 #  contents: read
 jobs:
-  build-activemq-docker-image:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: |
-      github.actor != 'dependabot[bot]' &&
-      !(
-        contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease')
-      )
-    steps:
-      - uses: actions/checkout@v6
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-      - name: Build image for testing activeqm
-        id: docker_build_testing_image_activeqm
-        uses: docker/build-push-action@v7
-        with:
-          context: ./clustering/activemq-docker/
-          file: ./clustering/activemq-docker/Dockerfile
-          push: false
-          load: true
-          tags: kartoza/activemq-docker:manual-build
-          outputs: type=docker,dest=/tmp/activemq.tar
-          cache-from: |
-            type=gha,scope=test
-            type=gha,scope=prod
-          cache-to: type=gha,scope=test
-          target: activemq-prod
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: kartoza-activemq
-          path: /tmp/activemq.tar
+
   build-geoserver-docker-image:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -209,7 +175,7 @@ jobs:
         contains(github.event.pull_request.title, '[skip-release]') ||
         contains(github.event.comment.body, '/skiprelease')
       )
-    needs: [ build-geoserver-docker-image, build-activemq-docker-image]
+    needs: [ build-geoserver-docker-image]
     strategy:
       matrix:
         scenario:
@@ -228,12 +194,40 @@ jobs:
           - upgrade
     steps:
       - uses: actions/checkout@v6
-      - name: Download artifact
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Build image for testing activeqm
+        if: matrix.scenario == 'clustering'
+        id: docker_build_testing_image_activeqm
+        uses: docker/build-push-action@v7
+        with:
+          context: ./clustering/activemq-docker/
+          file: ./clustering/activemq-docker/Dockerfile
+          push: false
+          load: true
+          tags: kartoza/activemq-docker:manual-build
+          outputs: type=docker,dest=/tmp/activemq.tar
+          cache-from: |
+            type=gha,scope=test
+            type=gha,scope=prod
+          cache-to: type=gha,scope=test
+          target: activemq-prod
+      - name: Upload artifact
+        if: matrix.scenario == 'clustering'
+        uses: actions/upload-artifact@v7
+        with:
+          name: kartoza-activemq
+          path: /tmp/activemq.tar
+
+      - uses: actions/checkout@v6
+      - name: Download Geoserver artifact
         uses: actions/download-artifact@v8
         with:
           name: kartoza-geoserver
           path: /tmp
-      - name: Load image
+      - name: Load Geoserver image
         run: |
           docker load --input /tmp/geoserver.tar
       - name: Download ActiveMQ artifact
