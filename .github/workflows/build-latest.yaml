@@ -66,14 +66,11 @@ jobs:
       )
     strategy:
       matrix:
-        geoserverMajorVersion:
-          - 2
+
         imageVersion:
           - image: 9.0.115-jdk17-temurin-noble
             javaHome: /opt/java/openjdk
-        geoserverMinorVersion:
-          - minor: 28
-            patch: 3
+
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
     steps:
@@ -82,6 +79,17 @@ jobs:
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
+        
+      - name: Check latest GeoServer version
+        id: geoserver_check
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "$PWD/.github/workflows/scripts:/scripts" \
+            -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
+            python:3.12-slim \
+            bash /scripts/check_geoserver_version.sh
+
       - name: Build image for production
         id: docker_build_production_image
         uses: docker/build-push-action@v7
@@ -94,8 +102,8 @@ jobs:
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
-            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+            GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
           cache-from: |
             type=gha,scope=prod
@@ -119,8 +127,8 @@ jobs:
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
-            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+            GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}

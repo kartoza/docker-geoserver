@@ -24,14 +24,11 @@ jobs:
       latest-ref: refs/heads/develop
     strategy:
       matrix:
-        geoserverMajorVersion:
-          - 2
+        
         imageVersion:
           - image: 9.0.115-jdk17-temurin-noble
             javaHome: /opt/java/openjdk
-        geoserverMinorVersion:
-          - minor: 28
-            patch: 3
+
         stablePluginBaseURL:
           # empty because it often changes, so it's better
           # to use the default one described in the Dockerfile
@@ -54,6 +51,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: Check latest GeoServer version
+        id: geoserver_check
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "$PWD/.github/workflows/scripts:/scripts" \
+            -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
+            python:3.12-slim \
+            bash /scripts/check_geoserver_version.sh
+
       - name: Get Current Date
         id: current_date
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
@@ -66,7 +73,7 @@ jobs:
           set -e
 
           status=$(curl -s -o /dev/null -w "%{http_code}" \
-            https://hub.docker.com/v2/repositories/kartoza/geoserver/tags/${{ matrix.geoserverMajorVersion }}-${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/
+            https://hub.docker.com/v2/repositories/kartoza/geoserver/tags/${{ steps.geoserver_check.outputs.major }}-${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/
           )
 
           echo "check_image=$status" >> "$GITHUB_OUTPUT"
@@ -88,14 +95,14 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_REPO }}/geoserver
-            ${{ ( steps.check_hub_image_exists.outputs.check_image != 200 || matrix.geoserverPatchMajorVersionBugs == 'yes' ) && format('{0}/geoserver:{1}.{2}.{3}', secrets.DOCKERHUB_REPO,  matrix.geoserverMajorVersion, matrix.geoserverMinorVersion.minor, matrix.geoserverMinorVersion.patch) || null}}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--v${{ steps.current_date.outputs.formatted }}
+            ${{ ( steps.check_hub_image_exists.outputs.check_image != 200 || matrix.geoserverPatchMajorVersionBugs == 'yes' ) && format('{0}/geoserver:{1}.{2}.{3}', secrets.DOCKERHUB_REPO,  steps.geoserver_check.outputs.major, steps.geoserver_check.outputs.minor, steps.geoserver_check.outputs.bugfix) || null}}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}--v${{ steps.current_date.outputs.formatted }}
           build-args: |
             IMAGE_VERSION=${{ matrix.imageVersion.image }}
             JAVA_HOME=${{ matrix.imageVersion.javaHome }}
-            GS_VERSION=${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}
-            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}/geoserver-${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}-war.zip
+            GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
+            WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
           cache-from: |
             type=gha,scope=prod
@@ -111,13 +118,8 @@ jobs:
         contains(github.event.comment.body, '/skiprelease') 
       ) &&  github.event.workflow_run.conclusion == 'success'
     needs: [deploy-image]
-    strategy:
-      matrix:
-        geoserverMajorVersion:
-          - 2
-        geoserverMinorVersion:
-          - minor: 28
-            patch: 3
+
+
     steps:
       - name: Checkout code
         id: git_checkout
@@ -129,6 +131,16 @@ jobs:
         id: current_date
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
 
+      - name: Check latest GeoServer version
+        id: geoserver_check
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "$PWD/.github/workflows/scripts:/scripts" \
+            -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
+            python:3.12-slim \
+            bash /scripts/check_geoserver_version.sh
+
       - name: Get Latest Commit Hash
         id: latest_commit_hash
         run: echo "commit=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_OUTPUT
@@ -136,7 +148,7 @@ jobs:
       - name: publish_release
         id: tag_releases
         run: |
-          gh release create v${{ matrix.geoserverMajorVersion }}.${{ matrix.geoserverMinorVersion.minor }}.${{ matrix.geoserverMinorVersion.patch }}--${{ steps.current_date.outputs.formatted }}--${{ steps.latest_commit_hash.outputs.commit }} --notes ${{ steps.latest_commit_hash.outputs.commit }} --target develop --repo $GITHUB_REPOSITORY
+          gh release create v${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}--${{ steps.current_date.outputs.formatted }}--${{ steps.latest_commit_hash.outputs.commit }} --notes ${{ steps.latest_commit_hash.outputs.commit }} --target develop --repo $GITHUB_REPOSITORY
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
