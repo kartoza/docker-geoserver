@@ -51,20 +51,22 @@ jobs:
         id: geoserver_check
         shell: bash
         run: |
+          IMAGE_VERSION=3.12-slim
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
-            python:3.12-slim \
+            python:${IMAGE_VERSION} \
             bash /scripts/check_geoserver_version.sh
 
       - name: Check tomcat version in the series
         id: tomcat_check
         shell: bash
         run: |
+          IMAGE_VERSION=3.12-slim
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
-            python:3.12-slim \
+            python:${IMAGE_VERSION} \
             bash /scripts/check_tomcat_version.sh
 
       - name: Check Java Home path
@@ -77,6 +79,7 @@ jobs:
                 "tomcat:${IMAGE_VERSION}" \
                 sh -c 'printf "%s" "$JAVA_HOME"'
             )
+          echo "${JAVA_HOME}"
           echo "java_home=${JAVA_HOME}" >> $GITHUB_OUTPUT
 
       - name: Get Current Date

@@ -57,7 +57,7 @@ def main():
     tag, version = get_latest_tomcat_tag()
 
     if version:
-        print(f"Latest tomcat version in the 9 Series: {version}")
+        print(f"Latest tomcat version in the 9 Series: {tag}")
         github_output = Path("/github_output/github_output.txt")
 
         with github_output.open("a") as f:
