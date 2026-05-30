@@ -33,7 +33,7 @@ To get the image onto your system:
 The recommended approach (though it requires more bandwidth for the initial download) is to pull the trusted Docker image as follows:
 
 ```shell
-VERSION=2.28.3
+VERSION=2.28.4
 docker pull kartoza/geoserver:$VERSION
 ```
 
@@ -70,7 +70,7 @@ page in your browser: [http://localhost:8600/geoserver](http://localhost:8600/ge
 For a minimum example use the following:
 
 ```bash
-GS_VERSION=2.28.3
+GS_VERSION=2.28.4
 docker run -d -p 8600:8080 --name geoserver -e GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver -e GEOSERVER_ADMIN_USER=admin kartoza/geoserver:${GS_VERSION}
 ```
 Navigate to the URL: http://localhost:8600/geoserver
