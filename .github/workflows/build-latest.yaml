@@ -20,41 +20,7 @@ on:
 #permissions:
 #  contents: read
 jobs:
-  build-activemq-docker-image:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: |
-      github.actor != 'dependabot[bot]' &&
-      !(
-        contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease')
-      )
-    steps:
-      - uses: actions/checkout@v6
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-      - name: Build image for testing activeqm
-        id: docker_build_testing_image_activeqm
-        uses: docker/build-push-action@v7
-        with:
-          context: ./clustering/activemq-docker/
-          file: ./clustering/activemq-docker/Dockerfile
-          push: false
-          load: true
-          tags: kartoza/activemq-docker:manual-build
-          outputs: type=docker,dest=/tmp/activemq.tar
-          cache-from: |
-            type=gha,scope=test
-            type=gha,scope=prod
-          cache-to: type=gha,scope=test
-          target: activemq-prod
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: kartoza-activemq
-          path: /tmp/activemq.tar
+
   build-geoserver-docker-image:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -66,10 +32,6 @@ jobs:
       )
     strategy:
       matrix:
-
-        imageVersion:
-          - image: 9.0.115-jdk17-temurin-noble
-            javaHome: /opt/java/openjdk
 
         stablePluginBaseURL:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
@@ -84,11 +46,37 @@ jobs:
         id: geoserver_check
         shell: bash
         run: |
+          IMAGE_VERSION=3.12-slim
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
-            python:3.12-slim \
+            python:${IMAGE_VERSION} \
             bash /scripts/check_geoserver_version.sh
+
+      - name: Check tomcat version in the series
+        id: tomcat_check
+        shell: bash
+        run: |
+          IMAGE_VERSION=3.12-slim
+          docker run --rm \
+            -v "$PWD/.github/workflows/scripts:/scripts" \
+            -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
+            python:${IMAGE_VERSION} \
+            bash /scripts/check_tomcat_version.sh
+
+      - name: Check Java Home path
+        id: java_home_check
+        shell: bash
+        run: |
+          IMAGE_VERSION=${{steps.tomcat_check.outputs.tomcat_version}}
+          JAVA_HOME=$(
+              docker run --rm \
+                "tomcat:${IMAGE_VERSION}" \
+                sh -c 'printf "%s" "$JAVA_HOME"'
+            )
+          echo "${JAVA_HOME}"
+          echo "java_home=${JAVA_HOME}" >> $GITHUB_OUTPUT
+          
 
       - name: Build image for production
         id: docker_build_production_image
@@ -100,8 +88,8 @@ jobs:
           load: true
           outputs: type=docker,dest=/tmp/geoserver_production.tar
           build-args: |
-            IMAGE_VERSION=${{ matrix.imageVersion.image }}
-            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
+            JAVA_HOME=${{ steps.java_home_check.outputs.java_home }}
             GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
@@ -125,8 +113,8 @@ jobs:
           tags: kartoza/geoserver:manual-build
           outputs: type=docker,dest=/tmp/geoserver.tar
           build-args: |
-            IMAGE_VERSION=${{ matrix.imageVersion.image }}
-            JAVA_HOME=${{ matrix.imageVersion.javaHome }}
+            IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
+            JAVA_HOME=${{ steps.java_home_check.outputs.java_home }}
             GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
@@ -187,7 +175,7 @@ jobs:
         contains(github.event.pull_request.title, '[skip-release]') ||
         contains(github.event.comment.body, '/skiprelease')
       )
-    needs: [ build-geoserver-docker-image, build-activemq-docker-image]
+    needs: [ build-geoserver-docker-image]
     strategy:
       matrix:
         scenario:
@@ -206,12 +194,40 @@ jobs:
           - upgrade
     steps:
       - uses: actions/checkout@v6
-      - name: Download artifact
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Build image for testing activeqm
+        if: matrix.scenario == 'clustering'
+        id: docker_build_testing_image_activeqm
+        uses: docker/build-push-action@v7
+        with:
+          context: ./clustering/activemq-docker/
+          file: ./clustering/activemq-docker/Dockerfile
+          push: false
+          load: true
+          tags: kartoza/activemq-docker:manual-build
+          outputs: type=docker,dest=/tmp/activemq.tar
+          cache-from: |
+            type=gha,scope=test
+            type=gha,scope=prod
+          cache-to: type=gha,scope=test
+          target: activemq-prod
+      - name: Upload artifact
+        if: matrix.scenario == 'clustering'
+        uses: actions/upload-artifact@v7
+        with:
+          name: kartoza-activemq
+          path: /tmp/activemq.tar
+
+      - uses: actions/checkout@v6
+      - name: Download Geoserver artifact
         uses: actions/download-artifact@v8
         with:
           name: kartoza-geoserver
           path: /tmp
-      - name: Load image
+      - name: Load Geoserver image
         run: |
           docker load --input /tmp/geoserver.tar
       - name: Download ActiveMQ artifact
