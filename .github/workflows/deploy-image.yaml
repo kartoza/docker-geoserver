@@ -87,14 +87,11 @@ jobs:
         shell: bash
         run: |
           IMAGE_VERSION=${{steps.tomcat_check.outputs.tomcat_version}}
-          GDAL_VERSION=$(
-              docker run --rm \
-                -e GDAL_VERSION=$(gdalinfo --version | awk '{print $2}' | tr -d ',') \
-                tomcat:${IMAGE_VERSION} \
-                printenv GDAL_VERSION
-            )
-          echo "${GDAL_VERSION}"
-          echo "gdal_number=${GDAL_VERSION}" >> $GITHUB_OUTPUT
+          docker run --rm \
+            -v "$PWD/.github/workflows/scripts:/scripts" \
+            -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
+            tomcat:${IMAGE_VERSION} \
+            bash /scripts/get_gdal_version.sh
 
       - name: Get Current Date
         id: current_date
