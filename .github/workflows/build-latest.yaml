@@ -68,7 +68,7 @@ jobs:
         id: java_home_check
         shell: bash
         run: |
-          IMAGE_VERSION=${{steps.tomcat_check.outputs.tomcat_version}}
+          IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
           JAVA_HOME=$(
               docker run --rm \
                 "tomcat:${IMAGE_VERSION}" \
@@ -81,7 +81,7 @@ jobs:
         id: gdal_version_check
         shell: bash
         run: |
-          IMAGE_VERSION=${{steps.tomcat_check.outputs.tomcat_version}}
+          IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
@@ -104,7 +104,7 @@ jobs:
             GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
-            GDAL_VERSION=${{ steps.gdal_version_check.gdal_version }}
+            GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=prod
@@ -125,7 +125,7 @@ jobs:
             GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
-            GDAL_VERSION=${{ steps.gdal_version_check.gdal_version }}
+            GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=test
