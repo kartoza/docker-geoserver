@@ -76,6 +76,20 @@ jobs:
             )
           echo "${JAVA_HOME}"
           echo "java_home=${JAVA_HOME}" >> $GITHUB_OUTPUT
+
+      - name: Check GDAL version
+        id: gdal_version_check
+        shell: bash
+        run: |
+          IMAGE_VERSION=${{steps.tomcat_check.outputs.tomcat_version}}
+          GDAL_VERSION=$(
+              docker run --rm \
+                -e GDAL_VERSION=$(gdalinfo --version | awk '{print $2}' | tr -d ',') \
+                tomcat:${IMAGE_VERSION} \
+                printenv GDAL_VERSION
+            )
+          echo "${GDAL_VERSION}"
+          echo "gdal_number=${GDAL_VERSION}" >> $GITHUB_OUTPUT
           
 
       - name: Build image for production
@@ -93,6 +107,7 @@ jobs:
             GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
+            GDAL_VERSION=${{ steps.gdal_version_check.gdal_number }}
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=prod
@@ -120,6 +135,7 @@ jobs:
             DOWNLOAD_ALL_STABLE_EXTENSIONS=${{ matrix.downloadAllStableExtensions }}
             DOWNLOAD_ALL_COMMUNITY_EXTENSIONS=${{ matrix.downloadAllCommunityExtensions }}
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
+            GDAL_VERSION=${{ steps.gdal_version_check.gdal_number }}
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=test
