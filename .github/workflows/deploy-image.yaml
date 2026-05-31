@@ -105,7 +105,7 @@ jobs:
           set -e
 
           status=$(curl -s -o /dev/null -w "%{http_code}" \
-            https://hub.docker.com/v2/repositories/kartoza/geoserver/tags/${{ steps.geoserver_check.outputs.major }}-${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/
+            https://hub.docker.com/v2/repositories/kartoza/geoserver/tags/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/
           )
 
           echo "check_image=$status" >> "$GITHUB_OUTPUT"
