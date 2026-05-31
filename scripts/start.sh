@@ -15,8 +15,8 @@ source "${SCRIPT_DIR}/lib/tomcat.sh"
 source "${SCRIPT_DIR}/lib/cluster.sh"
 source "${SCRIPT_DIR}/lib/extensions.sh"
 
-GS_VERSION=$(cat /scripts/geoserver_version.txt)
-STABLE_PLUGIN_BASE_URL=$(cat /scripts/geoserver_gs_url.txt)
+GS_VERSION=$(grep '^GEOSERVER_VERSION=' /etc/kartoza/build_info.env | cut -d= -f2-)
+STABLE_PLUGIN_BASE_URL=$(grep '^STABLE_PLUGIN_URL=' /etc/kartoza/build_info.env | cut -d= -f2-)
 
 #############################################
 # Functions
