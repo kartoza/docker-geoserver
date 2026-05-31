@@ -93,12 +93,11 @@ jobs:
             tomcat:${IMAGE_VERSION} \
             bash /scripts/get_gdal_version.sh
 
-      - name: Published Tomcat Digest
+      - name: Tomcat Digest for image used in build
         id: tomcat_digest
         shell: bash
         run: |
           PUBLISHED_TOMCAT="${{ steps.tomcat_check.outputs.tomcat_version }}"
-          docker pull tomcat:${PUBLISHED_TOMCAT}
           TOMCAT_DIGEST=$(docker inspect \
             --format='{{index .RepoDigests 0}}' \
             tomcat:${PUBLISHED_TOMCAT})
