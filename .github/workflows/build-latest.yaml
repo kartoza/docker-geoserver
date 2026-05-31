@@ -105,6 +105,7 @@ jobs:
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
             GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
+            TOMCAT_IMAGE_SHA=''
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=prod
@@ -126,6 +127,7 @@ jobs:
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
             GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
+            TOMCAT_IMAGE_SHA=''
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=test

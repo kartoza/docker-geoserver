@@ -61,6 +61,7 @@ ARG GS_VERSION=2.28.4
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
 ARG TARGETARCH
+ARG TOMCAT_IMAGE_SHA=''
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OTEL_SERVICE_NAME=geoserver
 
@@ -102,7 +103,7 @@ ENV \
     STABLE_PLUGINS_DIR=/stable_plugins \
     REQUIRED_PLUGINS_DIR=/required_plugins \
     OTEL_DIR=/otel \
-    JMX_DIR=/jmx 
+    JMX_DIR=/jmx
 
 
 WORKDIR /scripts
@@ -111,7 +112,7 @@ ADD build_data /build_data
 ADD scripts /scripts
 
 RUN mkdir -p ${OTEL_DIR} \
-    && mkdir -p ${JMX_DIR} 
+    && mkdir -p ${JMX_DIR}
 
 # copy plugins
 COPY --from=geoserver-plugin-downloader /work/required_plugins/*.zip ${REQUIRED_PLUGINS_DIR}/
@@ -137,6 +138,7 @@ RUN mkdir -p /etc/kartoza && \
       "IMAGE_VERSION=${IMAGE_VERSION}" \
       "GEOSERVER_VERSION=${GS_VERSION}" \
       "STABLE_PLUGIN_URL=${STABLE_PLUGIN_BASE_URL}" \
+      "TOMCAT_DIGEST_SHA=${TOMCAT_IMAGE_SHA}" \
       > /etc/kartoza/build_info.env
 
 RUN chmod +x /scripts/*.sh;chmod +x /scripts/lib/*.sh;/scripts/lib/setup.sh \
