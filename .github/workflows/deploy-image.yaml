@@ -93,6 +93,18 @@ jobs:
             tomcat:${IMAGE_VERSION} \
             bash /scripts/get_gdal_version.sh
 
+      - name: Published Tomcat Digest
+        id: tomcat_digest
+        shell: bash
+        run: |
+          PUBLISHED_TOMCAT="${{ steps.tomcat_check.outputs.tomcat_version }}"
+          docker pull tomcat:${PUBLISHED_TOMCAT}
+          TOMCAT_DIGEST=$(docker inspect \
+            --format='{{index .RepoDigests 0}}' \
+            tomcat:${PUBLISHED_TOMCAT})
+          echo "${TOMCAT_DIGEST}"
+          echo "tomcat_sha=${TOMCAT_DIGEST}" >> $GITHUB_OUTPUT
+
       - name: Get Current Date
         id: current_date
         run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
@@ -137,7 +149,7 @@ jobs:
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
             GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
-            TOMCAT_IMAGE_SHA=''
+            TOMCAT_IMAGE_SHA=${{ steps.tomcat_digest.outputs.tomcat_sha }}
           cache-from: |
             type=gha,scope=prod
           target: geoserver-prod
