@@ -43,6 +43,9 @@ jobs:
             python:${IMAGE_VERSION} \
             sh /scripts/check_tomcat_version.sh
 
+      
+    
+
       - name: Read published image metadata
         id: published_image
         shell: bash
@@ -60,10 +63,25 @@ jobs:
           echo "$VERSION_INFO"
 
           TOMCAT_VERSION=$(echo "$VERSION_INFO" | grep '^TOMCAT_VERSION=' | cut -d= -f2)
+          TOMCAT_VERSION_DIGEST=$(echo "$VERSION_INFO" | grep '^TOMCAT_DIGEST_SHA=' | cut -d= -f2)
           GEOSERVER_VERSION=$(echo "$VERSION_INFO" | grep '^GEOSERVER_VERSION=' | cut -d= -f2)
 
           echo "TOMCAT_VERSION=$TOMCAT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "TOMCAT_VERSION_DIGEST=$TOMCAT_VERSION_DIGEST" >> "$GITHUB_OUTPUT"
           echo "GEOSERVER_VERSION=$GEOSERVER_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Published Tomcat Digest
+        id: tomcat_digest_comparison
+        shell: bash
+        run: |
+          PUBLISHED_TOMCAT="${{ steps.published_image.outputs.TOMCAT_VERSION }}"
+          docker pull tomcat:${PUBLISHED_TOMCAT}
+          TOMCAT_DIGEST=$(docker inspect \
+            --format='{{index .RepoDigests 0}}' \
+            tomcat:${PUBLISHED_TOMCAT})
+          echo "${TOMCAT_DIGEST}"
+          echo "tomcat_sha=${TOMCAT_DIGEST}" >> $GITHUB_OUTPUT
+          
 
       - name: Determine if rebuild is needed
         id: rebuild_check
@@ -78,6 +96,10 @@ jobs:
 
           LATEST_TOMCAT="${{ steps.tomcat_check.outputs.tomcat_version }}"
           PUBLISHED_TOMCAT="${{ steps.published_image.outputs.TOMCAT_VERSION }}"
+          
+          PUBLISHED_TOMCAT_DIGEST="${{ steps.published_image.outputs.TOMCAT_VERSION_DIGEST }}"
+          DOCKERHUB_TOMCAT_DIGEST="${{ steps.tomcat_digest_comparison.outputs.tomcat_sha }}"
+          
 
           echo "Published GeoServer: $PUBLISHED_GEOSERVER"
           echo "Latest GeoServer:    $LATEST_GEOSERVER"
@@ -91,6 +113,11 @@ jobs:
           fi
 
           if [ "$PUBLISHED_TOMCAT" != "$LATEST_TOMCAT" ]; then
+            echo "Tomcat version changed"
+            NEEDS_BUILD=true
+          fi
+          
+          if [ "$PUBLISHED_TOMCAT_DIGEST" != "$DOCKERHUB_TOMCAT_DIGEST" ]; then
             echo "Tomcat version changed"
             NEEDS_BUILD=true
           fi
