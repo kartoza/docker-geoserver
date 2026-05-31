@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-apt update;apt install -y gdal-bin
+apt -qq update;apt -y --no-install-recommends install gdal-bin
 
 gdal_version=$(gdalinfo --version | awk '{print $2}' | tr -d ',')
 
