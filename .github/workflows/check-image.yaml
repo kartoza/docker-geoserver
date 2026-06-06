@@ -53,12 +53,13 @@ jobs:
           set -euo pipefail
 
           docker pull kartoza/geoserver:latest
+          CONTAINER_ID=$(docker create kartoza/geoserver:latest)
 
-          VERSION_INFO=$(
-            docker run --rm \
-              kartoza/geoserver:latest \
-              cat /etc/kartoza/build_info.env
-          )
+          docker cp "${CONTAINER_ID}:/etc/kartoza/build_info.env" ./build_info.env
+
+          docker rm "${CONTAINER_ID}"
+
+          VERSION_INFO=$(cat ./build_info.env)
 
           echo "$VERSION_INFO"
 
@@ -69,6 +70,8 @@ jobs:
           echo "TOMCAT_VERSION=$TOMCAT_VERSION" >> "$GITHUB_OUTPUT"
           echo "TOMCAT_VERSION_DIGEST=$TOMCAT_VERSION_DIGEST" >> "$GITHUB_OUTPUT"
           echo "GEOSERVER_VERSION=$GEOSERVER_VERSION" >> "$GITHUB_OUTPUT"
+          docker stop geoserver-params
+          docker rm geoserver-params
 
       - name: Published Tomcat Digest
         id: tomcat_digest_comparison
