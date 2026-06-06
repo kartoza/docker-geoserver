@@ -25,7 +25,7 @@ jobs:
         id: geoserver_check
         shell: bash
         run: |
-          IMAGE_VERSION=python:3.12-slim
+          IMAGE_VERSION=3.12-slim
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
@@ -36,7 +36,7 @@ jobs:
         id: tomcat_check
         shell: bash
         run: |
-          IMAGE_VERSION=python:3.12-slim
+          IMAGE_VERSION=3.12-slim
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
