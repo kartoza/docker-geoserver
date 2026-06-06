@@ -57,6 +57,7 @@ RUN /work/plugin_download.sh
 FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
+ARG IMAGE_VERSION
 ARG GS_VERSION=2.28.4
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG HTTPS_PORT=8443
@@ -135,7 +136,7 @@ RUN ldconfig
 
 RUN mkdir -p /etc/kartoza && \
     printf '%s\n' \
-      "IMAGE_VERSION=${IMAGE_VERSION}" \
+      "TOMCAT_VERSION=${IMAGE_VERSION}" \
       "GEOSERVER_VERSION=${GS_VERSION}" \
       "STABLE_PLUGIN_URL=${STABLE_PLUGIN_BASE_URL}" \
       "TOMCAT_DIGEST_SHA=${TOMCAT_IMAGE_SHA}" \
