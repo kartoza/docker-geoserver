@@ -39,6 +39,7 @@ services:
         WAR_URL: ${WAR_URL}
         STABLE_PLUGIN_BASE_URL: ${STABLE_PLUGIN_BASE_URL}
         ACTIVATE_GDAL_PLUGIN: ${ACTIVATE_GDAL_PLUGIN}
+        TOMCAT_IMAGE_SHA: ""
       target: geoserver-prod
 
   geoserver-test:
