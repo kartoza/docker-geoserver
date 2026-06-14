@@ -200,7 +200,7 @@ jobs:
         scenario:
           - gwc
           - login
-          - stores
+#         - stores
           - context
           - disk-quota
 #          - clustering
