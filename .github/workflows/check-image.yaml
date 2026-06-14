@@ -1,13 +1,13 @@
-name: daily-image-updates
+name: weekly-image-updates
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 2 * * 0'
 
 
 
 jobs:
-  check-image:
+  update-geoserver-image-weekly:
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -135,6 +135,6 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'build-latest.yml',
+              workflow_id: 'build-latest.yaml',
               ref: 'develop'
             })

@@ -2,9 +2,10 @@ import re
 import requests
 from pathlib import Path
 
+
 TOMCAT_REPO = "library/tomcat"
 TAG_PATTERN = re.compile(
-    r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)-jdk17-temurin-noble$"
+    r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)-jdk21-temurin-noble$"
 )
 
 #TODO Update when GeoServer 3 is out which uses the tomcat 10 seies
@@ -20,8 +21,9 @@ def version_key(v):
     )
 
 
+
 def get_latest_tomcat_tag():
-    url = "https://hub.docker.com/v2/repositories/library/tomcat/tags?page_size=100&name=9."
+    url = "https://hub.docker.com/v2/repositories/library/tomcat/tags?page_size=100&name=11."
 
     latest_tag = None
     latest_version = None
@@ -34,11 +36,11 @@ def get_latest_tomcat_tag():
         for result in data["results"]:
             tag = result["name"]
 
-            if not tag.startswith("9."):
+            if not tag.startswith("11."):
                 continue
 
             # optional stricter filter
-            if "-jdk17-temurin-noble" not in tag:
+            if "-jdk21-temurin-noble" not in tag:
                 continue
 
             parsed = version_key(tag)
@@ -57,7 +59,7 @@ def main():
     tag, version = get_latest_tomcat_tag()
 
     if version:
-        print(f"Latest tomcat version in the 9 Series: {tag}")
+        print(f"Latest tomcat version in the 11 Series: {tag}")
         github_output = Path("/github_output/github_output.txt")
 
         with github_output.open("a") as f:

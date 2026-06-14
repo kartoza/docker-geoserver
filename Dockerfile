@@ -1,6 +1,6 @@
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=9.0.115-jdk17-temurin-noble
+ARG IMAGE_VERSION=11.0-jdk21-temurin-noble
 ARG JAVA_HOME=/opt/java/openjdk
 #TODO we need a way to predetermine the gdal version in the tomcat image so as to match it
 ARG GDAL_VERSION=3.8.4
@@ -28,7 +28,7 @@ FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
 # alpine because it's smaller.
 
 FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
-ARG GS_VERSION=2.28.4
+ARG GS_VERSION=3.0.0
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
 ENV OTEL_VERSION=v2.17.1
