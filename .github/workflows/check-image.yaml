@@ -135,6 +135,6 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'build-latest.yml',
+              workflow_id: 'build-latest.yaml',
               ref: 'develop'
             })
