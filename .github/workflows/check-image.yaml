@@ -108,6 +108,10 @@ jobs:
 
           echo "Published Tomcat:    $PUBLISHED_TOMCAT"
           echo "Latest Tomcat:       $LATEST_TOMCAT"
+          
+          echo "Latest Tomcat Digest:       $DOCKERHUB_TOMCAT_DIGEST"
+          echo "Published Tomcat Digest:    $PUBLISHED_TOMCAT_DIGEST"
+          
 
           if [ "$PUBLISHED_GEOSERVER" != "$LATEST_GEOSERVER" ]; then
             echo "GeoServer version changed"
@@ -135,6 +139,6 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'build-latest.yaml',
+              workflow_id: 'deploy-image.yaml',
               ref: 'develop'
             })
