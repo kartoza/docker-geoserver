@@ -35,7 +35,7 @@ jobs:
           # useful to also update existing broken image, defaults to no
           - no
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
@@ -168,7 +168,7 @@ jobs:
     steps:
       - name: Checkout code
         id: git_checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: 'develop'
 
