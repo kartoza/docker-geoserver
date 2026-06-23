@@ -60,7 +60,8 @@ if [ "$(echo "${LIMIT_EXT_DOWNLOAD}" | tr '[:upper:]' '[:lower:]')" = "true" ]; 
 else
   COMMUNITY_PLUGINS_FILE=/work/community_plugins.txt
 fi
-awk '{print "url = \"https://build.geoserver.org/geoserver/'"${GS_VERSION:0:5}"'x/community-latest/geoserver-'"${GS_VERSION:0:4}"'-SNAPSHOT-"$0".zip\"\noutput = \"/work/community_plugins/"$0".zip\"\n--fail\n--location\n"}' < ${COMMUNITY_PLUGINS_FILE} >> /work/curl.cfg
+GS_MAJOR_MINOR="${GS_VERSION%.*}"
+awk '{print "url = \"https://build.geoserver.org/geoserver/'"${GS_MAJOR_MINOR}"'.x/community-latest/geoserver-'"${GS_MAJOR_MINOR}"'-SNAPSHOT-"$0".zip\"\noutput = \"/work/community_plugins/"$0".zip\"\n--fail\n--location\n"}' < ${COMMUNITY_PLUGINS_FILE} >> /work/curl.cfg
 
 # Add OpenTelemetry Java Agent
 echo "url = \"https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/${OTEL_VERSION}/opentelemetry-javaagent.jar\"" >> /work/curl.cfg
