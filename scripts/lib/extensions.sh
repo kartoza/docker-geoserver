@@ -30,6 +30,7 @@ install_plugin() {
 
 generate_community_extensions_config() {
   local cfg_file="${COMMUNITY_PLUGINS_DIR}/curl.cfg"
+  local gs_major_minor="${GS_VERSION%.*}"
   rm -f "$cfg_file"
 
   for ext in $(echo "${COMMUNITY_EXTENSIONS}" | tr ',' ' '); do
@@ -40,7 +41,7 @@ generate_community_extensions_config() {
       continue
     fi
 
-    echo "url = \"https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip\"" >> "$cfg_file"
+    echo "url = \"https://build.geoserver.org/geoserver/${gs_major_minor}.x/community-latest/geoserver-${gs_major_minor}-SNAPSHOT-${ext}.zip\"" >> "$cfg_file"
     echo "output = \"${output_file}\"" >> "$cfg_file"
     echo "--fail" >> "$cfg_file"
     echo "--location" >> "$cfg_file"
