@@ -33,7 +33,7 @@ jobs:
           - https://sourceforge.net/projects/geoserver/files/GeoServer
         geoserverPatchMajorVersionBugs:
           # useful to also update existing broken image, defaults to no
-          - no
+          - yes
     steps:
       - uses: actions/checkout@v7
       - name: Set up QEMU
@@ -149,6 +149,7 @@ jobs:
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
             GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
             TOMCAT_IMAGE_SHA=${{ steps.tomcat_digest.outputs.tomcat_sha }}
+            COMMUNITY_EXTENSION_PLUGIN_BASE_URL=https://build.geoserver.org/geoserver/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.x/community-latest
           cache-from: |
             type=gha,scope=prod
           target: geoserver-prod

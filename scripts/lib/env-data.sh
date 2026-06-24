@@ -578,3 +578,18 @@ fi
 if [ -z ${TOMCAT_ENCRYPTED_PASSWORD} ];then
   export TOMCAT_ENCRYPTED_PASSWORD=false
 fi
+
+if [ -z ${STABLE_PLUGIN_BASE_URL} ];then
+  VERSION_INFO=$(cat /etc/kartoza/build_info.env)
+  export STABLE_PLUGIN_BASE_URL=$(echo "$VERSION_INFO" | grep '^STABLE_PLUGIN_URL=' | cut -d= -f2)
+fi
+
+if [ -z ${COMMUNITY_EXTENSION_PLUGIN_BASE_URL} ];then
+  VERSION_INFO=$(cat /etc/kartoza/build_info.env)
+  export COMMUNITY_EXTENSION_PLUGIN_BASE_URL=$(echo "$VERSION_INFO" | grep '^COMMUNITY_EXTENSION_PLUGIN_BASE_URL=' | cut -d= -f2)
+fi
+
+if [ -z ${GS_VERSION} ];then
+  VERSION_INFO=$(cat /etc/kartoza/build_info.env)
+  export GS_VERSION=$(echo "$VERSION_INFO" | grep '^GEOSERVER_VERSION=' | cut -d= -f2)
+fi

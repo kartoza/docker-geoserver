@@ -117,6 +117,7 @@ jobs:
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
             GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
             TOMCAT_IMAGE_SHA=${{ steps.tomcat_digest.outputs.tomcat_sha }}
+            COMMUNITY_EXTENSION_PLUGIN_BASE_URL=https://build.geoserver.org/geoserver/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.x/community-latest
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=prod
@@ -139,6 +140,7 @@ jobs:
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
             GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
             TOMCAT_IMAGE_SHA=${{ steps.tomcat_digest.outputs.tomcat_sha }}
+            COMMUNITY_EXTENSION_PLUGIN_BASE_URL=https://build.geoserver.org/geoserver/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.x/community-latest
           cache-from: |
             type=gha,scope=prod
           cache-to: type=gha,scope=test
