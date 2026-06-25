@@ -1,8 +1,8 @@
 
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-ARG IMAGE_VERSION=11.0-jdk21-temurin-noble
+ARG IMAGE_VERSION=11.0.23-jdk21-temurin-noble
 ARG JAVA_HOME=/opt/java/openjdk
-#TODO we need a way to predetermine the gdal version in the tomcat image so as to match it
+
 ARG GDAL_VERSION=3.8.4
 ARG TARGETARCH
 
@@ -30,12 +30,14 @@ FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
 FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
 ARG GS_VERSION=3.0.0
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
+ARG COMMUNITY_EXTENSION_PLUGIN_BASE_URL=https://build.geoserver.org/geoserver/${GS_VERSION%.*}x/community-latest
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+ARG LIMIT_EXT_DOWNLOAD=false
 ENV OTEL_VERSION=v2.17.1
 ENV JMX_PROMETHEUS_VERSION=1.0.1
 ENV LOG4J_VERSION=2.24.3
 
-RUN apk update && apk add curl py3-pip
+RUN apk update && apk add curl py3-pip bash
 RUN pip3 install beautifulsoup4 requests
 
 WORKDIR /work
@@ -47,7 +49,7 @@ ADD \
     build_data/plugins/plugin_download.sh \
     /work/
 
-RUN echo ${GS_VERSION} > /tmp/pass.txt && chmod 0755 /work/extensions.sh && /work/extensions.sh
+RUN chmod 0755 /work/extensions.sh && /work/extensions.sh
 
 RUN /work/plugin_download.sh
 
@@ -58,8 +60,10 @@ FROM tomcat:$IMAGE_VERSION AS geoserver-prod
 
 LABEL maintainer="Tim Sutton<tim@linfiniti.com>"
 ARG IMAGE_VERSION
-ARG GS_VERSION=2.28.4
-ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
+ARG COMMUNITY_EXTENSION_PLUGIN_BASE_URL
+ARG STABLE_PLUGIN_BASE_URL
+ARG GS_VERSION
+
 ARG HTTPS_PORT=8443
 ARG TARGETARCH
 ARG TOMCAT_IMAGE_SHA=''
@@ -140,6 +144,7 @@ RUN mkdir -p /etc/kartoza && \
       "GEOSERVER_VERSION=${GS_VERSION}" \
       "STABLE_PLUGIN_URL=${STABLE_PLUGIN_BASE_URL}" \
       "TOMCAT_DIGEST_SHA=${TOMCAT_IMAGE_SHA}" \
+      "COMMUNITY_EXTENSION_PLUGIN_BASE_URL=${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}" \
       > /etc/kartoza/build_info.env
 
 RUN chmod +x /scripts/*.sh;chmod +x /scripts/lib/*.sh;/scripts/lib/setup.sh \

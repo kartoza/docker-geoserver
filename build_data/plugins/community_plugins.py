@@ -21,7 +21,7 @@ for link in soup.find_all("a"):
 
 with open('community_plugins.txt', 'w') as f:
     for plugin in plugin_list:
-        _version = args.version.replace(".x", "")
+        _version = args.version.replace(".x", ".0")
         sub_string = "geoserver-%s-SNAPSHOT-" % _version
         plugin_file = plugin.replace("%s" % sub_string, "")
         plugin_name = plugin_file.replace(".zip", "")

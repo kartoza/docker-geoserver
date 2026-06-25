@@ -40,7 +40,7 @@ generate_community_extensions_config() {
       continue
     fi
 
-    echo "url = \"https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip\"" >> "$cfg_file"
+    echo "url = \"${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}/geoserver-${GS_VERSION}-SNAPSHOT-${ext}.zip\"" >> "$cfg_file"
     echo "output = \"${output_file}\"" >> "$cfg_file"
     echo "--fail" >> "$cfg_file"
     echo "--location" >> "$cfg_file"
