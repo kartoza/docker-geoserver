@@ -12,12 +12,15 @@ on:
 #  contents: read
 jobs:
   deploy-image:
-    #if: |
-      #github.actor != 'dependabot[bot]' &&
-      #!(
-        #contains(github.event.pull_request.title, '[skip-release]') ||
-        #contains(github.event.comment.body, '/skiprelease')
-      #) && github.event.workflow_run.conclusion == 'success'
+    if: |
+      github.actor != 'dependabot[bot]' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'workflow_run' &&
+          github.event.workflow_run.conclusion == 'success'
+        )
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -122,12 +125,6 @@ jobs:
           echo "check_image=$status" >> "$GITHUB_OUTPUT"
 
       - name: Build prod image
-        if: |
-          github.actor != 'dependabot[bot]' &&
-          !(
-            contains(github.event.pull_request.title, '[skip-release]') ||
-            contains(github.event.comment.body, '/skiprelease')
-          ) && github.event.workflow_run.conclusion == 'success'
         timeout-minutes: 45
         id: docker_build_prod
         uses: docker/build-push-action@v7
@@ -159,10 +156,13 @@ jobs:
     timeout-minutes: 15
     if: |
       github.actor != 'dependabot[bot]' &&
-      !(
-        contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease') 
-      ) &&  github.event.workflow_run.conclusion == 'success'
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'workflow_run' &&
+          github.event.workflow_run.conclusion == 'success'
+        )
+      )
     needs: [deploy-image]
 
 
@@ -198,7 +198,6 @@ jobs:
           gh release create v${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}--${{ steps.current_date.outputs.formatted }}--${{ steps.latest_commit_hash.outputs.commit }} --notes ${{ steps.latest_commit_hash.outputs.commit }} --target develop --repo $GITHUB_REPOSITORY
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
 
 
