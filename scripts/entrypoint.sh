@@ -27,6 +27,7 @@ source "${SCRIPT_DIR}/lib/extensions.sh"
 # Gosu preparations
 setup_geoserver_users
 create_entrypoint_directories
+validate_runtime_write_access
 rename_geoserver_context_root
 set_vars
 run_pre_start_hooks
@@ -34,5 +35,4 @@ configure_jvm
 configure_telemetry
 fix_permissions
 start_geoserver_service
-
 

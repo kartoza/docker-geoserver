@@ -447,7 +447,13 @@ rename_geoserver_context_root() {
 }
 
 start_geoserver_service() {
-if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
+if [[ "$(id -u)" -ne 0 ]]; then
+  if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
+    exec "${GEOSERVER_HOME}"/bin/startup.sh
+  else
+    exec /usr/local/tomcat/bin/catalina.sh run
+  fi
+elif [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]];then
   if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
     exec gosu "${USER_NAME}" "${GEOSERVER_HOME}"/bin/startup.sh
   else

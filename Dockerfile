@@ -150,6 +150,47 @@ RUN mkdir -p /etc/kartoza && \
 RUN chmod +x /scripts/*.sh;chmod +x /scripts/lib/*.sh;/scripts/lib/setup.sh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# OpenShift starts containers with an arbitrary UID in group 0. Make every
+# path modified during startup writable by that group without making it
+# world-writable.
+RUN mkdir -p \
+      "${GEOSERVER_DATA_DIR}" \
+      "${FOOTPRINTS_DATA_DIR}" \
+      "${FONTS_DIR}" \
+      "${EXTRA_CONFIG_DIR}" \
+      "${CERT_DIR}" \
+      /docker-entrypoint-geoserver.d \
+    && chgrp -R 0 \
+      "${CATALINA_HOME}" \
+      "${GEOSERVER_HOME}" \
+      "${GEOSERVER_DATA_DIR}" \
+      "${FOOTPRINTS_DATA_DIR}" \
+      "${FONTS_DIR}" \
+      "${EXTRA_CONFIG_DIR}" \
+      "${CERT_DIR}" \
+      "${COMMUNITY_PLUGINS_DIR}" \
+      "${STABLE_PLUGINS_DIR}" \
+      "${REQUIRED_PLUGINS_DIR}" \
+      "${OTEL_DIR}" \
+      "${JMX_DIR}" \
+      /docker-entrypoint-geoserver.d \
+      /usr/share/fonts \
+    && chmod -R g=u \
+      "${CATALINA_HOME}" \
+      "${GEOSERVER_HOME}" \
+      "${GEOSERVER_DATA_DIR}" \
+      "${FOOTPRINTS_DATA_DIR}" \
+      "${FONTS_DIR}" \
+      "${EXTRA_CONFIG_DIR}" \
+      "${CERT_DIR}" \
+      "${COMMUNITY_PLUGINS_DIR}" \
+      "${STABLE_PLUGINS_DIR}" \
+      "${REQUIRED_PLUGINS_DIR}" \
+      "${OTEL_DIR}" \
+      "${JMX_DIR}" \
+      /docker-entrypoint-geoserver.d \
+      /usr/share/fonts
+
 
 EXPOSE  ${HTTPS_PORT}
 

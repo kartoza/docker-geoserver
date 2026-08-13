@@ -69,7 +69,7 @@ EOF
     fi
   fi
 
-  [[ -d "${CLUSTER_CONFIG_DIR}" ]] &&
+  [[ "$(id -u)" -eq 0 && -d "${CLUSTER_CONFIG_DIR}" ]] &&
     chown -R "${USER_NAME}:${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
 }
 
@@ -258,7 +258,9 @@ setup_clustering_status() {
 
   if [[ -z "${EXISTING_DATA_DIR}" ]]; then
     create_dir "${CLUSTER_CONFIG_DIR}"
-    chown -R "${USER_NAME}:${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+    if [[ "$(id -u)" -eq 0 ]]; then
+      chown -R "${USER_NAME}:${GEO_GROUP_NAME}" "${CLUSTER_CONFIG_DIR}"
+    fi
 
     if [[ "${DB_BACKEND}" =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
       postgres_ssl_setup
@@ -284,5 +286,4 @@ setup_clustering_status() {
 
 
 }
-
 

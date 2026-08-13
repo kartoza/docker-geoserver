@@ -56,10 +56,17 @@ clean_up_vars() {
 ############################################
 
 init_runtime_user_vars() {
-  USER_ID="${GEOSERVER_UID:-2000}"
-  GROUP_ID="${GEOSERVER_GID:-2000}"
-  USER_NAME="${USER:-geoserveruser}"
-  GEO_GROUP_NAME="${GROUP_NAME:-geoserverusers}"
+  if [[ "$(id -u)" -eq 0 ]]; then
+    USER_ID="${GEOSERVER_UID:-2000}"
+    GROUP_ID="${GEOSERVER_GID:-2000}"
+    USER_NAME="${GEOSERVER_USER:-${USER:-geoserveruser}}"
+    GEO_GROUP_NAME="${GROUP_NAME:-geoserverusers}"
+  else
+    USER_ID="$(id -u)"
+    GROUP_ID="$(id -g)"
+    USER_NAME="$(id -un 2>/dev/null || printf '%s' "${USER_ID}")"
+    GEO_GROUP_NAME="$(id -gn 2>/dev/null || printf '%s' "${GROUP_ID}")"
+  fi
 
   export USER_ID GROUP_ID USER_NAME GEO_GROUP_NAME
 }
@@ -86,8 +93,39 @@ ensure_user_exists() {
 
 setup_geoserver_users() {
   init_runtime_user_vars
+
+  # Platforms such as OpenShift assign an arbitrary UID at runtime. In that
+  # case the image cannot (and does not need to) modify /etc/passwd or groups.
+  [[ "$(id -u)" -ne 0 ]] && return 0
+
   ensure_group_exists
   ensure_user_exists
+}
+
+validate_runtime_write_access() {
+  [[ "$(id -u)" -eq 0 ]] && return 0
+
+  local path
+  local runtime_paths=(
+    "${GEOSERVER_DATA_DIR}"
+    "${GEOWEBCACHE_CACHE_DIR}"
+    "${GEOSERVER_HOME}"
+    "${CATALINA_HOME}/conf"
+    "${CATALINA_HOME}/logs"
+    "${CATALINA_HOME}/temp"
+    "${CATALINA_HOME}/webapps"
+    "${CATALINA_HOME}/work"
+    "${CERT_DIR}"
+    "${EXTRA_CONFIG_DIR}"
+    "${FONTS_DIR}"
+  )
+
+  for path in "${runtime_paths[@]}"; do
+    if [[ ! -w "${path}" ]]; then
+      echo -e "\e[31m [ERROR] Arbitrary UID ${USER_ID}:${GROUP_ID} cannot write to ${path}. Ensure the mounted path is group-writable. \033[0m" >&2
+      return 1
+    fi
+  done
 }
 
 ############################################
@@ -173,6 +211,10 @@ fix_permissions() {
   change_owner_if_needed() {
     fix_path_ownership "$1" "/tmp/fix_ownership_list.txt"
   }
+
+  if [[ "$(id -u)" -ne 0 ]]; then
+    return 0
+  fi
 
   if [[ ${RUN_AS_ROOT} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
 
@@ -355,4 +397,3 @@ run_update_password_hook() {
     /bin/bash "${hook}"
   fi
 }
-
