@@ -1,0 +1,25 @@
+services:
+  geoserver:
+    image: 'kartoza/geoserver:${TAG:-manual-build}'
+    user: '12345:0'
+    volumes:
+      - geoserver-data:/opt/geoserver/data_dir
+      - ./tests:/tests:ro
+    environment:
+      GROUP_NAME: '0'
+      GEOSERVER_GID: '0'
+      GEOSERVER_ADMIN_PASSWORD: myawesomegeoserver
+      GEOSERVER_ADMIN_USER: admin
+      INITIAL_MEMORY: 1G
+      MAXIMUM_MEMORY: 2G
+      TEST_CLASS: test_arbitrary_uid.TestArbitraryUID
+    ports:
+      - '8085:8080'
+    healthcheck:
+      test: ['CMD-SHELL', "curl --fail --silent --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+
+volumes:
+  geoserver-data:
