@@ -210,8 +210,16 @@ fix_permissions() {
 
   echo -e "\e[32m [Entrypoint] Fixing Permissions for:\033[0m \e[1;31m ${GEOSERVER_DATA_DIR} && ${GEOWEBCACHE_CACHE_DIR}\033[0m"
 
-  geo_data_file_perms "${GEOWEBCACHE_CACHE_DIR}"
-  geo_data_file_perms "${GEOSERVER_DATA_DIR}"
+  if [[ ${CHOWN_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+    geo_data_file_perms "${GEOSERVER_DATA_DIR}"
+
+  fi
+
+  if [[ ${CHOWN_GWC_DATA_DIR} =~ [Tt][Rr][Uu][Ee] ]];then
+    geo_data_file_perms "${GEOWEBCACHE_CACHE_DIR}"
+  fi
+
+
 
   find "${CATALINA_HOME}/conf/" -type f -exec chmod 400 {} \;
 
