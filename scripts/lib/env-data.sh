@@ -593,3 +593,11 @@ if [ -z ${GS_VERSION} ];then
   VERSION_INFO=$(cat /etc/kartoza/build_info.env)
   export GS_VERSION=$(echo "$VERSION_INFO" | grep '^GEOSERVER_VERSION=' | cut -d= -f2)
 fi
+
+if [ -z "${CHOWN_DATA_DIR}" ]; then
+  CHOWN_DATA_DIR=true
+fi
+
+if [ -z "${CHOWN_GWC_DATA_DIR}" ]; then
+  CHOWN_GWC_DATA_DIR=true
+fi
