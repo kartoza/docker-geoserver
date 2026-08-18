@@ -164,7 +164,6 @@ download_community_plugins() {
   local connect_timeout="${COMMUNITY_PLUGIN_CONNECT_TIMEOUT:-10}"
   local max_time="${COMMUNITY_PLUGIN_MAX_TIME:-300}"
   local retries="${COMMUNITY_PLUGIN_RETRIES:-1}"
-  local community_plugin_version="${GS_VERSION%.*}.0"
   local plugin url destination error_file validation_file curl_status error_message
   local failed_count=0
   local plugins=()
@@ -199,7 +198,7 @@ download_community_plugins() {
     done
   else
     for plugin in "${plugins[@]}"; do
-      url="${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}/geoserver-${community_plugin_version}-SNAPSHOT-${plugin}.zip"
+      url="${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}/geoserver-${GS_VERSION}-SNAPSHOT-${plugin}.zip"
       destination="/work/community_plugins/${plugin}.zip"
       error_file="/tmp/community-plugin-${plugin}.error"
       validation_file="/tmp/community-plugin-${plugin}.validation"
