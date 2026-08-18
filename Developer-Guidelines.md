@@ -42,7 +42,7 @@ See the [dockerhub tomcat](https://hub.docker.com/_/tomcat/)
 for available tags.
 
 ```
-VERSION=3.0.0
+VERSION=3.0.1
 IMAGE_VERSION=9.0.99-jdk11-temurin-noble
 docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} --build-arg GS_VERSION=${VERSION} -t kartoza/geoserver:${VERSION} .
 ```
@@ -50,7 +50,7 @@ docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} --build-arg GS_VERSION=$
 For some recent builds, it is necessary to set the JAVA_PATH as well (e.g. Apache Tomcat/9.0.36)
 
 ```
-docker build --build-arg IMAGE_VERSION=9.0.99-jdk11-temurin-noble --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=3.0.0 -t kartoza/geoserver:3.0.0 .
+docker build --build-arg IMAGE_VERSION=9.0.99-jdk11-temurin-noble --build-arg JAVA_HOME=/usr/local/openjdk-11/bin/java --build-arg GS_VERSION=3.0.1 -t kartoza/geoserver:3.0.1 .
 ```
 
 **Note:** Please check the [GeoServer documentation](https://docs.geoserver.org/stable/en/user/production/index.html)
