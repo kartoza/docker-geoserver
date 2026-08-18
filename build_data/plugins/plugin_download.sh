@@ -73,22 +73,12 @@ setup_stable_plugin_download
 
 # Add in all community plugins
 setup_community_plugin_download(){
- if [ "${LIMIT_EXT_DOWNLOAD,,}" = "true" ]; then
+  if [ "${LIMIT_EXT_DOWNLOAD,,}" = "true" ]; then
     head -n 5 /work/community_plugins.txt > /work/community_plugins_modified.txt
     COMMUNITY_PLUGINS_FILE=/work/community_plugins_modified.txt
- else
+  else
     COMMUNITY_PLUGINS_FILE=/work/community_plugins.txt
- fi
-awk \
-    -v base_url="${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}" \
-    -v gs_version="${GS_VERSION}" '
-{
-    printf "url = \"%s/geoserver-%s-SNAPSHOT-%s.zip\"\n", base_url, gs_version, $0
-    printf "output = \"/work/community_plugins/%s.zip\"\n", $0
-    print "--fail"
-    print "--location"
-    print ""
-}' < "${COMMUNITY_PLUGINS_FILE}" >> /work/curl.cfg
+  fi
 }
 
 setup_community_plugin_download
@@ -148,17 +138,116 @@ prepare_extra_configs(){
 }
 prepare_extra_configs
 
-# Download all plugins and tools
+# Download required plugins and tools. These artifacts are required for a
+# usable image, so exhaust the retries and fail the build if they remain
+# unavailable.
+download_succeeded=false
 for attempt in {1..5}; do
     echo "Attempt $attempt of downloading plugins and agents"
     if curl --progress-bar -vK /work/curl.cfg; then
         echo "Download successful"
+        download_succeeded=true
         break
     else
         echo "Download failed, retrying in 10 seconds..."
         sleep 10
     fi
 done
+
+if [[ "${download_succeeded}" != "true" ]]; then
+  echo "Required plugins or agents could not be downloaded" >&2
+  exit 1
+fi
+
+download_community_plugins() {
+  local failure_report=/work/community_plugin_download_failures.txt
+  local connect_timeout="${COMMUNITY_PLUGIN_CONNECT_TIMEOUT:-10}"
+  local max_time="${COMMUNITY_PLUGIN_MAX_TIME:-300}"
+  local retries="${COMMUNITY_PLUGIN_RETRIES:-1}"
+  local plugin url destination error_file validation_file curl_status error_message
+  local failed_count=0
+  local plugins=()
+
+  if [[ -f /work/community_plugin_discovery_failure.txt ]]; then
+    cp /work/community_plugin_discovery_failure.txt "${failure_report}"
+    failed_count=1
+  else
+    : > "${failure_report}"
+  fi
+  mapfile -t plugins < <(sed -e '/^[[:space:]]*$/d' -e '/^[[:space:]]*#/d' "${COMMUNITY_PLUGINS_FILE}")
+
+  record_failure() {
+    local failed_plugin="$1"
+    local reason="$2"
+
+    printf '%s\t%s\n' "${failed_plugin}" "${reason}" >> "${failure_report}"
+    echo "Community plugin ${failed_plugin} won't be available: ${reason}"
+    failed_count=$((failed_count + 1))
+  }
+
+  # Avoid waiting once per plugin when the community build server itself is
+  # unreachable. HTTP errors are acceptable here; this only checks whether a
+  # connection can be established.
+  if ! curl --silent --show-error --location --head \
+      --connect-timeout "${connect_timeout}" \
+      --max-time "${connect_timeout}" \
+      --output /dev/null \
+      "${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}"; then
+    for plugin in "${plugins[@]}"; do
+      record_failure "${plugin}" "community plugin server is unreachable"
+    done
+  else
+    for plugin in "${plugins[@]}"; do
+      url="${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}/geoserver-${GS_VERSION}-SNAPSHOT-${plugin}.zip"
+      destination="/work/community_plugins/${plugin}.zip"
+      error_file="/tmp/community-plugin-${plugin}.error"
+      validation_file="/tmp/community-plugin-${plugin}.validation"
+
+      rm -f "${destination}" "${error_file}" "${validation_file}"
+      echo "Downloading community plugin ${plugin}"
+
+      set +e
+      curl --silent --show-error --fail --location \
+        --connect-timeout "${connect_timeout}" \
+        --max-time "${max_time}" \
+        --retry "${retries}" \
+        --retry-delay 2 \
+        --retry-connrefused \
+        --output "${destination}" \
+        "${url}" 2>"${error_file}"
+      curl_status=$?
+      set -e
+
+      if [[ "${curl_status}" -ne 0 ]]; then
+        rm -f "${destination}"
+        error_message="$(tail -n 1 "${error_file}" 2>/dev/null || true)"
+        error_message="${error_message:-curl exited with status ${curl_status}}"
+        record_failure "${plugin}" "download failed: ${error_message}"
+        continue
+      fi
+
+      if ! unzip -tq "${destination}" >"${validation_file}" 2>&1; then
+        error_message="$(tail -n 1 "${validation_file}" 2>/dev/null || true)"
+        error_message="${error_message:-unzip integrity check failed}"
+        rm -f "${destination}"
+        record_failure "${plugin}" "ZIP integrity validation failed: ${error_message}"
+        continue
+      fi
+
+      rm -f "${error_file}" "${validation_file}"
+      echo "Community plugin ${plugin} downloaded and verified"
+    done
+  fi
+
+  if [[ "${failed_count}" -eq 0 ]]; then
+    echo "All requested community plugins were downloaded successfully"
+  else
+    echo "${failed_count} community plugin(s) won't be available. See ${failure_report}:"
+    sed 's/^/  /' "${failure_report}"
+  fi
+}
+
+download_community_plugins
 
 # Write basic JMX config file
 printf '%s\n' \
