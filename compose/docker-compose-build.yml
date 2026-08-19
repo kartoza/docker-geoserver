@@ -39,6 +39,7 @@ services:
         WAR_URL: ${WAR_URL}
         STABLE_PLUGIN_BASE_URL: ${STABLE_PLUGIN_BASE_URL}
         ACTIVATE_GDAL_PLUGIN: ${ACTIVATE_GDAL_PLUGIN}
+        LIMIT_EXT_DOWNLOAD: ${LIMIT_EXT_DOWNLOAD}
         TOMCAT_IMAGE_SHA: ""
         COMMUNITY_EXTENSION_PLUGIN_BASE_URL: ${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}
       target: geoserver-prod
@@ -46,7 +47,7 @@ services:
   geoserver-test:
     image: kartoza/geoserver:manual-build
     build:
-      context: .
+      context: ../
       args:
         <<: *build-args-anchor
       target: geoserver-test

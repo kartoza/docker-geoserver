@@ -28,7 +28,7 @@ FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
 # alpine because it's smaller.
 
 FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
-ARG GS_VERSION=3.0.0
+ARG GS_VERSION=3.0.1
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG COMMUNITY_EXTENSION_PLUGIN_BASE_URL=https://build.geoserver.org/geoserver/${GS_VERSION%.*}x/community-latest
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
@@ -37,7 +37,7 @@ ENV OTEL_VERSION=v2.17.1
 ENV JMX_PROMETHEUS_VERSION=1.0.1
 ENV LOG4J_VERSION=2.24.3
 
-RUN apk update && apk add curl py3-pip bash
+RUN apk update && apk add curl py3-pip bash unzip
 RUN pip3 install beautifulsoup4 requests
 
 WORKDIR /work
@@ -129,6 +129,7 @@ COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNIT
 COPY --from=geoserver-plugin-downloader /work/geoserver_war/geoserver.* ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/community_plugins.txt ${COMMUNITY_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins.txt ${STABLE_PLUGINS_DIR}/
+COPY --from=geoserver-plugin-downloader /work/community_plugin_download_failures.txt /etc/kartoza/community_plugin_download_failures.txt
 
 # copy telemetry jars
 COPY --from=geoserver-plugin-downloader /work/telemetry/opentelemetry-javaagent.jar ${OTEL_DIR}/opentelemetry-javaagent.jar
