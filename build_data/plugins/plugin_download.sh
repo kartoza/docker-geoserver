@@ -164,7 +164,7 @@ download_community_plugins() {
   local connect_timeout="${COMMUNITY_PLUGIN_CONNECT_TIMEOUT:-10}"
   local max_time="${COMMUNITY_PLUGIN_MAX_TIME:-300}"
   local retries="${COMMUNITY_PLUGIN_RETRIES:-1}"
-  local community_plugin_version="${GS_VERSION%.*}.0"
+  local community_plugin_version="${GS_VERSION_COMMUNITY:-${GS_VERSION%.*}.0}"
   local plugin url destination error_file validation_file curl_status error_message
   local failed_count=0
   local plugins=()

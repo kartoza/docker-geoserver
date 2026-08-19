@@ -29,6 +29,7 @@ FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION} AS gdal-builder
 
 FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
 ARG GS_VERSION=3.0.1
+ARG GS_VERSION_COMMUNITY
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG COMMUNITY_EXTENSION_PLUGIN_BASE_URL=https://build.geoserver.org/geoserver/${GS_VERSION%.*}x/community-latest
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
@@ -63,6 +64,7 @@ ARG IMAGE_VERSION
 ARG COMMUNITY_EXTENSION_PLUGIN_BASE_URL
 ARG STABLE_PLUGIN_BASE_URL
 ARG GS_VERSION
+ARG GS_VERSION_COMMUNITY
 
 ARG HTTPS_PORT=8443
 ARG TARGETARCH
@@ -125,7 +127,7 @@ COPY --from=geoserver-plugin-downloader /work/required_plugins/*.jar ${REQUIRED_
 COPY --from=geoserver-plugin-downloader /work/required_plugins/*.deb ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/required_plugins.txt ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins/*.zip ${STABLE_PLUGINS_DIR}/
-COPY --from=geoserver-plugin-downloader /work/community_plugins/*.zip ${COMMUNITY_PLUGINS_DIR}/
+COPY --from=geoserver-plugin-downloader /work/community_plugins/ ${COMMUNITY_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/geoserver_war/geoserver.* ${REQUIRED_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/community_plugins.txt ${COMMUNITY_PLUGINS_DIR}/
 COPY --from=geoserver-plugin-downloader /work/stable_plugins.txt ${STABLE_PLUGINS_DIR}/
@@ -139,10 +141,12 @@ COPY --from=geoserver-plugin-downloader /work/telemetry/jmx_config.yaml ${JMX_DI
 
 RUN ldconfig
 
-RUN mkdir -p /etc/kartoza && \
+RUN GS_VERSION_COMMUNITY_RESOLVED="${GS_VERSION_COMMUNITY:-${GS_VERSION%.*}.0}" && \
+    mkdir -p /etc/kartoza && \
     printf '%s\n' \
       "TOMCAT_VERSION=${IMAGE_VERSION}" \
       "GEOSERVER_VERSION=${GS_VERSION}" \
+      "GS_VERSION_COMMUNITY=${GS_VERSION_COMMUNITY_RESOLVED}" \
       "STABLE_PLUGIN_URL=${STABLE_PLUGIN_BASE_URL}" \
       "TOMCAT_DIGEST_SHA=${TOMCAT_IMAGE_SHA}" \
       "COMMUNITY_EXTENSION_PLUGIN_BASE_URL=${COMMUNITY_EXTENSION_PLUGIN_BASE_URL}" \

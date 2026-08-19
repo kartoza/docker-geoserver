@@ -584,14 +584,19 @@ if [ -z ${STABLE_PLUGIN_BASE_URL} ];then
   export STABLE_PLUGIN_BASE_URL=$(echo "$VERSION_INFO" | grep '^STABLE_PLUGIN_URL=' | cut -d= -f2)
 fi
 
-if [ -z ${COMMUNITY_EXTENSION_PLUGIN_BASE_URL} ];then
+if [ -z "${COMMUNITY_EXTENSION_PLUGIN_BASE_URL:-}" ];then
   VERSION_INFO=$(cat /etc/kartoza/build_info.env)
   export COMMUNITY_EXTENSION_PLUGIN_BASE_URL=$(echo "$VERSION_INFO" | grep '^COMMUNITY_EXTENSION_PLUGIN_BASE_URL=' | cut -d= -f2)
 fi
 
-if [ -z ${GS_VERSION} ];then
+if [ -z "${GS_VERSION:-}" ];then
   VERSION_INFO=$(cat /etc/kartoza/build_info.env)
   export GS_VERSION=$(echo "$VERSION_INFO" | grep '^GEOSERVER_VERSION=' | cut -d= -f2)
+fi
+
+if [ -z "${GS_VERSION_COMMUNITY:-}" ];then
+  VERSION_INFO=$(cat /etc/kartoza/build_info.env)
+  export GS_VERSION_COMMUNITY=$(echo "$VERSION_INFO" | grep '^GS_VERSION_COMMUNITY=' | cut -d= -f2)
 fi
 
 if [ -z "${CHOWN_DATA_DIR}" ]; then

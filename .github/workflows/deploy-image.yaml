@@ -142,6 +142,7 @@ jobs:
             IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
             JAVA_HOME=${{ steps.java_home_check.outputs.java_home }}
             GS_VERSION=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
+            GS_VERSION_COMMUNITY=${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.0
             WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/geoserver-${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}-war.zip
             STABLE_PLUGIN_BASE_URL=${{ matrix.stablePluginBaseURL }}
             GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
@@ -198,6 +199,5 @@ jobs:
           gh release create v${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}--${{ steps.current_date.outputs.formatted }}--${{ steps.latest_commit_hash.outputs.commit }} --notes ${{ steps.latest_commit_hash.outputs.commit }} --target develop --repo $GITHUB_REPOSITORY
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
 
