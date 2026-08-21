@@ -11,6 +11,11 @@ parser.add_argument(
     nargs="?",
     help="Direct URL of the community-latest directory",
 )
+parser.add_argument(
+    "snapshot_version",
+    nargs="?",
+    help="Version used in community plugin snapshot filenames, e.g. 3.0.0",
+)
 args = parser.parse_args()
 
 url = args.base_url or (
@@ -53,7 +58,7 @@ if not plugin_list:
 
 with open('community_plugins.txt.tmp', 'w') as f:
     for plugin in plugin_list:
-        _version = args.version.replace(".x", ".0")
+        _version = args.snapshot_version or args.version.replace(".x", ".0")
         sub_string = "geoserver-%s-SNAPSHOT-" % _version
         plugin_file = plugin.replace("%s" % sub_string, "")
         plugin_name = plugin_file.replace(".zip", "")

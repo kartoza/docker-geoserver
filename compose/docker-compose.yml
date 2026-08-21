@@ -46,9 +46,7 @@ services:
         - GEOSERVER_CONTEXT_ROOT=${GEOSERVER_CONTEXT_ROOT}
         - ROOT_WEBAPP_REDIRECT=true
         - CONSOLE_HANDLER_LEVEL=${CONSOLE_HANDLER_LEVEL}
-      depends_on:
-        db:
-          condition: service_healthy
+      
       healthcheck:
         test: [ "CMD-SHELL", "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml" ]
         interval: 1m30s
