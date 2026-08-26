@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import sys
 from pathlib import Path
 
+FALLBACK_GEOSERVER_VERSION = "2.28.5"
+
 
 def get_latest_geoserver_version():
     url = "https://geoserver.org/release/maintain/"
@@ -27,15 +29,20 @@ def get_latest_geoserver_version():
 
 
 def main():
-    version = get_latest_geoserver_version()
+    try:
+        version = get_latest_geoserver_version()
+        major, minor, bugfix = version.split(".")
+        if not all(part.isdigit() for part in (major, minor, bugfix)):
+            raise ValueError(f"invalid version: {version}")
+    except (requests.RequestException, ValueError, AttributeError, TypeError) as error:
+        print(
+            f"Could not determine the latest GeoServer version ({error}); "
+            f"using Dockerfile fallback: {FALLBACK_GEOSERVER_VERSION}"
+        )
+        version = FALLBACK_GEOSERVER_VERSION
+        major, minor, bugfix = version.split(".")
 
-    if not version:
-        print("Could not determine GeoServer version.")
-        sys.exit(1)
-
-    major, minor, bugfix = version.split(".")
-
-    print(f"Latest GeoServer stable version: {version}")
+    print(f"GeoServer version: {version}")
 
     github_output = Path("/github_output/github_output.txt")
 

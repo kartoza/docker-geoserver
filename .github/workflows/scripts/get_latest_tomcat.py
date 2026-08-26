@@ -3,6 +3,7 @@ import requests
 from pathlib import Path
 
 TOMCAT_REPO = "library/tomcat"
+FALLBACK_TOMCAT_TAG = "9.0.121-jdk17-temurin-noble"
 TAG_PATTERN = re.compile(
     r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)-jdk17-temurin-noble$"
 )
@@ -54,15 +55,27 @@ def get_latest_tomcat_tag():
     return latest_tag, latest_version
 
 def main():
-    tag, version = get_latest_tomcat_tag()
+    try:
+        tag, version = get_latest_tomcat_tag()
+    except (requests.RequestException, ValueError, KeyError, TypeError) as error:
+        print(
+            f"Could not determine the latest Tomcat version ({error}); "
+            f"using Dockerfile fallback: {FALLBACK_TOMCAT_TAG}"
+        )
+        tag, version = FALLBACK_TOMCAT_TAG, version_key(FALLBACK_TOMCAT_TAG)
 
-    if version:
-        print(f"Latest tomcat version in the 9 Series: {tag}")
-        github_output = Path("/github_output/github_output.txt")
+    if not tag or not version:
+        print(
+            "Could not parse a supported Tomcat version; "
+            f"using Dockerfile fallback: {FALLBACK_TOMCAT_TAG}"
+        )
+        tag = FALLBACK_TOMCAT_TAG
 
-        with github_output.open("a") as f:
-            f.write(f"tomcat_version={tag}\n")
+    print(f"Tomcat version: {tag}")
+    github_output = Path("/github_output/github_output.txt")
+
+    with github_output.open("a") as f:
+        f.write(f"tomcat_version={tag}\n")
 
 if __name__ == "__main__":
     main()
-
