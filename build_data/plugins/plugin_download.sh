@@ -43,7 +43,7 @@ download_libjpegturbo
 
 # Build a curl config to download all required plugins
 awk '{print "url = \"'"${STABLE_PLUGIN_BASE_URL}/${GS_VERSION}"'/extensions/geoserver-'"${GS_VERSION}"'-"$0".zip\"\noutput = \"/work/required_plugins/"$0".zip\"\n--fail\n--location\n"}' < /work/required_plugins.txt > /work/curl.cfg
-export LIMIT_EXT_DOWNLOAD=false
+export LIMIT_EXT_DOWNLOAD="${LIMIT_EXT_DOWNLOAD:-false}"
 # Add in all stable plugins
 if [ "$(echo "${LIMIT_EXT_DOWNLOAD}" | tr '[:upper:]' '[:lower:]')" = "true" ]; then
   head -n 5 /work/stable_plugins.txt > /work/stable_plugins_modified.txt

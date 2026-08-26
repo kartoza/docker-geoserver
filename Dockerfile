@@ -31,6 +31,7 @@ FROM --platform=$BUILDPLATFORM python:alpine3.20 AS geoserver-plugin-downloader
 ARG GS_VERSION=2.28.5
 ARG STABLE_PLUGIN_BASE_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 ARG WAR_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/geoserver-${GS_VERSION}-war.zip
+ARG LIMIT_EXT_DOWNLOAD=false
 ENV OTEL_VERSION=v2.17.1
 ENV JMX_PROMETHEUS_VERSION=1.0.1
 ENV LOG4J_VERSION=2.24.3
