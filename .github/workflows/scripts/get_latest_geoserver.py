@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def get_latest_geoserver_version():
-    url = "https://geoserver.org/release/stable/"
+    url = "https://geoserver.org/release/maintain/"
 
     response = requests.get(url, timeout=30)
     response.raise_for_status()

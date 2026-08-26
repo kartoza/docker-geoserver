@@ -137,7 +137,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver
+            
             ${{ ( steps.check_hub_image_exists.outputs.check_image != 200 || matrix.geoserverPatchMajorVersionBugs == 'yes' ) && format('{0}/geoserver:{1}.{2}.{3}', secrets.DOCKERHUB_REPO,  steps.geoserver_check.outputs.major, steps.geoserver_check.outputs.minor, steps.geoserver_check.outputs.bugfix) || null}}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
             ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}--v${{ steps.current_date.outputs.formatted }}
