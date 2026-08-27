@@ -122,12 +122,12 @@ jobs:
           echo "check_image=$status" >> "$GITHUB_OUTPUT"
 
       - name: Build prod image
-        if: |
-          github.actor != 'dependabot[bot]' &&
-          !(
-            contains(github.event.pull_request.title, '[skip-release]') ||
-            contains(github.event.comment.body, '/skiprelease')
-          ) && github.event.workflow_run.conclusion == 'success'
+        #if: |
+          #github.actor != 'dependabot[bot]' &&
+          #!(
+            #contains(github.event.pull_request.title, '[skip-release]') ||
+            #contains(github.event.comment.body, '/skiprelease')
+          #) && github.event.workflow_run.conclusion == 'success'
         timeout-minutes: 45
         id: docker_build_prod
         uses: docker/build-push-action@v7
