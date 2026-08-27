@@ -12,12 +12,12 @@ on:
 #  contents: read
 jobs:
   deploy-image:
-    if: |
-      github.actor != 'dependabot[bot]' &&
-      !(
-        contains(github.event.pull_request.title, '[skip-release]') ||
-        contains(github.event.comment.body, '/skiprelease')
-      ) && github.event.workflow_run.conclusion == 'success'
+    #if: |
+      #github.actor != 'dependabot[bot]' &&
+      #!(
+        #contains(github.event.pull_request.title, '[skip-release]') ||
+        #contains(github.event.comment.body, '/skiprelease')
+      #) && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
