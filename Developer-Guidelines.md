@@ -138,6 +138,6 @@ So when reporting please vulnerabilities please try to distinguish them from the
 Other platforms where users can ask questions and get assistance are listed below:
 
 -   [Stack Exchange](https://stackexchange.com/)
--   [GeoServer Mailing lists](https://sourceforge.net/projects/geoserver/lists/geoserver-users)
+-   [GeoServer User Forum](https://discourse.osgeo.org/c/geoserver/user/51)
 -   [GeoServer Commercial Support](https://geoserver.org/support/)
 
