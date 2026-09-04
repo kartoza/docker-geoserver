@@ -1,6 +1,8 @@
 name: deploy-image
+
 on:
   workflow_dispatch:
+
   workflow_run:
     workflows:
       - build-latest
@@ -8,8 +10,7 @@ on:
       - develop
     types:
       - completed
-#permissions:
-#  contents: read
+
 jobs:
   deploy-image:
     if: |
@@ -21,26 +22,35 @@ jobs:
           github.event.workflow_run.conclusion == 'success'
         )
       )
+
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    env:
-      latest-ref: refs/heads/develop
+
+    outputs:
+      push_dated: ${{ steps.publish_mode.outputs.push_dated }}
+      push_version: ${{ steps.publish_mode.outputs.push_version }}
+      release_type: ${{ steps.publish_mode.outputs.release_type }}
+
     strategy:
       matrix:
-
         stablePluginBaseURL:
-          # empty because it often changes, so it's better
-          # to use the default one described in the Dockerfile
-          # to make it consistent. How-ever we keep this in GH Action
-          # to make it easy to pass overrides in the future.
+          # Keep this here so that it is easy to override in future.
           - https://sourceforge.net/projects/geoserver/files/GeoServer
+
         geoserverPatchMajorVersionBugs:
-          # useful to also update existing broken image, defaults to no
-          - yes
+          # Do NOT normally update an existing GeoServer version tag for
+          # arbitrary code changes.
+          - no
+
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          ref: develop
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -50,94 +60,414 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+
       - name: Check latest GeoServer version
         id: geoserver_check
         shell: bash
         run: |
+          set -euo pipefail
+
           IMAGE_VERSION=3.12-slim
+
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
             python:${IMAGE_VERSION} \
             bash /scripts/check_geoserver_version.sh
 
-      - name: Check tomcat version in the series
+      - name: Check Tomcat version in the series
         id: tomcat_check
         shell: bash
         run: |
+          set -euo pipefail
+
           IMAGE_VERSION=3.12-slim
+
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
             python:${IMAGE_VERSION} \
             bash /scripts/check_tomcat_version.sh
 
-      - name: Check Java Home path
-        id: java_home_check
-        shell: bash
-        run: |
-          IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
-          JAVA_HOME=$(
-              docker run --rm \
-                "tomcat:${IMAGE_VERSION}" \
-                sh -c 'printf "%s" "$JAVA_HOME"'
-            )
-          echo "${JAVA_HOME}"
-          echo "java_home=${JAVA_HOME}" >> $GITHUB_OUTPUT
+      # ------------------------------------------------------------
+      # Read metadata from the currently published GeoServer image.
+      #
+      # build_info.env contains:
+      #
+      #   TOMCAT_VERSION=
+      #   TOMCAT_DIGEST_SHA=
+      #   GEOSERVER_VERSION=
+      #
+      # This is the state that the currently published image was
+      # actually built with.
+      # ------------------------------------------------------------
 
-      - name: Check GDAL version
-        id: gdal_version_check
+      - name: Read published image metadata
+        id: published_image
         shell: bash
         run: |
-          IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
-          docker run --rm \
-            -v "$PWD/.github/workflows/scripts:/scripts" \
-            -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
-            tomcat:${IMAGE_VERSION} \
-            bash /scripts/get_gdal_version.sh
+          set -euo pipefail
+
+          docker pull kartoza/geoserver:latest
+
+          CONTAINER_ID=$(docker create kartoza/geoserver:latest)
+
+          trap 'docker rm -f "${CONTAINER_ID}" >/dev/null 2>&1 || true' EXIT
+
+          docker cp \
+            "${CONTAINER_ID}:/etc/kartoza/build_info.env" \
+            ./build_info.env
+
+          VERSION_INFO=$(cat ./build_info.env)
+
+          echo "Published image metadata:"
+          echo "$VERSION_INFO"
+
+          TOMCAT_VERSION=$(
+            echo "$VERSION_INFO" |
+            grep '^TOMCAT_VERSION=' |
+            cut -d= -f2-
+          )
+
+          TOMCAT_VERSION_DIGEST=$(
+            echo "$VERSION_INFO" |
+            grep '^TOMCAT_DIGEST_SHA=' |
+            cut -d= -f2-
+          )
+
+          GEOSERVER_VERSION=$(
+            echo "$VERSION_INFO" |
+            grep '^GEOSERVER_VERSION=' |
+            cut -d= -f2-
+          )
+
+          echo "TOMCAT_VERSION=$TOMCAT_VERSION" \
+            >> "$GITHUB_OUTPUT"
+
+          echo "TOMCAT_VERSION_DIGEST=$TOMCAT_VERSION_DIGEST" \
+            >> "$GITHUB_OUTPUT"
+
+          echo "GEOSERVER_VERSION=$GEOSERVER_VERSION" \
+            >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------
+      # Resolve the digest currently associated with the same Tomcat
+      # tag that the published GeoServer image was built from.
+      #
+      # This detects mutable Tomcat/base-image updates where:
+      #
+      #   TOMCAT_VERSION stays the same
+      #   TOMCAT_DIGEST_SHA changes
+      # ------------------------------------------------------------
+
+      - name: Published Tomcat Digest
+        id: tomcat_digest_comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PUBLISHED_TOMCAT="${{ steps.published_image.outputs.TOMCAT_VERSION }}"
+
+          docker pull "tomcat:${PUBLISHED_TOMCAT}"
+
+          TOMCAT_DIGEST=$(
+            docker inspect \
+              --format='{{index .RepoDigests 0}}' \
+              "tomcat:${PUBLISHED_TOMCAT}"
+          )
+
+          echo "Current digest for published Tomcat tag:"
+          echo "${TOMCAT_DIGEST}"
+
+          echo "tomcat_sha=${TOMCAT_DIGEST}" \
+            >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------
+      # Resolve the Tomcat digest that THIS build will actually use.
+      #
+      # This can be different from the previous step if the Tomcat
+      # version itself has moved.
+      # ------------------------------------------------------------
 
       - name: Tomcat Digest for image used in build
         id: tomcat_digest
         shell: bash
         run: |
-          PUBLISHED_TOMCAT="${{ steps.tomcat_check.outputs.tomcat_version }}"
-          TOMCAT_DIGEST=$(docker inspect \
-            --format='{{index .RepoDigests 0}}' \
-            tomcat:${PUBLISHED_TOMCAT})
+          set -euo pipefail
+
+          BUILD_TOMCAT="${{ steps.tomcat_check.outputs.tomcat_version }}"
+
+          docker pull "tomcat:${BUILD_TOMCAT}"
+
+          TOMCAT_DIGEST=$(
+            docker inspect \
+              --format='{{index .RepoDigests 0}}' \
+              "tomcat:${BUILD_TOMCAT}"
+          )
+
+          echo "Tomcat digest for new build:"
           echo "${TOMCAT_DIGEST}"
-          echo "tomcat_sha=${TOMCAT_DIGEST}" >> $GITHUB_OUTPUT
 
-      - name: Get Current Date
-        id: current_date
-        run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
+          echo "tomcat_sha=${TOMCAT_DIGEST}" \
+            >> "$GITHUB_OUTPUT"
 
+      # ------------------------------------------------------------
+      # Check whether the semantic GeoServer tag exists.
+      #
+      # Normally version differences already tell us this is a new
+      # release, but this also repairs a missing version tag.
+      # ------------------------------------------------------------
 
-      - name: Check if image exists on Docker Hub
+      - name: Check if GeoServer version tag exists on Docker Hub
         id: check_hub_image_exists
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
-          status=$(curl -s -o /dev/null -w "%{http_code}" \
-            https://hub.docker.com/v2/repositories/kartoza/geoserver/tags/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}/
+          VERSION="${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}"
+
+          STATUS=$(
+            curl -s \
+              -o /dev/null \
+              -w "%{http_code}" \
+              "https://hub.docker.com/v2/repositories/kartoza/geoserver/tags/${VERSION}/"
           )
 
-          echo "check_image=$status" >> "$GITHUB_OUTPUT"
+          echo "Docker Hub status for ${VERSION}: ${STATUS}"
+
+          if [[ "${STATUS}" == "200" ]]; then
+            echo "image_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "image_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ------------------------------------------------------------
+      # Decide which tags should move.
+      #
+      # MODE 1: New GeoServer version
+      #   latest      -> YES
+      #   2.x.x       -> YES
+      #   dated       -> YES
+      #
+      # MODE 2: Tomcat version/digest changed
+      #   latest      -> YES
+      #   2.x.x       -> YES
+      #   dated       -> NO
+      #
+      # MODE 3: Normal repository/code change
+      #   latest      -> YES
+      #   2.x.x       -> NO
+      #   dated       -> YES
+      #
+      # Explicit geoserverPatchMajorVersionBugs=yes can still force
+      # the semantic GeoServer tag to be refreshed.
+      # ------------------------------------------------------------
+
+      - name: Determine image publishing mode
+        id: publish_mode
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CURRENT_GEOSERVER="${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}"
+
+          PUBLISHED_GEOSERVER="${{ steps.published_image.outputs.GEOSERVER_VERSION }}"
+
+          CURRENT_TOMCAT="${{ steps.tomcat_check.outputs.tomcat_version }}"
+
+          PUBLISHED_TOMCAT="${{ steps.published_image.outputs.TOMCAT_VERSION }}"
+
+          PUBLISHED_TOMCAT_DIGEST="${{ steps.published_image.outputs.TOMCAT_VERSION_DIGEST }}"
+
+          DOCKERHUB_PUBLISHED_TOMCAT_DIGEST="${{ steps.tomcat_digest_comparison.outputs.tomcat_sha }}"
+
+          VERSION_TAG_EXISTS="${{ steps.check_hub_image_exists.outputs.image_exists }}"
+
+          PATCH_MAJOR_BUGS="${{ matrix.geoserverPatchMajorVersionBugs }}"
+
+          echo "----------------------------------------"
+          echo "Published GeoServer:      ${PUBLISHED_GEOSERVER}"
+          echo "Current GeoServer:        ${CURRENT_GEOSERVER}"
+          echo
+          echo "Published Tomcat:         ${PUBLISHED_TOMCAT}"
+          echo "Current Tomcat:           ${CURRENT_TOMCAT}"
+          echo
+          echo "Published Tomcat digest:  ${PUBLISHED_TOMCAT_DIGEST}"
+          echo "Docker Hub Tomcat digest: ${DOCKERHUB_PUBLISHED_TOMCAT_DIGEST}"
+          echo
+          echo "Version tag exists:       ${VERSION_TAG_EXISTS}"
+          echo "Patch existing version:   ${PATCH_MAJOR_BUGS}"
+          echo "----------------------------------------"
+
+          GEOSERVER_CHANGED=false
+          TOMCAT_VERSION_CHANGED=false
+          TOMCAT_DIGEST_CHANGED=false
+          BASE_IMAGE_CHANGED=false
+
+          if [[ "${PUBLISHED_GEOSERVER}" != "${CURRENT_GEOSERVER}" ]]; then
+            GEOSERVER_CHANGED=true
+          fi
+
+          if [[ "${PUBLISHED_TOMCAT}" != "${CURRENT_TOMCAT}" ]]; then
+            TOMCAT_VERSION_CHANGED=true
+          fi
+
+          if [[ "${PUBLISHED_TOMCAT_DIGEST}" != "${DOCKERHUB_PUBLISHED_TOMCAT_DIGEST}" ]]; then
+            TOMCAT_DIGEST_CHANGED=true
+          fi
+
+          if [[ "${TOMCAT_VERSION_CHANGED}" == "true" ]] ||
+             [[ "${TOMCAT_DIGEST_CHANGED}" == "true" ]]; then
+            BASE_IMAGE_CHANGED=true
+          fi
+
+          #
+          # latest is ALWAYS published.
+          #
+          PUSH_VERSION=false
+          PUSH_DATED=true
+          RELEASE_TYPE=code-change
+
+          #
+          # New GeoServer release.
+          #
+          if [[ "${GEOSERVER_CHANGED}" == "true" ]]; then
+
+            echo "Publishing mode: new GeoServer release"
+
+            PUSH_VERSION=true
+            PUSH_DATED=true
+            RELEASE_TYPE=geoserver-release
+
+          #
+          # Existing GeoServer version, but the Tomcat image itself
+          # has changed.
+          #
+          elif [[ "${BASE_IMAGE_CHANGED}" == "true" ]]; then
+
+            echo "Publishing mode: Tomcat/base-image refresh"
+
+            PUSH_VERSION=true
+            PUSH_DATED=false
+            RELEASE_TYPE=base-image-refresh
+
+          #
+          # Repair a semantic tag if it has disappeared.
+          #
+          elif [[ "${VERSION_TAG_EXISTS}" != "true" ]]; then
+
+            echo "Publishing mode: missing GeoServer version tag"
+
+            PUSH_VERSION=true
+            PUSH_DATED=true
+            RELEASE_TYPE=missing-version-tag
+
+          #
+          # Explicit override.
+          #
+          elif [[ "${PATCH_MAJOR_BUGS}" == "yes" ]]; then
+
+            echo "Publishing mode: explicitly patch existing GeoServer version"
+
+            PUSH_VERSION=true
+            PUSH_DATED=true
+            RELEASE_TYPE=version-patch
+
+          #
+          # Otherwise this is an ordinary repository/code change.
+          #
+          else
+
+            echo "Publishing mode: normal repository/code change"
+
+            PUSH_VERSION=false
+            PUSH_DATED=true
+            RELEASE_TYPE=code-change
+
+          fi
+
+          echo "----------------------------------------"
+          echo "push latest:  true"
+          echo "push version: ${PUSH_VERSION}"
+          echo "push dated:   ${PUSH_DATED}"
+          echo "release type: ${RELEASE_TYPE}"
+          echo "----------------------------------------"
+
+          echo "push_version=${PUSH_VERSION}" \
+            >> "$GITHUB_OUTPUT"
+
+          echo "push_dated=${PUSH_DATED}" \
+            >> "$GITHUB_OUTPUT"
+
+          echo "release_type=${RELEASE_TYPE}" \
+            >> "$GITHUB_OUTPUT"
+
+          echo "base_image_changed=${BASE_IMAGE_CHANGED}" \
+            >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------
+      # Remaining build information
+      # ------------------------------------------------------------
+
+      - name: Check Java Home path
+        id: java_home_check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          IMAGE_VERSION="${{ steps.tomcat_check.outputs.tomcat_version }}"
+
+          JAVA_HOME=$(
+            docker run --rm \
+              "tomcat:${IMAGE_VERSION}" \
+              sh -c 'printf "%s" "$JAVA_HOME"'
+          )
+
+          echo "${JAVA_HOME}"
+
+          echo "java_home=${JAVA_HOME}" \
+            >> "$GITHUB_OUTPUT"
+
+      - name: Check GDAL version
+        id: gdal_version_check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          IMAGE_VERSION="${{ steps.tomcat_check.outputs.tomcat_version }}"
+
+          docker run --rm \
+            -v "$PWD/.github/workflows/scripts:/scripts" \
+            -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
+            "tomcat:${IMAGE_VERSION}" \
+            bash /scripts/get_gdal_version.sh
+
+      - name: Get Current Date
+        id: current_date
+        shell: bash
+        run: |
+          echo "formatted=$(date -u +%Y.%m.%d)" \
+            >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------
+      # Build and publish
+      # ------------------------------------------------------------
 
       - name: Build prod image
-        timeout-minutes: 45
         id: docker_build_prod
+        timeout-minutes: 45
         uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           file: Dockerfile
           push: true
+
           tags: |
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver
-            ${{ ( steps.check_hub_image_exists.outputs.check_image != 200 || matrix.geoserverPatchMajorVersionBugs == 'yes' ) && format('{0}/geoserver:{1}.{2}.{3}', secrets.DOCKERHUB_REPO,  steps.geoserver_check.outputs.major, steps.geoserver_check.outputs.minor, steps.geoserver_check.outputs.bugfix) || null}}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}
-            ${{ secrets.DOCKERHUB_REPO }}/geoserver:${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}--v${{ steps.current_date.outputs.formatted }}
+            ${{ secrets.DOCKERHUB_REPO }}/geoserver:latest
+            ${{ steps.publish_mode.outputs.push_version == 'true' && format('{0}/geoserver:{1}.{2}.{3}', secrets.DOCKERHUB_REPO, steps.geoserver_check.outputs.major, steps.geoserver_check.outputs.minor, steps.geoserver_check.outputs.bugfix) || '' }}
+            ${{ steps.publish_mode.outputs.push_dated == 'true' && format('{0}/geoserver:{1}.{2}.{3}--v{4}', secrets.DOCKERHUB_REPO, steps.geoserver_check.outputs.major, steps.geoserver_check.outputs.minor, steps.geoserver_check.outputs.bugfix, steps.current_date.outputs.formatted) || '' }}
+
           build-args: |
             IMAGE_VERSION=${{ steps.tomcat_check.outputs.tomcat_version }}
             JAVA_HOME=${{ steps.java_home_check.outputs.java_home }}
@@ -148,14 +478,33 @@ jobs:
             GDAL_VERSION=${{ steps.gdal_version_check.outputs.gdal_version }}
             TOMCAT_IMAGE_SHA=${{ steps.tomcat_digest.outputs.tomcat_sha }}
             COMMUNITY_EXTENSION_PLUGIN_BASE_URL=https://build.geoserver.org/geoserver/${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.x/community-latest
+
           cache-from: |
             type=gha,scope=prod
+
+          cache-to: |
+            type=gha,scope=prod,mode=max
+
           target: geoserver-prod
+
+  # ==================================================================
+  # GitHub release
+  #
+  # A base-image-only refresh intentionally does NOT produce a dated
+  # Docker image and therefore does NOT produce another GitHub release.
+  # ==================================================================
 
   publish_release_artifacts:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    needs:
+      - deploy-image
+
     if: |
+      always() &&
+      needs.deploy-image.result == 'success' &&
+      needs.deploy-image.outputs.push_dated == 'true' &&
       github.actor != 'dependabot[bot]' &&
       (
         github.event_name == 'workflow_dispatch' ||
@@ -164,40 +513,73 @@ jobs:
           github.event.workflow_run.conclusion == 'success'
         )
       )
-    needs: [deploy-image]
-
 
     steps:
       - name: Checkout code
         id: git_checkout
         uses: actions/checkout@v7
         with:
-          ref: 'develop'
+          ref: develop
 
       - name: Get Current Date
         id: current_date
-        run: echo "formatted=$(date -u +%Y.%m.%d)" >> $GITHUB_OUTPUT
+        shell: bash
+        run: |
+          echo "formatted=$(date -u +%Y.%m.%d)" \
+            >> "$GITHUB_OUTPUT"
 
       - name: Check latest GeoServer version
         id: geoserver_check
         shell: bash
         run: |
+          set -euo pipefail
+
           docker run --rm \
             -v "$PWD/.github/workflows/scripts:/scripts" \
             -v "$GITHUB_OUTPUT:/github_output/github_output.txt" \
             python:3.12-slim \
             bash /scripts/check_geoserver_version.sh
-          
 
       - name: Get Latest Commit Hash
         id: latest_commit_hash
-        run: echo "commit=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_OUTPUT
-
-      - name: publish_release
-        id: tag_releases
+        shell: bash
         run: |
-          gh release create v${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}--${{ steps.current_date.outputs.formatted }}--${{ steps.latest_commit_hash.outputs.commit }} --notes ${{ steps.latest_commit_hash.outputs.commit }} --target develop --repo $GITHUB_REPOSITORY
+          echo "commit=$(git rev-parse --short HEAD)" \
+            >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        id: tag_releases
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
 
+          VERSION="${{ steps.geoserver_check.outputs.major }}.${{ steps.geoserver_check.outputs.minor }}.${{ steps.geoserver_check.outputs.bugfix }}"
 
+          DATE="${{ steps.current_date.outputs.formatted }}"
+
+          COMMIT="${{ steps.latest_commit_hash.outputs.commit }}"
+
+          RELEASE_TAG="v${VERSION}--${DATE}--${COMMIT}"
+
+          echo "Release type: ${{ needs.deploy-image.outputs.release_type }}"
+          echo "Creating release: ${RELEASE_TAG}"
+
+          #
+          # Avoid failing if this exact workflow is manually re-run.
+          #
+          if gh release view \
+            "${RELEASE_TAG}" \
+            --repo "$GITHUB_REPOSITORY" \
+            >/dev/null 2>&1; then
+
+            echo "Release ${RELEASE_TAG} already exists."
+            exit 0
+          fi
+
+          gh release create \
+            "${RELEASE_TAG}" \
+            --notes "${COMMIT}" \
+            --target develop \
+            --repo "$GITHUB_REPOSITORY"
