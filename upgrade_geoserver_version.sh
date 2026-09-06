@@ -1,16 +1,10 @@
 #!/bin/bash
 
 
-GS_VERSION=$1
-if [  -f "${GS_VERSION}" ]; then
-    rm "${GS_VERSION}"
-fi
+GS_VERSION="${1:-3.0.1}"
+GS_NEW_VERSION="${2:-3.0.2}"
+PUSH_CHANGES="${3:-TRUE}"
 
-
-GS_NEW_VERSION=$2
-if [  -f "${GS_NEW_VERSION}" ]; then
-    rm "${GS_NEW_VERSION}"
-fi
 
 sed -i "s/${GS_VERSION}/${GS_NEW_VERSION}/g" "Dockerfile"
 
@@ -28,6 +22,7 @@ sed -i  "s/${GS_VERSION}/${GS_NEW_VERSION}/g" "clustering/docker-compose-externa
 
 # Github actions always install the latest versions
 
-
-#git commit -a -m "Upgraded the GeoServer instance from version ${GS_VERSION} to ${GS_NEW_VERSION}"
+if [[ ${PUSH_CHANGES} =~ [Tt][Rr][Uu][Ee] ]];
+  git commit -a -m "Upgraded the GeoServer instance from version ${GS_VERSION} to ${GS_NEW_VERSION}"
+fi
 

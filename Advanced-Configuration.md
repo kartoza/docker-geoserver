@@ -44,7 +44,7 @@ environment variables.
 
 ## Environment Variables
 
-A full list of environment variables are specified in the [.env](https://github.com/kartoza/docker-geoserver/blob/develop/compose/.env) file
+A full list of environment variables is specified in the [.env](https://github.com/kartoza/docker-geoserver/blob/develop/compose/.env) file
 
 ### Default installed extensions
 
@@ -60,7 +60,7 @@ The image activates the [default_stable_extensions](https://github.com/kartoza/d
 -   inspire-plugin
 -   csw-plugin
 
-If you wish to exclude any of the default activated plugins you will need to set
+If you wish to exclude any of the default-activated plugins you will need to set
 
 ```bash
 ACTIVE_EXTENSIONS=${Default_extension} - skipped_default_extension
