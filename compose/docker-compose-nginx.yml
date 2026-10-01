@@ -1,6 +1,8 @@
 volumes:
    geoserver-data:
    geo-db-data:
+   geoserver-gwc:
+   geoserver-settings:
 
 services:
    db:
@@ -27,6 +29,8 @@ services:
       image: kartoza/geoserver:${GS_VERSION}
       volumes:
         - geoserver-data:/opt/geoserver/data_dir
+        - geoserver-gwc:/opt/geoserver/gwc
+        - geoserver-settings:/settings
       restart: on-failure
       environment:
         - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}

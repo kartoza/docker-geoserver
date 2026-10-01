@@ -51,6 +51,9 @@ if [ -z "${DISKQUOTA_DISABLED}" ]; then
   DISKQUOTA_DISABLED=false
 fi
 
+if [ -z "${SCRIPTS_LOCKFILE_DIR}" ]; then
+   SCRIPTS_LOCKFILE_DIR=${DEFAULT_SCRIPTS_LOCKFILE_DIR}
+fi
 
 
 if [ -z "${TMS_ENABLED}" ]; then
