@@ -83,14 +83,14 @@ action_password_update() {
 }
 
 password_reset() {
-  if [[ ! -f ${EXTRA_CONFIG_DIR}/.security.lock ]]; then
+  if [[ ! -f ${SCRIPTS_LOCKFILE_DIR}/.security.lock ]]; then
 
     echo -e "\e[32m [SECURITY CONFIG] First-time initialization → copying default security configs. \033[0m"
     cp -r "${CATALINA_HOME}/security" "${GEOSERVER_DATA_DIR}"
     sed -i '/<readOnly>false<\/readOnly>/a <loginEnabled>false<\/loginEnabled>' \
       "${GEOSERVER_DATA_DIR}/security/config.xml"
     action_password_update
-    touch "${EXTRA_CONFIG_DIR}/.security.lock"
+    touch "${SCRIPTS_LOCKFILE_DIR}/.security.lock"
   else
     create_dir "${GEOSERVER_DATA_DIR}/security"
     local did_restore=false
