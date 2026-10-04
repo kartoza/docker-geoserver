@@ -3,6 +3,7 @@ volumes:
    geo-db-data:
    geoserver-gwc:
    geoserver-settings:
+   geoserver-lockfile:
 
 services:
    db:
@@ -31,11 +32,13 @@ services:
         - geoserver-data:/opt/geoserver/data_dir
         - geoserver-gwc:/opt/geoserver/gwc
         - geoserver-settings:/settings
+        - geoserver-lockfile:/credentials
       ports:
         - "${GEOSERVER_PORT}:8080"
       restart: on-failure
       environment:
         - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+        - SCRIPTS_LOCKFILE_DIR=${SCRIPTS_LOCKFILE_DIR}
         - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
         - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
         - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
