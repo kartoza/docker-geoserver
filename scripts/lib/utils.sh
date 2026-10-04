@@ -281,6 +281,7 @@ create_entrypoint_directories() {
     "${GEOWEBCACHE_CACHE_DIR}"
     "${GEOSERVER_HOME}"
     "${EXTRA_CONFIG_DIR}"
+    "${SCRIPTS_LOCKFILE_DIR}"
     "/docker-entrypoint-geoserver.d"
   )
 

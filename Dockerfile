@@ -107,6 +107,7 @@ ENV \
     GEOSERVER_HOME=/geoserver \
     EXTRA_CONFIG_DIR=/settings \
     COMMUNITY_PLUGINS_DIR=/community_plugins  \
+    DEFAULT_SCRIPTS_LOCKFILE_DIR=/settings \
     STABLE_PLUGINS_DIR=/stable_plugins \
     REQUIRED_PLUGINS_DIR=/required_plugins \
     OTEL_DIR=/otel \
