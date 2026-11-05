@@ -45,7 +45,7 @@ setup_jndi_status
 setup_tomcat_webapp_status
 setup_tomcat_ssl_status
 clean_up_vars
-run_update_password_hook
 entry_point_script
+run_update_password_hook
 log4j_logging
 
