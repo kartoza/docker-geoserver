@@ -21,7 +21,7 @@ STABLE_PLUGIN_BASE_URL=$(grep '^STABLE_PLUGIN_URL=' /etc/kartoza/build_info.env 
 #############################################
 # Functions
 #############################################
-
+entry_point_script pre
 web_cors
 cleanup_data_dir
 install_fonts
@@ -48,4 +48,5 @@ clean_up_vars
 entry_point_script
 run_update_password_hook
 log4j_logging
+entry_point_script post
 
