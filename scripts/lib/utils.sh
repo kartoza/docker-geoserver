@@ -361,6 +361,15 @@ entry_point_script() {
 
     [[ -d "$script_dir" ]] || return 0
 
+    local pre_scripts="${GEOSERVER_PREPROCESSING_SCRIPTS:-}"
+    local post_scripts="${GEOSERVER_POSTPROCESSING_SCRIPTS:-}"
+
+    # Only run pre/post when the corresponding env var is set
+    case "$phase" in
+        pre)  [[ -n "$pre_scripts"  ]] || return 0 ;;
+        post) [[ -n "$post_scripts" ]] || return 0 ;;
+    esac
+
     for f in "$script_dir"/*; do
         [[ -e "$f" ]] || continue
 
@@ -374,21 +383,19 @@ entry_point_script() {
                 case "$phase" in
                     pre)
                         is_configured_script "$filename" \
-                            "${GEOSERVER_PREPROCESSING_SCRIPTS:-}" \
+                            "$pre_scripts" \
                             && run_script=true
                         ;;
 
                     post)
                         is_configured_script "$filename" \
-                            "${GEOSERVER_POSTPROCESSING_SCRIPTS:-}" \
+                            "$post_scripts" \
                             && run_script=true
                         ;;
 
                     default)
-                        if ! is_configured_script "$filename" \
-                            "${GEOSERVER_PREPROCESSING_SCRIPTS:-}" &&
-                           ! is_configured_script "$filename" \
-                            "${GEOSERVER_POSTPROCESSING_SCRIPTS:-}"; then
+                        if ! is_configured_script "$filename" "$pre_scripts" &&
+                           ! is_configured_script "$filename" "$post_scripts"; then
                             run_script=true
                         fi
                         ;;
