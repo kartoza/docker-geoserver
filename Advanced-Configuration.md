@@ -509,12 +509,34 @@ during container start. Mounting these two files will overwrite `GEOSERVER_ADMIN
 
 ### Running scripts on container startup.
 
-You can run some bash script to correct some missing dependencies i.e. in
-community extension like [cluster issue](https://github.com/kartoza/docker-geoserver/issues/514)
+You can mount shell scripts into `/docker-entrypoint-geoserver.d` to customize
+container startup, for example to correct missing dependencies in a community
+extension as described in [this cluster issue](https://github.com/kartoza/docker-geoserver/issues/514).
+Only regular files ending in `.sh` are run.
 
 ```bash
--v ./run.sh:/docker-entrypoint-geoserver.d/run.sh
+docker run \
+  -v ./before-geoserver.sh:/docker-entrypoint-geoserver.d/before-geoserver.sh \
+  -e GEOSERVER_PREPROCESSING_SCRIPTS=before-geoserver.sh \
+  -v ./after-geoserver.sh:/docker-entrypoint-geoserver.d/after-geoserver.sh \
+  -e GEOSERVER_POSTPROCESSING_SCRIPTS=after-geoserver.sh \
+  kartoza/geoserver
 ```
+
+Scripts can be assigned to startup phases using comma-separated **filenames**
+(not paths) in these environment variables:
+
+- `GEOSERVER_PREPROCESSING_SCRIPTS`: run before the built-in GeoServer startup
+  setup.
+- `GEOSERVER_POSTPROCESSING_SCRIPTS`: run after the built-in setup and logging
+  configuration.
+- **Default phase**: any `.sh` file not listed in either variable runs during
+  the default phase, after built-in setup and before the password-update hook
+  and logging configuration.
+
+The entrypoint sources each selected script into the entrypoint shell, so the
+script runs in that shell's context. A script's non-zero return status does not
+stop container startup.
 
 ### CORS Support
 
@@ -552,5 +574,4 @@ http://localhost/geoserver/web/
 ## Kubernetes (Helm Charts)
 
 You can run the image in Kubernetes following the [recipe](https://github.com/kartoza/charts/tree/develop/charts/geoserver)
-
 

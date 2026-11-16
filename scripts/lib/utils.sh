@@ -335,18 +335,92 @@ cleanup_resources() {
 ############################################
 # 8. ENTRYPOINT & HOOKS
 ############################################
+is_configured_script() {
+    local filename="$1"
+    local scripts="$2"
+    local script
+
+    IFS=',' read -r -a scripts_array <<< "$scripts"
+
+    for script in "${scripts_array[@]}"; do
+        # Trim whitespace
+        script="${script#"${script%%[![:space:]]*}"}"
+        script="${script%"${script##*[![:space:]]}"}"
+
+        [[ "$filename" == "$script" ]] && return 0
+    done
+
+    return 1
+}
 
 entry_point_script() {
-  if find "/docker-entrypoint-geoserver.d" -mindepth 1 -print -quit 2>/dev/null | grep -q .; then
-    for f in /docker-entrypoint-geoserver.d/*; do
-      case "$f" in
-        *.sh) echo "$0: running $f"; . "$f" || true ;;
-        *)    echo "$0: ignoring $f" ;;
-      esac
-      echo
+    local phase="${1:-default}"
+    local script_dir="/docker-entrypoint-geoserver.d"
+    local filename
+    local run_script
+
+    [[ -d "$script_dir" ]] || return 0
+
+    local pre_scripts="${GEOSERVER_PREPROCESSING_SCRIPTS:-}"
+    local post_scripts="${GEOSERVER_POSTPROCESSING_SCRIPTS:-}"
+
+    # Only run pre/post when the corresponding env var is set
+    case "$phase" in
+        pre)  [[ -n "$pre_scripts"  ]] || return 0 ;;
+        post) [[ -n "$post_scripts" ]] || return 0 ;;
+    esac
+
+    for f in "$script_dir"/*; do
+        [[ -e "$f" ]] || continue
+
+        filename="$(basename "$f")"
+        run_script=false
+
+        case "$f" in
+            *.sh)
+                [[ -f "$f" ]] || continue
+
+                case "$phase" in
+                    pre)
+                        is_configured_script "$filename" \
+                            "$pre_scripts" \
+                            && run_script=true
+                        ;;
+
+                    post)
+                        is_configured_script "$filename" \
+                            "$post_scripts" \
+                            && run_script=true
+                        ;;
+
+                    default)
+                        if ! is_configured_script "$filename" "$pre_scripts" &&
+                           ! is_configured_script "$filename" "$post_scripts"; then
+                            run_script=true
+                        fi
+                        ;;
+
+                    *)
+                        echo "$0: unknown entry point phase: $phase" >&2
+                        return 1
+                        ;;
+                esac
+
+                if [[ "$run_script" == true ]]; then
+                    echo "$0: running ($phase) $f"
+                    . "$f" || true
+                    echo
+                fi
+                ;;
+
+            *)
+                [[ "$phase" == "default" ]] &&
+                    echo "$0: ignoring $f"
+                ;;
+        esac
     done
-  fi
 }
+
 
 run_pre_start_hooks() {
   local hook="${SCRIPT_DIR}/start.sh"
